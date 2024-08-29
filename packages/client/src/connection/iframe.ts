@@ -4,6 +4,7 @@ import {
   RPCMessage,
   RPCMessageSchema,
   RPCMessageType,
+  SubscriptionResult,
   WindowMessageSchema,
   WindowMessageType,
   Zapp
@@ -41,6 +42,18 @@ export class AdviceChannel implements ConnectorAdvice {
     this.onReady(rpc);
     this.port.postMessage({
       type: RPCMessageType.PARCNET_CLIENT_READY
+    });
+  }
+
+  public subscriptionUpdate(
+    { update, subscriptionId }: SubscriptionResult,
+    subscriptionSerial: number
+  ): void {
+    this.port.postMessage({
+      type: RPCMessageType.PARCNET_CLIENT_SUBSCRIPTION_UPDATE,
+      update,
+      subscriptionId,
+      subscriptionSerial
     });
   }
 }

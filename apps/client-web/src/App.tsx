@@ -2,6 +2,7 @@ import { listen } from "@parcnet/client";
 import { Zapp } from "@parcnet/client-rpc";
 import { Dispatch, ReactNode, useEffect, useReducer } from "react";
 import { ParcnetClientProcessor } from "./client/client";
+import { Rabbit } from "./rabbit";
 import { ClientAction, clientReducer } from "./state";
 
 function App() {
@@ -36,7 +37,12 @@ function App() {
   return (
     <main className="mx-auto max-w-md container">
       <div className="font-mono my-4 bg-black text-white p-4 rounded-lg">
-        <p className="my-4">Welcome to PARCNET</p>
+        <div className="flex items-center w-full my-4">
+          <div className="my-4 w-full">Welcome to PARCNET</div>
+          <div className="w-8 h-8">
+            <Rabbit />
+          </div>
+        </div>
         {!state.loggedIn && (
           <button
             className="border-2 font-semibold cursor-pointer border-white py-1 px-2 uppercase active:translate-x-[2px] active:translate-y-[2px]"

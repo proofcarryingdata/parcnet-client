@@ -20,13 +20,12 @@ export class ParcnetPODServer implements ParcnetPODRPC {
     this.pods.delete(signature);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public async subscribe(_query: PODQuery): Promise<string> {
-    throw new Error("Method not implemented.");
+  public async subscribe(query: PODQuery): Promise<string> {
+    const q = p.deserialize(query);
+    return this.pods.subscribe(q);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public async unsubscribe(_subscriptionId: string): Promise<void> {
-    throw new Error("Method not implemented.");
+  public async unsubscribe(subscriptionId: string): Promise<void> {
+    this.pods.unsubscribe(subscriptionId);
   }
 }

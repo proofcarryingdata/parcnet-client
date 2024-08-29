@@ -15,6 +15,7 @@
     "@pcd/gpc-pcd": "^0.0.6",
     "@pcd/pod": "0.1.5",
     "@pcd/podspec": "0.0.2",
+    "eventemitter3": "^5.0.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "vite-plugin-node-polyfills": "^0.22.0",

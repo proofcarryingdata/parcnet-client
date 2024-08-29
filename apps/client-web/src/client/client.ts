@@ -18,6 +18,9 @@ export class ParcnetClientProcessor implements ParcnetRPC {
 
   public constructor(public readonly clientChannel: ConnectorAdvice) {
     this.pods = new PODCollection();
+    this.pods.onSubscriptionUpdated((update, serial) => {
+      this.clientChannel.subscriptionUpdate(update, serial);
+    });
     this.pod = new ParcnetPODServer(this.pods);
     this.identity = new ParcnetIdentityServer();
     // @todo: implement gpc

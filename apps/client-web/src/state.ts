@@ -1,5 +1,5 @@
+import { ConnectorAdvice } from "@parcnet/client";
 import { Zapp } from "@parcnet/client-rpc";
-import { ConnectorAdvice } from "@parcnet/client/dist/connection/advice";
 
 export type ClientState = {
   loggedIn: boolean;
