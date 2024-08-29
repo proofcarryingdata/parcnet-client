@@ -1,5 +1,5 @@
 {
-  "extends": "@parcnet/typescript-config/react-library.json",
+  "extends": "@parcnet/typescript-config/base.json",
   "compilerOptions": {
     "outDir": "dist"
   },

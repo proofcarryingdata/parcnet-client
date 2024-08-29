@@ -1,7 +1,40 @@
 {
-  "eslint.workingDirectories": [
-    {
-      "mode": "auto"
+  "files.exclude": {
+    "**/.next": true,
+    "**/.turbo": true
+  },
+  "files.associations": {
+    "*.env": "properties",
+    "*.env.example": "properties",
+    "*.env.local.example": "properties",
+    "tsconfig.json": "jsonc",
+    "ts-library.json": "jsonc"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "always"
     }
-  ]
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "always"
+    }
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "always"
+    }
+  },
+  "eslint.rules.customizations": [],
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "prettier.configPath": ".prettierrc",
+  "editor.tabSize": 2,
+  "editor.formatOnSave": true,
+  "javascript.preferences.quoteStyle": "double",
+  "typescript.format.semicolons": "insert",
+  "typescript.preferences.quoteStyle": "double",
+  "typescript.enablePromptUseWorkspaceTsdk": true
 }

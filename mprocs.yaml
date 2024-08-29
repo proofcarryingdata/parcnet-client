@@ -1,0 +1,23 @@
+procs:
+  watch:
+    # This command is the only auto-started command. It does three things:
+    # - Run a full build
+    # - Start client-web process
+    # - Run a build on the packages directory, in watch mode
+    shell: "mprocs --ctl '{c: batch, cmds: [{c: select-proc, index: 1}, {c: kill-proc}]}' && pnpm install && pnpm build --filter='./packages/**' && mprocs --ctl '{c: batch, cmds: [{c: select-proc, index: 1}, {c: start-proc}, {c: select-proc, index: 0}] }' && pnpm turbo watch build --filter='./packages/**'"
+  client-web:
+    cwd: "apps/client-web"
+    shell: "pnpm dev"
+    autostart: false
+keymap_procs: # keymap when process list is focused
+  <1>: { c: select-proc, index: 0 }
+  <2>: { c: select-proc, index: 1 }
+  <3>: { c: select-proc, index: 2 }
+  <4>: { c: select-proc, index: 3 }
+  <5>: { c: select-proc, index: 4 }
+  <6>: { c: select-proc, index: 5 }
+  <7>: { c: select-proc, index: 6 }
+  <8>: { c: select-proc, index: 7 }
+  <9>: { c: select-proc, index: 8 }
+  <0>: { c: select-proc, index: 9 }
+server: 127.0.0.1:4060

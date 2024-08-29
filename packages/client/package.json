@@ -1,0 +1,37 @@
+{
+  "name": "@parcnet/client",
+  "version": "0.0.1",
+  "private": false,
+  "scripts": {
+    "build": "tsup 'src/**/*@(ts|tsx)' --format cjs,esm --dts",
+    "lint": "eslint . --max-warnings 0"
+  },
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@parcnet/client-rpc": "workspace:*",
+    "@pcd/gpc-pcd": "0.0.5",
+    "@pcd/pcd-types": "0.11.4",
+    "@pcd/pod": "0.1.5",
+    "@pcd/podspec": "0.0.2",
+    "@pcd/semaphore-identity-pcd": "0.11.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@parcnet/eslint-config": "workspace:*",
+    "@parcnet/typescript-config": "workspace:*",
+    "@types/eslint": "^9.0.0",
+    "@types/node": "^20.11.24",
+    "@types/react": "^18.2.61",
+    "@types/react-dom": "^18.2.19",
+    "eslint": "^9.0.0",
+    "tsup": "^8.2.4",
+    "typescript": "^5.3.3"
+  }
+}

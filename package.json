@@ -1,8 +1,9 @@
 {
   "name": "parcnet",
+  "type": "module",
   "private": true,
   "scripts": {
-    "build": "turbo build",
+    "build": "TURBO_UI=0 turbo build",
     "dev": "turbo dev",
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\""
@@ -15,5 +16,8 @@
   "packageManager": "pnpm@8.15.6",
   "engines": {
     "node": ">=18"
+  },
+  "dependencies": {
+    "mprocs": "^0.7.1"
   }
 }
