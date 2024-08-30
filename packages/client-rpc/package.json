@@ -3,13 +3,18 @@
   "private": false,
   "version": "0.0.1",
   "license": "GPL-3.0-or-later",
-  "type": "module",
   "main": "dist/index.js",
+  "module": "dist/index.mjs",
   "types": "src/index.ts",
   "scripts": {
     "lint": "eslint . --max-warnings 0",
-    "build": "tsup 'src/**/*@(ts|tsx)' --format cjs,esm --dts"
+    "build": "tsup 'src/**/*@(ts|tsx)' --format cjs,esm",
+    "prepublish": "tsup 'src/**/*@(ts|tsx)' --format cjs,esm --dts --clean"
   },
+  "files": [
+    "dist",
+    "LICENSE"
+  ],
   "dependencies": {
     "@pcd/gpc-pcd": "0.0.6",
     "@pcd/podspec": "0.0.2",
@@ -24,6 +29,7 @@
     "typescript": "^5.3.3"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "types": "dist/index.d.ts"
   }
 }
