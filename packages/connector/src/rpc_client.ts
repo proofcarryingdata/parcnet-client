@@ -4,6 +4,7 @@ import {
   ParcnetIdentityRPC,
   ParcnetPODRPC,
   ParcnetRPC,
+  ParcnetRPCMethodName,
   ParcnetRPCSchema,
   PODQuery,
   RPCMessage,
@@ -16,11 +17,6 @@ import { SerializedPCD } from "@pcd/pcd-types";
 import { EventEmitter } from "eventemitter3";
 import { z, ZodFunction, ZodTuple, ZodTypeAny } from "zod";
 import { DialogController } from "./connect_iframe.js";
-
-type ParcnetRPCMethodName =
-  | `gpc.${keyof typeof ParcnetRPCSchema.shape.gpc.shape}`
-  | `pod.${keyof typeof ParcnetRPCSchema.shape.pod.shape}`
-  | `identity.${keyof typeof ParcnetRPCSchema.shape.identity.shape}`;
 
 /**
  * The RPC connector handles low-level communication with the client.
