@@ -16,7 +16,7 @@ import { GPCPCDArgs } from "@pcd/gpc-pcd";
 import { SerializedPCD } from "@pcd/pcd-types";
 import { EventEmitter } from "eventemitter3";
 import { z, ZodFunction, ZodTuple, ZodTypeAny } from "zod";
-import { DialogController } from "./connect_iframe.js";
+import { DialogController } from "./adapters/iframe.js";
 
 /**
  * The RPC connector handles low-level communication with the client.
@@ -32,8 +32,16 @@ export class ParcnetRPCConnector implements ParcnetRPC, ParcnetEvents {
   // #-prefix indicates private fields, enforced at the JavaScript level so
   // that these values are not accessible outside of the class.
   #dialogController: DialogController;
+  // The MessagePort to send/receive messages over.
+  // In cases where we're communicating with an iframe, the port will be
+  // created inside that iframe. In cases where we're communicating with a
+  // websocket, the websocket adapter will create a port and bridge the
+  // websocket over the port. This means that this class only needs to know
+  // about MessagePorts.
   #port: MessagePort;
+  // Each request has a unique ID, which is just an incrementing number.
   #serial = 0;
+  // Pending invocations, keyed by their serial ID.
   #pending = new Map<
     number,
     { resolve: (value: unknown) => void; reject: (reason?: unknown) => void }

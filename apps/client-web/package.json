@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@parcnet/client": "workspace:*",
+    "@parcnet/client-helpers": "workspace:*",
     "@parcnet/client-rpc": "workspace:*",
     "@pcd/gpc-pcd": "^0.0.6",
     "@pcd/pod": "0.1.5",

@@ -1,6 +1,7 @@
 {
   "name": "@parcnet/client-rpc",
   "private": false,
+  "type": "module",
   "version": "0.0.1",
   "license": "GPL-3.0-or-later",
   "main": "dist/index.js",
@@ -8,7 +9,7 @@
   "types": "src/index.ts",
   "scripts": {
     "lint": "eslint . --max-warnings 0",
-    "build": "tsup 'src/**/*@(ts|tsx)' --format cjs,esm",
+    "build": "tsup 'src/**/*@(ts|tsx)' --format cjs,esm --sourcemap",
     "prepublish": "tsup 'src/**/*@(ts|tsx)' --format cjs,esm --dts --clean"
   },
   "files": [

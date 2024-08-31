@@ -4,5 +4,10 @@ import { nodePolyfills } from "vite-plugin-node-polyfills";
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(), nodePolyfills()]
+  plugins: [
+    react(),
+    nodePolyfills({
+      include: ["assert", "buffer"]
+    })
+  ]
 });

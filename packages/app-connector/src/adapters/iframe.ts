@@ -1,10 +1,11 @@
 import {
-  postWindowMessage,
-  WindowMessageType,
+  InitializationMessage,
+  InitializationMessageType,
+  RPCMessage,
   Zapp
 } from "@parcnet/client-rpc";
-import { ParcnetAPI } from "./api_wrapper.js";
-import { ParcnetRPCConnector } from "./rpc_client.js";
+import { ParcnetAPI } from "../api_wrapper.js";
+import { ParcnetRPCConnector } from "../rpc_client.js";
 
 class DialogControllerImpl implements DialogController {
   #dialog: HTMLDialogElement;
@@ -131,7 +132,7 @@ export function connect(
         postWindowMessage(
           iframe.contentWindow,
           {
-            type: WindowMessageType.PARCNET_CLIENT_CONNECT,
+            type: InitializationMessageType.PARCNET_CLIENT_CONNECT,
             zapp: zapp
           },
           "*",
@@ -139,9 +140,22 @@ export function connect(
           [chan.port1]
         );
       } else {
-        console.log("no content window!");
+        console.error("no iframe content window!");
       }
     });
     shadow.appendChild(iframe);
   });
+}
+
+function postWindowMessage(
+  window: Window,
+  message: InitializationMessage,
+  targetOrigin: string,
+  transfer: Transferable[] = []
+): void {
+  window.postMessage(message, targetOrigin, transfer);
+}
+
+function postRPCMessage(port: MessagePort, message: RPCMessage): void {
+  port.postMessage(message);
 }

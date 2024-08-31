@@ -2,7 +2,7 @@ import { z } from "zod";
 import { ParcnetRPCSchema } from "./schema.js";
 import { ZappSchema } from "./zapp.js";
 
-export enum WindowMessageType {
+export enum InitializationMessageType {
   // Update this constant here and in Zupass
   PARCNET_CLIENT_CONNECT = "zupass-client-connect"
 }
@@ -72,26 +72,13 @@ export const RPCMessageSchema = z.discriminatedUnion("type", [
   })
 ]);
 
-export const WindowMessageSchema = z.discriminatedUnion("type", [
+export const InitializationMessageSchema = z.discriminatedUnion("type", [
   z.object({
-    type: z.literal(WindowMessageType.PARCNET_CLIENT_CONNECT),
+    type: z.literal(InitializationMessageType.PARCNET_CLIENT_CONNECT),
     zapp: ZappSchema
   })
 ]);
 
-export type WindowMessage = z.infer<typeof WindowMessageSchema>;
+export type InitializationMessage = z.infer<typeof InitializationMessageSchema>;
 export type RPCMessage = z.infer<typeof RPCMessageSchema>;
 export type ParcnetRPCMethodName = z.infer<typeof ParcnetRPCMethodNameSchema>;
-
-export function postWindowMessage(
-  window: Window,
-  message: WindowMessage,
-  targetOrigin: string,
-  transfer: Transferable[] = []
-): void {
-  window.postMessage(message, targetOrigin, transfer);
-}
-
-export function postRPCMessage(port: MessagePort, message: RPCMessage): void {
-  port.postMessage(message);
-}

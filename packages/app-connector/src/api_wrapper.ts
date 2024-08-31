@@ -31,11 +31,11 @@ export class Subscription {
   }
 
   on(event: "update", callback: (result: POD[]) => void): void {
-    this.#emitter.on("update", callback);
+    this.#emitter.on(event, callback);
   }
 
   off(event: "update", callback: (result: POD[]) => void): void {
-    this.#emitter.off("update", callback);
+    this.#emitter.off(event, callback);
   }
 }
 

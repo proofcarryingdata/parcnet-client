@@ -6,15 +6,19 @@
     "declarationMap": true,
     "esModuleInterop": true,
     "incremental": false,
+    "isolatedDeclarations": false,
     "isolatedModules": true,
-    "lib": ["es2022", "DOM", "DOM.Iterable"],
+    "lib": ["es2020", "DOM", "DOM.Iterable"],
     "module": "NodeNext",
     "moduleDetection": "force",
     "moduleResolution": "NodeNext",
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
     "noUncheckedIndexedAccess": true,
     "resolveJsonModule": true,
+    "resolvePackageJsonExports": true,
     "skipLibCheck": true,
     "strict": true,
-    "target": "ES2022"
+    "target": "ES2020"
   }
 }

@@ -1,4 +1,4 @@
-import { listen } from "@parcnet/client";
+import { listen } from "@parcnet/client-helpers/connection/iframe";
 import { Zapp } from "@parcnet/client-rpc";
 import { Dispatch, ReactNode, useEffect, useReducer } from "react";
 import { ParcnetClientProcessor } from "./client/client";

@@ -1,12 +1,12 @@
 import {
   deepGet,
+  InitializationMessageSchema,
+  InitializationMessageType,
   ParcnetRPC,
   RPCMessage,
   RPCMessageSchema,
   RPCMessageType,
   SubscriptionResult,
-  WindowMessageSchema,
-  WindowMessageType,
   Zapp
 } from "@parcnet/client-rpc";
 import { ConnectorAdvice } from "./advice.js";
@@ -108,19 +108,16 @@ export async function listen(): Promise<ListenResult> {
   let port: MessagePort;
   let portMessageHandler: (message: MessageEvent) => void;
 
-  console.log("starting listen");
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve, _reject) => {
     const windowEventHandler = async (event: MessageEvent) => {
-      console.log("window event", event);
-      const data = WindowMessageSchema.safeParse(event.data);
+      const data = InitializationMessageSchema.safeParse(event.data);
       if (!data.success) {
         return;
       }
-      console.log("data", data);
 
       const msg = data.data;
 
-      if (msg.type === WindowMessageType.PARCNET_CLIENT_CONNECT) {
+      if (msg.type === InitializationMessageType.PARCNET_CLIENT_CONNECT) {
         if (!event.ports[0] || event.ports.length !== 1) {
           throw new Error("Expected exactly one port");
         }
@@ -148,7 +145,6 @@ export async function listen(): Promise<ListenResult> {
       }
     };
 
-    console.log("adding window event listener");
     window.addEventListener("message", windowEventHandler);
   });
 }

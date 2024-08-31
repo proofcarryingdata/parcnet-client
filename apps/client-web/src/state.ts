@@ -1,4 +1,4 @@
-import { ConnectorAdvice } from "@parcnet/client";
+import { ConnectorAdvice } from "@parcnet/client-helpers";
 import { Zapp } from "@parcnet/client-rpc";
 
 export type ClientState = {
