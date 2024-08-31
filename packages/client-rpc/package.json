@@ -5,12 +5,12 @@
   "version": "0.0.1",
   "license": "GPL-3.0-or-later",
   "main": "dist/index.js",
-  "module": "dist/index.mjs",
+  "module": "dist/index.js",
   "types": "src/index.ts",
   "scripts": {
     "lint": "eslint . --max-warnings 0",
-    "build": "tsup 'src/**/*@(ts|tsx)' --format cjs,esm --sourcemap",
-    "prepublish": "tsup 'src/**/*@(ts|tsx)' --format cjs,esm --dts --clean"
+    "build": "tsup 'src/**/*@(ts|tsx)' --format cjs,esm --clean --sourcemap ",
+    "prepublish": "tsup 'src/**/*@(ts|tsx)' --format cjs,esm --clean --sourcemap --dts"
   },
   "files": [
     "dist",

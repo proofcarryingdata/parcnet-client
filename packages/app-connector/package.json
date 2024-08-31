@@ -9,8 +9,8 @@
   "types": "src/index.ts",
   "scripts": {
     "lint": "eslint . --max-warnings 0",
-    "build": "tsup 'src/**/*@(ts|tsx)' --format cjs,esm --sourcemap",
-    "prepublish": "tsup 'src/**/*@(ts|tsx)' --format cjs,esm --dts --clean"
+    "build": "tsup 'src/**/*@(ts|tsx)' --format cjs,esm --clean --sourcemap ",
+    "prepublish": "tsup 'src/**/*@(ts|tsx)' --format cjs,esm --clean --sourcemap --dts"
   },
   "files": [
     "dist",

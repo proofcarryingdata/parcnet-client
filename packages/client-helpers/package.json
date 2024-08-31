@@ -9,23 +9,23 @@
   "exports": {
     ".": {
       "types": "./src/index.ts",
-      "import": "./dist/index.mjs",
+      "import": "./dist/index.js",
       "require": "./dist/index.js"
     },
     "./connection/iframe": {
       "types": "./src/connection/iframe.ts",
-      "import": "./dist/connection/iframe.mjs",
+      "import": "./dist/connection/iframe.js",
       "require": "./dist/connection/iframe.cjs"
     },
     "./connection/websocket": {
       "types": "./src/connection/websocket.ts",
-      "import": "./dist/connection/websocket.mjs",
+      "import": "./dist/connection/websocket.js",
       "require": "./dist/connection/websocket.cjs"
     }
   },
   "scripts": {
-    "build": "tsup 'src/**/*@(ts|tsx)' --format cjs,esm --sourcemap",
-    "prepublish": "tsup 'src/**/*@(ts|tsx)' --format cjs,esm --dts --clean",
+    "build": "tsup 'src/**/*@(ts|tsx)' --format cjs,esm --clean --sourcemap ",
+    "prepublish": "tsup 'src/**/*@(ts|tsx)' --format cjs,esm --clean --sourcemap --dts",
     "lint": "eslint . --max-warnings 0"
   },
   "files": [
@@ -51,17 +51,17 @@
     "exports": {
       ".": {
         "types": "./dist/index.d.ts",
-        "import": "./dist/index.mjs",
+        "import": "./dist/index.js",
         "require": "./dist/index.cjs"
       },
       "./connection/iframe": {
         "types": "./dist/connection/iframe.d.ts",
-        "import": "./dist/connection/iframe.mjs",
+        "import": "./dist/connection/iframe.js",
         "require": "./dist/connection/iframe.cjs"
       },
       "./connection/websocket": {
         "types": "./dist/connection/websocket.d.ts",
-        "import": "./dist/connection/websocket.mjs",
+        "import": "./dist/connection/websocket.js",
         "require": "./dist/connection/websocket.cjs"
       }
     }
