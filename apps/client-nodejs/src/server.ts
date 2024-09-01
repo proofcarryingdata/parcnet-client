@@ -1,5 +1,8 @@
+import { confirm } from "@inquirer/prompts";
 import { listen } from "@parcnet/client-helpers/connection/websocket";
+import { RPCMessage, RPCMessageType } from "@parcnet/client-rpc";
 import * as http from "http";
+import JSONBig from "json-bigint";
 import { v4 as uuidv4 } from "uuid";
 import { WebSocket, WebSocketServer } from "ws";
 import { ParcnetClientProcessor } from "./client/client";
@@ -24,12 +27,26 @@ wss.on("connection", async function (connection) {
   const connectionId = uuidv4();
   console.log(`Received a new connection.`);
   const { advice, zapp } = await listen(connection);
-  console.log(zapp);
-  // Here we should decide if we want to permit this Zapp to connect
-  // For demonstration purposes, just allow it automatically
-  advice.ready(new ParcnetClientProcessor(advice));
 
-  // Store the new connection and handle messages
-  clients[connectionId] = connection;
-  console.log(`${connectionId} connected.`);
+  connection.send(
+    JSONBig.stringify({
+      type: RPCMessageType.PARCNET_CLIENT_SHOW
+    } satisfies RPCMessage)
+  );
+  const allowed = await confirm({
+    message: `Allow Zapp "${zapp.name}" to connect?`
+  });
+  connection.send(
+    JSONBig.stringify({
+      type: RPCMessageType.PARCNET_CLIENT_HIDE
+    } satisfies RPCMessage)
+  );
+
+  if (allowed) {
+    advice.ready(new ParcnetClientProcessor(advice));
+    console.log(`Connected to ${zapp.name}`);
+    clients[connectionId] = connection;
+  } else {
+    connection.close();
+  }
 });

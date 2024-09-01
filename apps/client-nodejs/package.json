@@ -8,6 +8,7 @@
     "build": "tsc --noEmit && esbuild --outdir=build src/server.ts"
   },
   "dependencies": {
+    "@inquirer/prompts": "^5.3.8",
     "@parcnet/client-helpers": "workspace:*",
     "@parcnet/client-rpc": "workspace:*",
     "@pcd/gpc-pcd": "^0.0.6",

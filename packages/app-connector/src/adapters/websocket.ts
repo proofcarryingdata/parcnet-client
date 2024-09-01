@@ -11,6 +11,7 @@ import { DialogController } from "./iframe.js";
 
 class DialogControllerImpl implements DialogController {
   public show(): void {
+    console.log("toooooooast");
     toast.info("Your PARCNET client requests interaction");
   }
 
