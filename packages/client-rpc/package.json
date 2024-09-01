@@ -25,7 +25,7 @@
   "devDependencies": {
     "@parcnet/eslint-config": "workspace:*",
     "@parcnet/typescript-config": "workspace:*",
-    "eslint": "^9.0.0",
+    "eslint": "^8",
     "tsup": "^8.2.4",
     "typescript": "^5.3.3"
   },

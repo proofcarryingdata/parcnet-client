@@ -8,9 +8,10 @@ import fs from "fs";
 dotenv.config();
 
 const define = {
-  "process.env.ZUPASS_URL": JSON.stringify(
-    process.env.ZUPASS_URL ?? "https://staging-rob.zupass.org"
-  )
+  "process.env.CLIENT_URL": JSON.stringify(
+    process.env.CLIENT_URL ?? "https://staging-rob.zupass.org"
+  ),
+  "process.env.CLIENT_TYPE": JSON.stringify(process.env.CLIENT_TYPE ?? "iframe")
 };
 
 const testClientAppOpts: BuildOptions = {

@@ -21,7 +21,7 @@ export function connectWebsocket(zapp: Zapp, url: string): Promise<ParcnetAPI> {
   const ws = new WebSocket(url);
   const chan = new MessageChannel();
 
-  ws.addEventListener("open", async (ev) => {
+  ws.addEventListener("open", async () => {
     const connectMsg = JSONBig.stringify({
       type: InitializationMessageType.PARCNET_CLIENT_CONNECT,
       zapp
@@ -40,7 +40,7 @@ export function connectWebsocket(zapp: Zapp, url: string): Promise<ParcnetAPI> {
 
   chan.port1.start();
 
-  return new Promise((resolve, _reject) => {
+  return new Promise((resolve) => {
     // Create a new RPC client
     const client = new ParcnetRPCConnector(
       chan.port2,

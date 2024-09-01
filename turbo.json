@@ -16,5 +16,6 @@
       "cache": false,
       "persistent": true
     }
-  }
+  },
+  "globalEnv": ["CLIENT_URL", "CLIENT_TYPE", "NODE_ENV"]
 }

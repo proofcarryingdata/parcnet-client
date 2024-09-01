@@ -124,9 +124,6 @@ importers:
       vite-plugin-node-polyfills:
         specifier: ^0.22.0
         version: 0.22.0(rollup@4.21.0)(vite@5.4.2(@types/node@20.16.1))
-      zod:
-        specifier: ^3.23.8
-        version: 3.23.8
     devDependencies:
       '@eslint/js':
         specifier: ^9.9.0
@@ -219,12 +216,6 @@ importers:
       '@esbuild-plugins/node-modules-polyfill':
         specifier: ^0.2.2
         version: 0.2.2(esbuild@0.23.1)
-      '@pcd/eslint-config-custom':
-        specifier: 0.11.1
-        version: 0.11.1
-      '@pcd/tsconfig':
-        specifier: 0.11.1
-        version: 0.11.1
       '@tailwindcss/forms':
         specifier: ^0.5.7
         version: 0.5.8(tailwindcss@3.4.10(ts-node@10.9.2(@types/node@20.16.1)(typescript@5.5.4)))
@@ -329,8 +320,8 @@ importers:
         specifier: ^7.1.1
         version: 7.1.2(chai@5.1.1)
       eslint:
-        specifier: ^9.0.0
-        version: 9.9.1(jiti@1.21.6)
+        specifier: ^8
+        version: 8.57.0
       mocha:
         specifier: ^10.2.0
         version: 10.7.3
@@ -349,36 +340,12 @@ importers:
       '@parcnet/client-rpc':
         specifier: workspace:*
         version: link:../client-rpc
-      '@pcd/gpc-pcd':
-        specifier: 0.0.5
-        version: 0.0.5
-      '@pcd/pcd-types':
-        specifier: 0.11.4
-        version: 0.11.4
-      '@pcd/pod':
-        specifier: 0.1.5
-        version: 0.1.5
-      '@pcd/podspec':
-        specifier: 0.0.2
-        version: 0.0.2
-      '@pcd/semaphore-identity-pcd':
-        specifier: 0.11.4
-        version: 0.11.4
       json-bigint:
         specifier: ^1.0.0
         version: 1.0.0
-      react:
-        specifier: ^18.2.0
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
       ws:
         specifier: ^8.18.0
         version: 8.18.0
-      zod:
-        specifier: ^3.23.8
-        version: 3.23.8
     devDependencies:
       '@parcnet/eslint-config':
         specifier: workspace:*
@@ -386,27 +353,18 @@ importers:
       '@parcnet/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
-      '@types/eslint':
-        specifier: ^9.0.0
-        version: 9.6.0
       '@types/json-bigint':
         specifier: ^1.0.1
         version: 1.0.4
       '@types/node':
         specifier: ^20.11.24
         version: 20.16.1
-      '@types/react':
-        specifier: ^18.2.61
-        version: 18.3.4
-      '@types/react-dom':
-        specifier: ^18.2.19
-        version: 18.3.0
       '@types/ws':
         specifier: ^8.5.12
         version: 8.5.12
       eslint:
-        specifier: ^9.0.0
-        version: 9.9.1(jiti@1.21.6)
+        specifier: ^8
+        version: 8.57.0
       tsup:
         specifier: ^8.2.4
         version: 8.2.4(jiti@1.21.6)(postcss@8.4.41)(tsx@4.19.0)(typescript@5.5.4)(yaml@2.5.0)
@@ -436,8 +394,8 @@ importers:
         specifier: workspace:*
         version: link:../typescript-config
       eslint:
-        specifier: ^9.0.0
-        version: 9.9.1(jiti@1.21.6)
+        specifier: ^8
+        version: 8.57.0
       tsup:
         specifier: ^8.2.4
         version: 8.2.4(jiti@1.21.6)(postcss@8.4.41)(tsx@4.19.0)(typescript@5.5.4)(yaml@2.5.0)
@@ -462,6 +420,12 @@ importers:
       eslint-plugin-only-warn:
         specifier: ^1.1.0
         version: 1.1.0
+      eslint-plugin-react-hooks:
+        specifier: ^5.1.0-rc.0
+        version: 5.1.0-rc-fb9a90fa48-20240614(eslint@9.9.1(jiti@1.21.6))
+      eslint-plugin-tree-shaking:
+        specifier: ^1.12.2
+        version: 1.12.2
       typescript:
         specifier: ^5.3.3
         version: 5.5.4
@@ -979,9 +943,6 @@ packages:
     resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
     engines: {node: '>= 8'}
 
-  '@pcd/eslint-config-custom@0.11.1':
-    resolution: {integrity: sha512-MSz9y9yaqh+PRr8Uerb69ldB3OoXlzvMbVQ0/uR4NoXttEaso7TKGzHt5VGsHjWGWmzYRxA4y+oa/uklVlQhKQ==}
-
   '@pcd/gpc-pcd@0.0.5':
     resolution: {integrity: sha512-CCqeD/llDp7m7TE9xF8O6DeVZSbg2YRGJahrVO9wKdv6qiqnKLtADyZp/BwfKxxUOfT5DMT8jSNsh3lMTpQvGg==}
 
@@ -1020,9 +981,6 @@ packages:
 
   '@pcd/semaphore-identity-pcd@0.11.4':
     resolution: {integrity: sha512-/N6oEGE7cSRyW6EPgNYmt0G+EaGpXn6mdDmJBtGFRCgnqhcOVdvn/ukHniXkcmQBN18pnP4CqD/cVH0dt7bi2Q==}
-
-  '@pcd/tsconfig@0.11.1':
-    resolution: {integrity: sha512-qCX/sy0c92PehoeONSH3aZGXdwaeNXbeM+ChUZYzXfAxUogqeV+fu2zrn594bfZwHIrg+VI1GOEqM8Yaujr9tg==}
 
   '@pcd/util@0.5.3':
     resolution: {integrity: sha512-mAfbpQrl2CYJJwNDHJKwkUD0JYuEAtD3Tli87hb7jZ3vvHmtT/mXlivbpnNZ5uyoowiArnhPMwng/2JmyuU3Cw==}
@@ -1178,9 +1136,6 @@ packages:
   '@types/connect@3.4.38':
     resolution: {integrity: sha512-K6uROf1LD88uDQqJCktA4yzL1YYAK6NgfsI0v/mTgyPKWsX1CnJ0XPSDhViejru1GcRkLWb8RlzFYJRqGUbaug==}
 
-  '@types/eslint@9.6.0':
-    resolution: {integrity: sha512-gi6WQJ7cHRgZxtkQEoyHMppPjq9Kxo5Tjn2prSKDSmZrCz8TZ3jSRCeTJm+WoM+oB0WG37bRqLzaaU3q7JypGg==}
-
   '@types/estree@1.0.5':
     resolution: {integrity: sha512-/kYRxGDLWzHOB7q+wtSUQlFrtcdUccpfy+X+9iMBpHK8QLLhx2wIPYuS5DYtR9Wa/YlZAbIovy7qVdB1Aq6Lyw==}
 
@@ -1195,9 +1150,6 @@ packages:
 
   '@types/json-bigint@1.0.4':
     resolution: {integrity: sha512-ydHooXLbOmxBbubnA7Eh+RpBzuaIiQjh8WGJYQB50JFGFrdxW7JzVlyEV7fAXw0T2sqJ1ysTneJbiyNLqZRAag==}
-
-  '@types/json-schema@7.0.15':
-    resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
 
   '@types/json5@0.0.29':
     resolution: {integrity: sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==}
@@ -1918,6 +1870,10 @@ packages:
     resolution: {integrity: sha512-wrAKxMbVr8qhXTtIKfXqAn5SAtRZt0aXxe5P23Fh4pUAdC6XEsybGLB8P0PI4j1yYqOgUEUlzKAGDfo7rJOjcw==}
     peerDependencies:
       eslint: '>=7'
+
+  eslint-plugin-tree-shaking@1.12.2:
+    resolution: {integrity: sha512-D3MBKjH9EaGZg1gxqezGmjCeWzHs/O0jRFajpuXLYKeOCh3ycgoXeZ1ceKaD2QnK+v18ly+XjNDUCgss4vKbWg==}
+    engines: {node: '>=6.0.0'}
 
   eslint-plugin-turbo@2.0.14:
     resolution: {integrity: sha512-E++MSAEeWZTU0FYARrfakMPq+7XeltqeY4JBDQTzbGEWG3kgYJPeYBMWsypcvBujVihQLlMu0S6ImnfV692mHg==}
@@ -3967,8 +3923,6 @@ snapshots:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.17.1
 
-  '@pcd/eslint-config-custom@0.11.1': {}
-
   '@pcd/gpc-pcd@0.0.5':
     dependencies:
       '@pcd/gpc': 0.0.5
@@ -4080,8 +4034,6 @@ snapshots:
       '@semaphore-protocol/identity': 3.15.2
       json-bigint: 1.0.0
       uuid: 9.0.1
-
-  '@pcd/tsconfig@0.11.1': {}
 
   '@pcd/util@0.5.3':
     dependencies:
@@ -4223,11 +4175,6 @@ snapshots:
     dependencies:
       '@types/node': 20.16.1
 
-  '@types/eslint@9.6.0':
-    dependencies:
-      '@types/estree': 1.0.5
-      '@types/json-schema': 7.0.15
-
   '@types/estree@1.0.5': {}
 
   '@types/express-serve-static-core@4.19.5':
@@ -4247,8 +4194,6 @@ snapshots:
   '@types/http-errors@2.0.4': {}
 
   '@types/json-bigint@1.0.4': {}
-
-  '@types/json-schema@7.0.15': {}
 
   '@types/json5@0.0.29':
     optional: true
@@ -5100,6 +5045,8 @@ snapshots:
   eslint-plugin-react-refresh@0.4.11(eslint@9.9.1(jiti@1.21.6)):
     dependencies:
       eslint: 9.9.1(jiti@1.21.6)
+
+  eslint-plugin-tree-shaking@1.12.2: {}
 
   eslint-plugin-turbo@2.0.14(eslint@9.9.1(jiti@1.21.6)):
     dependencies:

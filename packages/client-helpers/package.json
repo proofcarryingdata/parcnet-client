@@ -43,7 +43,7 @@
     "@types/json-bigint": "^1.0.1",
     "@types/node": "^20.11.24",
     "@types/ws": "^8.5.12",
-    "eslint": "^9.0.0",
+    "eslint": "^8",
     "tsup": "^8.2.4",
     "typescript": "^5.3.3"
   },

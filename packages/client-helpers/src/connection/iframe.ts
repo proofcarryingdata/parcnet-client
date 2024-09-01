@@ -108,7 +108,7 @@ export async function listen(): Promise<ListenResult> {
   let port: MessagePort;
   let portMessageHandler: (message: MessageEvent) => void;
 
-  return new Promise((resolve, _reject) => {
+  return new Promise((resolve) => {
     const windowEventHandler = async (event: MessageEvent) => {
       const data = InitializationMessageSchema.safeParse(event.data);
       if (!data.success) {

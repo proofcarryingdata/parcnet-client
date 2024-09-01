@@ -101,7 +101,7 @@ export function connect(
   iframe.style.height = "100%";
   iframe.src = normalizedUrl.toString();
 
-  return new Promise<ParcnetAPI>((resolve, _reject) => {
+  return new Promise<ParcnetAPI>((resolve) => {
     iframe.addEventListener("load", async () => {
       // Create a new MessageChannel to communicate with the iframe
       const chan = new MessageChannel();
@@ -147,7 +147,7 @@ export function connect(
   });
 }
 
-function postWindowMessage(
+export function postWindowMessage(
   window: Window,
   message: InitializationMessage,
   targetOrigin: string,
@@ -156,6 +156,6 @@ function postWindowMessage(
   window.postMessage(message, targetOrigin, transfer);
 }
 
-function postRPCMessage(port: MessagePort, message: RPCMessage): void {
+export function postRPCMessage(port: MessagePort, message: RPCMessage): void {
   port.postMessage(message);
 }

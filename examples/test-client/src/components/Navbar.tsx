@@ -78,7 +78,7 @@ export function Navbar({ connecting }: { connecting: boolean }): ReactNode {
                       type="radio"
                       value="iframe"
                       checked={inputClientType === "iframe"}
-                      onChange={(e) => setInputClientType("iframe")}
+                      onChange={() => setInputClientType("iframe")}
                       className="radio radio-primary radio-xs mr-2"
                     />
                     <span className="label-text">IFrame</span>
@@ -88,7 +88,7 @@ export function Navbar({ connecting }: { connecting: boolean }): ReactNode {
                       type="radio"
                       value="websocket"
                       checked={inputClientType === "websocket"}
-                      onChange={(e) => setInputClientType("websocket")}
+                      onChange={() => setInputClientType("websocket")}
                       className="radio radio-primary radio-xs mr-2"
                     />
                     <span className="label-text">WebSocket</span>

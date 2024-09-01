@@ -5,8 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx --watch-preserve-output --watch src/server.ts ",
-    "build": "tsc --noEmit && esbuild --outdir=build src/server.ts",
-    "lint": "eslint ."
+    "build": "tsc --noEmit && esbuild --outdir=build src/server.ts"
   },
   "dependencies": {
     "@parcnet/client-helpers": "workspace:*",

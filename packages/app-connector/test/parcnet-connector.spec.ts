@@ -1,5 +1,4 @@
 import {
-  postRPCMessage,
   RPCMessage,
   RPCMessageSchema,
   RPCMessageType
@@ -11,6 +10,7 @@ import chaiAsPromised from "chai-as-promised";
 import crypto from "crypto";
 import "mocha";
 import { ZodError } from "zod";
+import { postRPCMessage } from "../src/index.js";
 import { ParcnetRPCConnector } from "../src/rpc_client.js";
 import { connectedClient, mockDialog } from "./utils";
 
@@ -19,6 +19,7 @@ function generateRandomHex(byteLength: number): string {
   return randomBytes.toString("hex");
 }
 
+// eslint-disable-next-line react-hooks/rules-of-hooks
 use(chaiAsPromised);
 
 describe("parcnet-client should work", async function () {

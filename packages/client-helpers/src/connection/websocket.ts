@@ -77,7 +77,7 @@ interface ListenResult {
 export async function listen(ws: WebSocket): Promise<ListenResult> {
   let rpcMessageHandler: (ev: MessageEvent) => void;
 
-  return new Promise((resolve, _reject) => {
+  return new Promise((resolve) => {
     const initialEventHandler = (initialEvent: MessageEvent) => {
       const data = InitializationMessageSchema.safeParse(
         JSONBig.parse(initialEvent.data.toString())

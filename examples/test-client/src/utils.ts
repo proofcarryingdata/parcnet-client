@@ -23,8 +23,9 @@ export function getConnectionInfo(): ClientConnectionInfo {
       ) {
         connectionInfo = parsedConnectionInfo;
       }
-    } catch (e) {}
+    } catch (e) {
+      // JSON parsing failed
+    }
   }
-  console.log(connectionInfo);
   return connectionInfo;
 }
