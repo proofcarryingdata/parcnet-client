@@ -5,8 +5,8 @@ import {
   ParcnetPODRPC,
   ParcnetRPC
 } from "@parcnet/client-rpc";
-import { ParcnetIdentityServer } from "./identity.js";
-import { ParcnetPODServer } from "./pod.js";
+import { ParcnetIdentityProcessor } from "./identity.js";
+import { ParcnetPODProcessor } from "./pod.js";
 import { PODCollection } from "./pod_collection.js";
 
 export class ParcnetClientProcessor implements ParcnetRPC {
@@ -21,8 +21,8 @@ export class ParcnetClientProcessor implements ParcnetRPC {
     this.pods.onSubscriptionUpdated((update, serial) => {
       this.clientChannel.subscriptionUpdate(update, serial);
     });
-    this.pod = new ParcnetPODServer(this.pods);
-    this.identity = new ParcnetIdentityServer();
+    this.pod = new ParcnetPODProcessor(this.pods);
+    this.identity = new ParcnetIdentityProcessor();
     // @todo: implement gpc
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
     this.gpc = { prove: (_: any): any => {}, verify: (_: any): any => {} };

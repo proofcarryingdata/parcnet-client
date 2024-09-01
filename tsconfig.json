@@ -1,8 +1,0 @@
-{
-  "files": [],
-  "references": [
-    { "path": "./packages/client-rpc" },
-    { "path": "./packages/connector" },
-    { "path": "./packages/client" }
-  ]
-}

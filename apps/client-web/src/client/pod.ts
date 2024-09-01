@@ -3,7 +3,7 @@ import { POD } from "@pcd/pod";
 import { GenericSerializedPodspecPOD, p } from "@pcd/podspec";
 import { PODCollection } from "./pod_collection.js";
 
-export class ParcnetPODServer implements ParcnetPODRPC {
+export class ParcnetPODProcessor implements ParcnetPODRPC {
   public constructor(private readonly pods: PODCollection) {}
 
   public async query(query: GenericSerializedPodspecPOD): Promise<string[]> {

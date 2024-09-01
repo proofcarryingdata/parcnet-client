@@ -14,7 +14,7 @@ export function Identity(): ReactNode {
           <p>
             Getting the identity commitment is done like this:
             <code className="block text-xs font-base rounded-md p-2">
-              await z.identity.getIdentityCommitment();
+              await z.identity.getSemaphoreV3Commitment();
             </code>
           </p>
           <TryIt
@@ -28,7 +28,9 @@ export function Identity(): ReactNode {
             }}
             label="Get identity commitment"
           />
-          {commitment && <p>Commitment: {commitment.toString()}</p>}
+          {commitment !== undefined && (
+            <p>Commitment: {commitment.toString()}</p>
+          )}
         </div>
       </div>
     </div>
