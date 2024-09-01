@@ -10,7 +10,7 @@ import {
   RPCMessage,
   RPCMessageSchema,
   RPCMessageType,
-  SubscriptionResult
+  SubscriptionUpdateResult
 } from "@parcnet/client-rpc";
 import { GPCPCDArgs } from "@pcd/gpc-pcd";
 import { SerializedPCD } from "@pcd/pcd-types";
@@ -251,14 +251,14 @@ export class ParcnetRPCConnector implements ParcnetRPC, ParcnetEvents {
 
   on(
     event: "subscription-update",
-    callback: (result: SubscriptionResult) => void
+    callback: (result: SubscriptionUpdateResult) => void
   ): void {
     this.#emitter.on("subscription-update", callback);
   }
 
   off(
     event: "subscription-update",
-    callback: (result: SubscriptionResult) => void
+    callback: (result: SubscriptionUpdateResult) => void
   ): void {
     this.#emitter.off("subscription-update", callback);
   }

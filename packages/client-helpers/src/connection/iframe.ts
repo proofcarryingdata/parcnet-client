@@ -6,7 +6,7 @@ import {
   RPCMessage,
   RPCMessageSchema,
   RPCMessageType,
-  SubscriptionResult,
+  SubscriptionUpdateResult,
   Zapp
 } from "@parcnet/client-rpc";
 import { ConnectorAdvice } from "./advice.js";
@@ -46,7 +46,7 @@ export class AdviceChannel implements ConnectorAdvice {
   }
 
   public subscriptionUpdate(
-    { update, subscriptionId }: SubscriptionResult,
+    { update, subscriptionId }: SubscriptionUpdateResult,
     subscriptionSerial: number
   ): void {
     this.port.postMessage({

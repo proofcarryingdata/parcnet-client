@@ -2,9 +2,13 @@ import { ParcnetPODRPC, PODQuery } from "@parcnet/client-rpc";
 import { POD } from "@pcd/pod";
 import { GenericSerializedPodspecPOD, p } from "@pcd/podspec";
 import { PODCollection } from "./pod_collection.js";
+import { QuerySubscriptions } from "./query_subscriptions.js";
 
 export class ParcnetPODProcessor implements ParcnetPODRPC {
-  public constructor(private readonly pods: PODCollection) {}
+  public constructor(
+    private readonly pods: PODCollection,
+    private readonly subscriptions: QuerySubscriptions
+  ) {}
 
   public async query(query: GenericSerializedPodspecPOD): Promise<string[]> {
     const podspecQuery = p.deserialize(query);
@@ -22,10 +26,10 @@ export class ParcnetPODProcessor implements ParcnetPODRPC {
 
   public async subscribe(query: PODQuery): Promise<string> {
     const q = p.deserialize(query);
-    return this.pods.subscribe(q);
+    return this.subscriptions.subscribe(q);
   }
 
   public async unsubscribe(subscriptionId: string): Promise<void> {
-    this.pods.unsubscribe(subscriptionId);
+    this.subscriptions.unsubscribe(subscriptionId);
   }
 }

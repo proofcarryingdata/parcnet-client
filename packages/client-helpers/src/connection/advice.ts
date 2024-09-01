@@ -1,4 +1,4 @@
-import { ParcnetRPC, SubscriptionResult } from "@parcnet/client-rpc";
+import { ParcnetRPC, SubscriptionUpdateResult } from "@parcnet/client-rpc";
 
 /**
  * ConnectorAdvice is a set of methods that a client can call to advise the
@@ -15,7 +15,7 @@ export interface ConnectorAdvice {
   hideClient(): void;
   ready(rpc: ParcnetRPC): void;
   subscriptionUpdate(
-    result: SubscriptionResult,
+    result: SubscriptionUpdateResult,
     subscriptionSerial: number
   ): void;
 }

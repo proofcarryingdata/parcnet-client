@@ -10,7 +10,7 @@ import { GenericSerializedPodspecPOD } from "@pcd/podspec";
 
 export type PODQuery = GenericSerializedPodspecPOD;
 
-export interface SubscriptionResult {
+export interface SubscriptionUpdateResult {
   subscriptionId: string;
   update: string[];
 }
@@ -43,6 +43,6 @@ export interface ParcnetRPC {
 export interface ParcnetEvents {
   on: (
     event: "subscription-update",
-    callback: (result: SubscriptionResult) => void
+    callback: (result: SubscriptionUpdateResult) => void
   ) => void;
 }

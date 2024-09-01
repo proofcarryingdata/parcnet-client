@@ -1,4 +1,4 @@
-import { SubscriptionResult } from "@parcnet/client-rpc";
+import { SubscriptionUpdateResult } from "@parcnet/client-rpc";
 import { POD } from "@pcd/pod";
 import { p } from "@pcd/podspec";
 import { EventEmitter } from "eventemitter3";
@@ -86,7 +86,7 @@ export class PODCollection {
   }
 
   public onSubscriptionUpdated(
-    callback: (update: SubscriptionResult, serial: number) => void
+    callback: (update: SubscriptionUpdateResult, serial: number) => void
   ): void {
     this.emitter.on("subscription-updated", callback);
   }

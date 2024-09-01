@@ -2,6 +2,8 @@ import { listen } from "@parcnet/client-helpers/connection/iframe";
 import { Zapp } from "@parcnet/client-rpc";
 import { Dispatch, ReactNode, useEffect, useReducer } from "react";
 import { ParcnetClientProcessor } from "./client/client";
+import { PODCollection } from "./client/pod_collection";
+import { loadPODsFromStorage, savePODsToStorage } from "./client/utils";
 import { Rabbit } from "./rabbit";
 import { ClientAction, clientReducer } from "./state";
 
@@ -30,7 +32,11 @@ function App() {
   useEffect(() => {
     if (state.authorized && state.advice) {
       state.advice.hideClient();
-      state.advice.ready(new ParcnetClientProcessor(state.advice));
+      const pods = new PODCollection(loadPODsFromStorage());
+      pods.onUpdate(() => {
+        savePODsToStorage(pods.getAll());
+      });
+      state.advice.ready(new ParcnetClientProcessor(state.advice, pods));
     }
   }, [state.authorized, state.advice]);
 

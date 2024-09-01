@@ -11,7 +11,7 @@ import {
   RPCMessage,
   RPCMessageSchema,
   RPCMessageType,
-  SubscriptionResult,
+  SubscriptionUpdateResult,
   Zapp
 } from "@parcnet/client-rpc";
 import JSONBig from "json-bigint";
@@ -57,7 +57,7 @@ export class WebsocketAdviceChannel implements ConnectorAdvice {
   }
 
   public subscriptionUpdate(
-    { update, subscriptionId }: SubscriptionResult,
+    { update, subscriptionId }: SubscriptionUpdateResult,
     subscriptionSerial: number
   ): void {
     this.send({
