@@ -9,7 +9,7 @@ dotenv.config();
 
 const define = {
   "process.env.CLIENT_URL": JSON.stringify(
-    process.env.CLIENT_URL ?? "https://staging-rob.zupass.org"
+    process.env.CLIENT_URL ?? "http://localhost:5173"
   ),
   "process.env.CLIENT_TYPE": JSON.stringify(process.env.CLIENT_TYPE ?? "iframe")
 };

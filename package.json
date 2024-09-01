@@ -6,7 +6,8 @@
     "build": "TURBO_UI=0 turbo build",
     "dev": "turbo dev",
     "lint": "turbo lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "watch": "turbo watch build --filter='./packages/**'"
   },
   "devDependencies": {
     "prettier": "^3.2.5",

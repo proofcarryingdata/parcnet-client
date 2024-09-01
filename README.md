@@ -1,81 +1,61 @@
-# Turborepo starter
+# PARCNET client libraries
 
-This is an official starter Turborepo.
-
-## Using this example
-
-Run the following command:
-
-```sh
-npx create-turbo@latest
-```
+TypeScript client libraries for PARCNET, providing APIs for third-party applications to connect to PARCNET clients.
 
 ## What's inside?
 
-This Turborepo includes the following packages/apps:
+This monorepo includes the following packages/apps:
 
-### Apps and Packages
+### Apps (Clients)
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+- `client-nodejs`, an example PARCNET client in TypeScript and running on NodeJS, which accepts connections from applications via a websocket and is intended to be run locally
+- `client-web`, an example PARCNET client in TypeScript and running in browser `<iframe>`, which accepts connections via a browser `MessageChannel` and is intended to be hosted by a third-party service (similar to Zupass)
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+### Packages
 
-### Utilities
+- `app-connector`, a TypeScript package which is imported by third-party apps which want to connect to a PARCNET client. It exposes an API and abstracts away the detail of which client and transport is being used.
+- `client-helpers`, useful code for client developers which provides reusable code for handling messages via MessageChannel and websocket transports
+- `client-rpc`, which defines the RPC protocol and API that clients support
 
-This Turborepo has some additional tools already setup for you:
+### Examples
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+- `test-app`, an example of the functionality exposed by clients to third-party applications
 
-### Build
+## Usage
 
-To build all apps and packages, run the following command:
+To install the monorepo contents:
 
+```bash
+pnpm install
 ```
-cd my-turborepo
+
+To build all packages and apps:
+
+```bash
 pnpm build
 ```
 
-### Develop
+To run a single app:
 
-To develop all apps and packages, run the following command:
-
-```
-cd my-turborepo
+```bash
+cd path/to/app
 pnpm dev
 ```
 
-### Remote Caching
+To run all apps:
 
-Turborepo can use a technique known as [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup), then enter the following commands:
-
-```
-cd my-turborepo
-npx turbo login
+```bash
+pnpm dev
 ```
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+To watch all packages and rebuild on change (good to run alongside `pnpm dev`):
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-```
-npx turbo link
+```bash
+pnpm watch
 ```
 
-## Useful Links
+## How to use/test
 
-Learn more about the power of Turborepo:
+To see the apps in action, run either `client-web` or `client-nodejs`. Then run `test-app` and open `test-app` at [http://localhost:3200](http://localhost:3200).
 
-- [Tasks](https://turbo.build/repo/docs/core-concepts/monorepos/running-tasks)
-- [Caching](https://turbo.build/repo/docs/core-concepts/caching)
-- [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching)
-- [Filtering](https://turbo.build/repo/docs/core-concepts/monorepos/filtering)
-- [Configuration Options](https://turbo.build/repo/docs/reference/configuration)
-- [CLI Usage](https://turbo.build/repo/docs/reference/command-line-reference)
+By default it will connect to `client-web` on `http://localhost:5173`. By clicking the lightning icon in the top-right of the screen, you can configure it to connect to another client. `client-nodejs` runs at `http://localhost:3050` - remember to select "websocket" rather than "iframe" when using `client-nodejs`.

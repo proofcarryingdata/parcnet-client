@@ -54,7 +54,7 @@ function App() {
             className="border-2 font-semibold cursor-pointer border-white py-1 px-2 uppercase active:translate-x-[2px] active:translate-y-[2px]"
             onClick={() => dispatch({ type: "login", loggedIn: true })}
           >
-            Log In
+            Connect
           </button>
         )}
         {state.loggedIn && !state.authorized && state.zapp && (
