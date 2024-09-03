@@ -10,7 +10,7 @@ procs:
     shell: "pnpm dev"
     autostart: false
   test-app:
-    cwd: "examples/test-client"
+    cwd: "examples/test-app"
     shell: "pnpm dev"
     autostart: false
 keymap_procs: # keymap when process list is focused

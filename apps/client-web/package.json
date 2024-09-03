@@ -12,9 +12,12 @@
   "dependencies": {
     "@parcnet/client-helpers": "workspace:*",
     "@parcnet/client-rpc": "workspace:*",
+    "@parcnet/podspec": "workspace:*",
+    "@pcd/gpc": "0.0.6",
     "@pcd/gpc-pcd": "^0.0.6",
     "@pcd/pod": "0.1.5",
     "@pcd/podspec": "0.0.2",
+    "@pcd/proto-pod-gpc-artifacts": "^0.5.0",
     "eventemitter3": "^5.0.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

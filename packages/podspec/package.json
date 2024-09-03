@@ -1,0 +1,42 @@
+{
+  "name": "@parcnet/podspec",
+  "private": true,
+  "version": "0.0.2",
+  "license": "GPL-3.0-or-later",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "src/index.ts",
+  "scripts": {
+    "lint": "eslint . --max-warnings 0",
+    "build": "tsup 'src/**/*@(ts|tsx)' --format cjs,esm --clean --sourcemap ",
+    "prepublish": "tsup 'src/**/*@(ts|tsx)' --format cjs,esm --clean --sourcemap --dts",
+    "test": "ts-mocha --type-check --config ../../../.mocharc.js --exit 'test/**/*.spec.ts'"
+  },
+  "files": [
+    "dist",
+    "./README.md",
+    "./LICENSE"
+  ],
+  "dependencies": {
+    "@pcd/gpc": "0.0.6",
+    "@pcd/pod": "0.1.5"
+  },
+  "devDependencies": {
+    "@parcnet/eslint-config": "workspace:*",
+    "@parcnet/typescript-config": "workspace:*",
+    "@types/chai": "^4.3.5",
+    "@types/mocha": "^10.0.1",
+    "@types/uuid": "^9.0.0",
+    "@zk-kit/eddsa-poseidon": "1.0.2",
+    "eslint": "^8.57.0",
+    "mocha": "^10.2.0",
+    "ts-mocha": "^10.0.0",
+    "tsup": "^8.2.4",
+    "typescript": "^5.3.3",
+    "uuid": "^9.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "types": "dist/index.d.ts"
+  }
+}

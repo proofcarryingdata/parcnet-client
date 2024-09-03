@@ -5,14 +5,15 @@ import { ParcnetClientProcessor } from "./client/client";
 import { PODCollection } from "./client/pod_collection";
 import { loadPODsFromStorage, savePODsToStorage } from "./client/utils";
 import { Rabbit } from "./rabbit";
-import { ClientAction, clientReducer } from "./state";
+import { ClientAction, clientReducer, ClientState } from "./state";
 
 function App() {
   const [state, dispatch] = useReducer(clientReducer, {
     loggedIn: false,
     advice: null,
     zapp: null,
-    authorized: false
+    authorized: false,
+    proofInProgress: undefined
   });
 
   useEffect(() => {
@@ -36,7 +37,9 @@ function App() {
       pods.onUpdate(() => {
         savePODsToStorage(pods.getAll());
       });
-      state.advice.ready(new ParcnetClientProcessor(state.advice, pods));
+      state.advice.ready(
+        new ParcnetClientProcessor(state.advice, pods, dispatch)
+      );
     }
   }, [state.authorized, state.advice]);
 
@@ -60,8 +63,39 @@ function App() {
         {state.loggedIn && !state.authorized && state.zapp && (
           <Authorize zapp={state.zapp} dispatch={dispatch} />
         )}
+        {state.loggedIn &&
+          state.authorized &&
+          state.zapp &&
+          state.proofInProgress && (
+            <Prove proveOperation={state.proofInProgress} />
+          )}
       </div>
     </main>
+  );
+}
+
+function Prove({
+  proveOperation
+}: {
+  proveOperation: NonNullable<ClientState["proofInProgress"]>;
+}): ReactNode {
+  return (
+    <div>
+      <ul>
+        {Object.entries(proveOperation.pods).map(([key, pods]) => {
+          return (
+            <div key={key}>
+              <p>{key}</p>
+              <select>
+                {pods.map((pod) => {
+                  return <option key={pod.signature}>{pod.signature}</option>;
+                })}
+              </select>
+            </div>
+          );
+        })}
+      </ul>
+    </div>
   );
 }
 

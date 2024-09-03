@@ -1,4 +1,5 @@
-import type { GPCPCDArgs } from "@pcd/gpc-pcd";
+import { PodspecProofRequest } from "@parcnet/podspec";
+import { GPCBoundConfig, GPCProof, GPCRevealedClaims } from "@pcd/gpc";
 import type { SerializedPCD } from "@pcd/pcd-types";
 import { GenericSerializedPodspecPOD } from "@pcd/podspec";
 
@@ -15,8 +16,20 @@ export interface SubscriptionUpdateResult {
   update: string[];
 }
 
+export type ProveResult =
+  | {
+      success: true;
+      proof: GPCProof;
+      boundConfig: GPCBoundConfig;
+      revealedClaims: GPCRevealedClaims;
+    }
+  | {
+      success: false;
+      error: string;
+    };
+
 export interface ParcnetGPCRPC {
-  prove: (args: GPCPCDArgs) => Promise<SerializedPCD>;
+  prove: (request: PodspecProofRequest) => Promise<ProveResult>;
   verify: (pcd: SerializedPCD) => Promise<boolean>;
 }
 

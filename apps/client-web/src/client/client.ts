@@ -5,6 +5,9 @@ import {
   ParcnetPODRPC,
   ParcnetRPC
 } from "@parcnet/client-rpc";
+import { Dispatch } from "react";
+import { ClientAction } from "../state.js";
+import { ParcnetGPCProcessor } from "./gpc.js";
 import { ParcnetIdentityProcessor } from "./identity.js";
 import { ParcnetPODProcessor } from "./pod.js";
 import { PODCollection } from "./pod_collection.js";
@@ -19,7 +22,8 @@ export class ParcnetClientProcessor implements ParcnetRPC {
 
   public constructor(
     public readonly clientChannel: ConnectorAdvice,
-    private readonly pods: PODCollection
+    private readonly pods: PODCollection,
+    dispatch: Dispatch<ClientAction>
   ) {
     this.subscriptions = new QuerySubscriptions(this.pods);
     this.subscriptions.onSubscriptionUpdated((update, serial) => {
@@ -29,6 +33,6 @@ export class ParcnetClientProcessor implements ParcnetRPC {
     this.identity = new ParcnetIdentityProcessor();
     // @todo: implement gpc
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
-    this.gpc = { prove: (_: any): any => {}, verify: (_: any): any => {} };
+    this.gpc = new ParcnetGPCProcessor(this.pods, dispatch, this.clientChannel);
   }
 }
