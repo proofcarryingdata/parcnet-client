@@ -1,14 +1,12 @@
 import { ParcnetPODRPC, PODQuery } from "@parcnet/client-rpc";
 import { POD } from "@pcd/pod";
-import { GenericSerializedPodspecPOD, p } from "@pcd/podspec";
 import { PODCollection } from "./pod_collection.js";
 
 export class ParcnetPODServer implements ParcnetPODRPC {
   public constructor(private readonly pods: PODCollection) {}
 
-  public async query(query: GenericSerializedPodspecPOD): Promise<string[]> {
-    const podspecQuery = p.deserialize(query);
-    return this.pods.query(podspecQuery).map((pod) => pod.serialize());
+  public async query(query: PODQuery): Promise<string[]> {
+    return this.pods.query(query).map((pod) => pod.serialize());
   }
 
   public async insert(serializedPod: string): Promise<void> {
@@ -21,8 +19,7 @@ export class ParcnetPODServer implements ParcnetPODRPC {
   }
 
   public async subscribe(query: PODQuery): Promise<string> {
-    const q = p.deserialize(query);
-    return this.pods.subscribe(q);
+    return this.pods.subscribe(query);
   }
 
   public async unsubscribe(subscriptionId: string): Promise<void> {

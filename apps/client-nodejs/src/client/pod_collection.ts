@@ -1,9 +1,6 @@
-import { SubscriptionUpdateResult } from "@parcnet/client-rpc";
+import { PODQuery, SubscriptionUpdateResult } from "@parcnet/client-rpc";
 import { POD } from "@pcd/pod";
-import { p } from "@pcd/podspec";
 import { EventEmitter } from "eventemitter3";
-
-type PODQuery = ReturnType<typeof p.pod>;
 
 interface Subscription {
   query: PODQuery;

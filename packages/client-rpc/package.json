@@ -18,9 +18,6 @@
   ],
   "dependencies": {
     "@pcd/gpc": "0.0.6",
-    "@pcd/gpc-pcd": "0.0.6",
-    "@pcd/podspec": "0.0.2",
-    "@pcd/pcd-types": "0.11.4",
     "@parcnet/podspec": "workspace:*",
     "zod": "^3.22.4"
   },

@@ -79,6 +79,11 @@ function Prove({
 }: {
   proveOperation: NonNullable<ClientState["proofInProgress"]>;
 }): ReactNode {
+  /**
+   * show exactly which fields are revealed and which are not, literally show
+   * the whole POD and which entries are revealed
+   * could be complicated for tuples?
+   */
   return (
     <div>
       <ul>
@@ -86,11 +91,16 @@ function Prove({
           return (
             <div key={key}>
               <p>{key}</p>
-              <select>
+              <div className="text-sm">
                 {pods.map((pod) => {
-                  return <option key={pod.signature}>{pod.signature}</option>;
+                  return (
+                    <div className="text-sm" key={pod.signature}>
+                      {pod.contentID.toString()}
+                      {pod.serialize()}
+                    </div>
+                  );
                 })}
-              </select>
+              </div>
             </div>
           );
         })}

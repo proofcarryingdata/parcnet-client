@@ -3,12 +3,9 @@ import {
   PODCryptographicValue,
   PODIntValue
 } from "@pcd/pod";
-import { IssueCode, PodspecIssue, PodspecNotInRangeIssue } from "../error";
-import { CryptographicSchema } from "../schemas/cryptographic";
-import { EdDSAPublicKeySchema } from "../schemas/eddsa_pubkey";
-import { IntSchema } from "../schemas/int";
-import { StringSchema } from "../schemas/string";
-import { DEFAULT_ENTRIES_PARSE_OPTIONS } from "./entries";
+import { IssueCode, PodspecIssue, PodspecNotInRangeIssue } from "../error.js";
+import { DefinedEntrySchema } from "../schemas/entry.js";
+import { DEFAULT_ENTRIES_PARSE_OPTIONS } from "./entries.js";
 import {
   FAILURE,
   ParseResult,
@@ -16,24 +13,7 @@ import {
   safeCheckPODValue,
   safeMembershipChecks,
   SUCCESS
-} from "./parseUtils";
-
-export interface OptionalSchema {
-  type: "optional";
-  innerType:
-    | StringSchema
-    | CryptographicSchema
-    | IntSchema
-    | EdDSAPublicKeySchema;
-}
-
-export type DefinedEntrySchema =
-  | StringSchema
-  | CryptographicSchema
-  | IntSchema
-  | EdDSAPublicKeySchema;
-
-export type EntrySchema = DefinedEntrySchema | OptionalSchema;
+} from "./parseUtils.js";
 
 export interface EntryParseOptions {
   exitEarly?: boolean;
@@ -58,7 +38,7 @@ export function parseEntry<S extends DefinedEntrySchema>(
     path
   );
   if (!checkedType.isValid) {
-    return FAILURE(checkedType.errors);
+    return FAILURE(checkedType.issues);
   }
 
   const { value } = checkedType;
@@ -66,18 +46,18 @@ export function parseEntry<S extends DefinedEntrySchema>(
   const checkedPodValue = safeCheckPODValue(path, value);
   if (!checkedPodValue.isValid) {
     if (options.exitEarly) {
-      return FAILURE(checkedPodValue.errors);
+      return FAILURE(checkedPodValue.issues);
     } else {
-      issues.push(...checkedPodValue.errors);
+      issues.push(...checkedPodValue.issues);
     }
   }
 
   const checkedForMatches = safeMembershipChecks(schema, value, options, path);
   if (!checkedForMatches.isValid) {
     if (options.exitEarly) {
-      return FAILURE(checkedForMatches.errors);
+      return FAILURE(checkedForMatches.issues);
     } else {
-      issues.push(...checkedForMatches.errors);
+      issues.push(...checkedForMatches.issues);
     }
   }
 

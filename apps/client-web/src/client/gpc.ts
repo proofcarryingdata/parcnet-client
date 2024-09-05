@@ -12,6 +12,19 @@ export class ParcnetGPCProcessor implements ParcnetGPCRPC {
     private readonly advice: ConnectorAdvice
   ) {}
 
+  public async canProve(request: PodspecProofRequest): Promise<boolean> {
+    const prs = proofRequest(request);
+
+    const inputPods = prs.queryForInputs(this.pods.getAll());
+    if (
+      Object.values(inputPods).some((candidates) => candidates.length === 0)
+    ) {
+      return false;
+    }
+
+    return true;
+  }
+
   public async prove(request: PodspecProofRequest): Promise<ProveResult> {
     const prs = proofRequest(request);
 
@@ -25,7 +38,10 @@ export class ParcnetGPCProcessor implements ParcnetGPCRPC {
       };
     }
 
+    const advice = this.advice;
+
     return new Promise((resolve) => {
+      console.log("proving");
       this.advice.showClient();
       this.dispatch({
         type: "set-proof-in-progress",
@@ -33,10 +49,11 @@ export class ParcnetGPCProcessor implements ParcnetGPCRPC {
         pods: inputPods,
         selectedPods: {},
         proving: false,
-        resolve
+        resolve: (result) => {
+          advice.hideClient();
+          resolve(result);
+        }
       });
-    }).then(() => {
-      this.advice.hideClient();
     });
   }
 

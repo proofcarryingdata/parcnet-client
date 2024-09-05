@@ -1,30 +1,37 @@
 import { checkPODName, PODEntries, PODValue } from "@pcd/pod";
 import {
   IssueCode,
+  PodspecError,
   PodspecInvalidEntryNameIssue,
   PodspecInvalidTypeIssue,
   PodspecIssue,
   PodspecMissingEntryIssue,
   PodspecUnexpectedInputEntryIssue
-} from "../error";
+} from "../error.js";
 import {
   checkPODCryptographicValue,
   cryptographicCoercer
-} from "../schemas/cryptographic";
+} from "../schemas/cryptographic.js";
 import {
   checkPODEdDSAPublicKeyValue,
   eddsaPublicKeyCoercer
-} from "../schemas/eddsa_pubkey";
-import { EntriesSchema } from "../schemas/entries";
-import { checkPODIntValue, intCoercer } from "../schemas/int";
-import { checkPODStringValue, stringCoercer } from "../schemas/string";
-import { DefinedEntrySchema, OptionalSchema, parseEntry } from "./entry";
+} from "../schemas/eddsa_pubkey.js";
+import { EntriesSchema, EntriesTupleSchema } from "../schemas/entries.js";
+import {
+  DefinedEntrySchema,
+  EntrySchema,
+  OptionalSchema
+} from "../schemas/entry.js";
+import { checkPODIntValue, intCoercer } from "../schemas/int.js";
+import { checkPODStringValue, stringCoercer } from "../schemas/string.js";
+import { parseEntry } from "./entry.js";
 import {
   FAILURE,
   ParseResult,
   PODValueNativeTypes,
+  safeCheckTuple,
   SUCCESS
-} from "./parseUtils";
+} from "./parseUtils.js";
 
 const COERCERS: Record<PODValue["type"], (data: unknown) => unknown> = {
   string: stringCoercer,
@@ -40,7 +47,7 @@ const TYPE_VALIDATORS = {
   cryptographic: checkPODCryptographicValue
 };
 
-export interface EntriesParseOptions {
+export interface EntriesParseOptions<E extends EntriesSchema> {
   // Exit as soon as the first issue is encountered, useful when you just want
   // to validate if some data is correct
   exitEarly?: boolean;
@@ -49,6 +56,7 @@ export interface EntriesParseOptions {
   // Allow certain JavaScript types as inputs, where conversion to PODValue is
   // straightforward
   coerce?: boolean;
+  tuples?: EntriesTupleSchema<E>[];
 }
 
 export class EntriesSpec<E extends EntriesSchema> {
@@ -56,10 +64,23 @@ export class EntriesSpec<E extends EntriesSchema> {
 
   public safeParse(
     input: Record<string, PODValue | string | bigint | number>,
-    options: EntriesParseOptions = DEFAULT_ENTRIES_PARSE_OPTIONS,
+    options: EntriesParseOptions<E> = DEFAULT_ENTRIES_PARSE_OPTIONS,
     path: string[] = []
   ): ParseResult<EntriesOutputType<E>> {
     return safeParseEntries(this.schema, input, options, path);
+  }
+
+  public parse(
+    input: Record<string, PODValue | string | bigint | number>,
+    options: EntriesParseOptions<E> = DEFAULT_ENTRIES_PARSE_OPTIONS,
+    path: string[] = []
+  ): EntriesOutputType<E> {
+    const result = this.safeParse(input, options, path);
+    if (result.isValid) {
+      return result.value;
+    } else {
+      throw new PodspecError(result.issues);
+    }
   }
 
   public static create<E extends EntriesSchema>(schema: E): EntriesSpec<E> {
@@ -69,16 +90,17 @@ export class EntriesSpec<E extends EntriesSchema> {
 
 export const entries = EntriesSpec.create;
 
-export const DEFAULT_ENTRIES_PARSE_OPTIONS: EntriesParseOptions = {
-  exitEarly: false,
-  strict: false,
-  coerce: false
-} as const;
+export const DEFAULT_ENTRIES_PARSE_OPTIONS: EntriesParseOptions<EntriesSchema> =
+  {
+    exitEarly: false,
+    strict: false,
+    coerce: false
+  } as const;
 
 export function safeParseEntries<E extends EntriesSchema>(
   schema: E,
   input: Record<string, PODValue | string | bigint | number>,
-  options: EntriesParseOptions = DEFAULT_ENTRIES_PARSE_OPTIONS,
+  options: EntriesParseOptions<E> = DEFAULT_ENTRIES_PARSE_OPTIONS,
   path: string[] = []
 ): ParseResult<EntriesOutputType<E>> {
   if (typeof input !== "object" || input === null) {
@@ -144,8 +166,7 @@ export function safeParseEntries<E extends EntriesSchema>(
       }
     }
 
-    // todo equalsEntry checks
-    let entrySchema = schema[key];
+    let entrySchema: EntrySchema = schema[key] as EntrySchema;
     if (entrySchema.type === "optional") {
       entrySchema = entrySchema.innerType;
     }
@@ -159,35 +180,35 @@ export function safeParseEntries<E extends EntriesSchema>(
     );
     if (!result.isValid) {
       if (options.exitEarly) {
-        return FAILURE(result.errors);
+        return FAILURE(result.issues);
       } else {
-        issues.push(...result.errors);
+        issues.push(...result.issues);
       }
     } else {
       output[key] = result.value;
     }
   }
 
-  // if (schema.tuples) {
-  //   const tuples = schema.tuples as EntriesTupleSchema<E>[];
-  //   for (const tupleIndex in tuples) {
-  //     const tupleSchema = tuples[tupleIndex];
+  if (options.tuples) {
+    const tuples = options.tuples as EntriesTupleSchema<E>[];
+    for (const tupleIndex in tuples) {
+      const tupleSchema = tuples[tupleIndex] as EntriesTupleSchema<E>;
 
-  //     const result = safeCheckTuple(output, tupleSchema, options, [
-  //       ...path,
-  //       "$tuples",
-  //       tupleIndex
-  //     ]);
+      const result = safeCheckTuple(output, tupleSchema, options, [
+        ...path,
+        "$tuples",
+        tupleIndex
+      ]);
 
-  //     if (!result.isValid) {
-  //       if (options.exitEarly) {
-  //         return FAILURE(result.errors);
-  //       } else {
-  //         issues.push(...result.errors);
-  //       }
-  //     }
-  //   }
-  // }
+      if (!result.isValid) {
+        if (options.exitEarly) {
+          return FAILURE(result.issues);
+        } else {
+          issues.push(...result.issues);
+        }
+      }
+    }
+  }
 
   return issues.length > 0
     ? FAILURE(issues)
@@ -201,13 +222,13 @@ export type EntriesOutputType<E extends EntriesSchema> = AddQuestionMarks<{
         value: PODValueNativeTypes[E[k]["type"]];
       }
     : E[k] extends OptionalSchema
-    ?
-        | {
-            type: E[k]["innerType"]["type"];
-            value: PODValueNativeTypes[E[k]["innerType"]["type"]];
-          }
-        | undefined
-    : never;
+      ?
+          | {
+              type: E[k]["innerType"]["type"];
+              value: PODValueNativeTypes[E[k]["innerType"]["type"]];
+            }
+          | undefined
+      : never;
 }>;
 type optionalKeys<T extends object> = {
   [k in keyof T]: undefined extends T[k] ? k : never;

@@ -10,6 +10,7 @@
     "watch": "turbo watch build --filter='./packages/**'"
   },
   "devDependencies": {
+    "knip": "^5.29.2",
     "prettier": "^3.2.5",
     "turbo": "^2.0.14",
     "typescript": "^5.4.5"

@@ -1,5 +1,5 @@
+import * as p from "@parcnet/podspec";
 import { POD } from "@pcd/pod";
-import { p } from "@pcd/podspec";
 import { EventEmitter } from "eventemitter3";
 
 type PODQuery = ReturnType<typeof p.pod>;
@@ -39,6 +39,7 @@ export class PODCollection {
   }
 
   public query(query: PODQuery): POD[] {
+    console.log(query);
     return query.query(this.pods).matches;
   }
 

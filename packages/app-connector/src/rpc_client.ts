@@ -7,13 +7,14 @@ import {
   ParcnetRPCMethodName,
   ParcnetRPCSchema,
   PODQuery,
+  ProveResult,
   RPCMessage,
   RPCMessageSchema,
   RPCMessageType,
   SubscriptionUpdateResult
 } from "@parcnet/client-rpc";
-import { GPCPCDArgs } from "@pcd/gpc-pcd";
-import { SerializedPCD } from "@pcd/pcd-types";
+import { PodspecProofRequest } from "@parcnet/podspec";
+import { GPCProof, GPCRevealedClaims } from "@pcd/gpc";
 import { EventEmitter } from "eventemitter3";
 import { z, ZodFunction, ZodTuple, ZodTypeAny } from "zod";
 import { DialogController } from "./adapters/iframe.js";
@@ -150,17 +151,28 @@ export class ParcnetRPCConnector implements ParcnetRPC, ParcnetEvents {
       }
     };
     this.gpc = {
-      prove: async (args: GPCPCDArgs): Promise<SerializedPCD> => {
+      prove: async (request: PodspecProofRequest): Promise<ProveResult> => {
         return this.#typedInvoke(
           "gpc.prove",
-          [args],
+          [request],
           ParcnetRPCSchema.shape.gpc.shape.prove
         );
       },
-      verify: async (pcd: SerializedPCD): Promise<boolean> => {
+      canProve: async (request: PodspecProofRequest): Promise<boolean> => {
+        return this.#typedInvoke(
+          "gpc.canProve",
+          [request],
+          ParcnetRPCSchema.shape.gpc.shape.canProve
+        );
+      },
+      verify: async (
+        proof: GPCProof,
+        revealedClaims: GPCRevealedClaims,
+        proofRequest: PodspecProofRequest
+      ): Promise<boolean> => {
         return this.#typedInvoke(
           "gpc.verify",
-          [pcd],
+          [proof, revealedClaims, proofRequest],
           ParcnetRPCSchema.shape.gpc.shape.verify
         );
       }

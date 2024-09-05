@@ -1,6 +1,6 @@
 import { ParcnetAPI, Subscription } from "@parcnet/app-connector";
+import * as p from "@parcnet/podspec";
 import { POD, POD_INT_MAX, POD_INT_MIN, PODEntries, PODValue } from "@pcd/pod";
-import { p } from "@pcd/podspec";
 import JSONBig from "json-bigint";
 import { ReactNode, useReducer, useState } from "react";
 import { Button } from "../components/Button";
@@ -38,10 +38,17 @@ function QueryPODs({ z }: { z: ParcnetAPI }): ReactNode {
       <p>
         Querying PODs is done like this:
         <code className="block text-xs font-base rounded-md p-2 whitespace-pre">
-          {`const q = p
-.pod({
-wis: p.int().range(BigInt(8), POD_INT_MAX),
-str: p.int().range(BigInt(5), POD_INT_MAX),
+          {`const q = p.pod({
+  entries: {
+    wis: {
+      type: "int",
+      inRange: { min: BigInt(8), max: POD_INT_MAX }
+    },
+    str: {
+      type: "int",
+      inRange: { min: BigInt(5), max: POD_INT_MAX }
+    }
+  }
 });
 const pods = await z.pod.query(q);
 `}
@@ -51,8 +58,16 @@ const pods = await z.pod.query(q);
         onClick={async () => {
           try {
             const q = p.pod({
-              wis: p.int().range(BigInt(8), POD_INT_MAX),
-              str: p.int().range(BigInt(5), POD_INT_MAX)
+              entries: {
+                wis: {
+                  type: "int",
+                  inRange: { min: BigInt(8), max: POD_INT_MAX }
+                },
+                str: {
+                  type: "int",
+                  inRange: { min: BigInt(5), max: POD_INT_MAX }
+                }
+              }
             });
             const pods = await z.pod.query(q);
             setPODs(pods);
@@ -388,19 +403,28 @@ function DeletePOD({ z }: { z: ParcnetAPI }): ReactNode {
 
 function SubscribeToPODs({ z }: { z: ParcnetAPI }): ReactNode {
   const [pods, setPODs] = useState<POD[]>([]);
-  const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const [subscription, setSubscription] = useState<Subscription<any> | null>(
+    null
+  );
 
   return (
     <div>
       <p>
         Subscribing to updates about PODs is done like this:
         <code className="block text-xs font-base rounded-md p-2 whitespace-pre">
-          {`const q = p
-.pod({
-wis: p.int().range(BigInt(8), POD_INT_MAX),
-str: p.int().range(BigInt(5), POD_INT_MAX),
+          {`const q = p.pod({
+  entries: {
+    wis: {
+      type: "int",
+      inRange: { min: BigInt(8), max: POD_INT_MAX }
+    },
+    str: {
+      type: "int",
+      inRange: { min: BigInt(5), max: POD_INT_MAX }
+    }
+  }
 });
-const pods = await z.pod.subscribe(q);
+const sub = await z.pod.subscribe(q);
 `}
         </code>
       </p>
@@ -408,8 +432,16 @@ const pods = await z.pod.subscribe(q);
         onClick={async () => {
           try {
             const q = p.pod({
-              wis: p.int().range(BigInt(8), POD_INT_MAX),
-              str: p.int().range(BigInt(5), POD_INT_MAX)
+              entries: {
+                wis: {
+                  type: "int",
+                  inRange: { min: BigInt(8), max: POD_INT_MAX }
+                },
+                str: {
+                  type: "int",
+                  inRange: { min: BigInt(5), max: POD_INT_MAX }
+                }
+              }
             });
             const sub = await z.pod.subscribe(q);
             setSubscription(sub);

@@ -1,7 +1,5 @@
-import { PodspecProofRequest } from "@parcnet/podspec";
+import { PODSchema, PodspecProofRequest } from "@parcnet/podspec";
 import { GPCBoundConfig, GPCProof, GPCRevealedClaims } from "@pcd/gpc";
-import type { SerializedPCD } from "@pcd/pcd-types";
-import { GenericSerializedPodspecPOD } from "@pcd/podspec";
 
 /**
  * @file This file contains the RPC interfaces for the Parcnet client.
@@ -9,7 +7,7 @@ import { GenericSerializedPodspecPOD } from "@pcd/podspec";
  * These interfaces are implemented in rpc_client.ts.
  */
 
-export type PODQuery = GenericSerializedPodspecPOD;
+export type PODQuery = PODSchema<any>;
 
 export interface SubscriptionUpdateResult {
   subscriptionId: string;
@@ -30,7 +28,12 @@ export type ProveResult =
 
 export interface ParcnetGPCRPC {
   prove: (request: PodspecProofRequest) => Promise<ProveResult>;
-  verify: (pcd: SerializedPCD) => Promise<boolean>;
+  canProve: (request: PodspecProofRequest) => Promise<boolean>;
+  verify: (
+    proof: GPCProof,
+    revealedClaims: GPCRevealedClaims,
+    proofRequest: PodspecProofRequest
+  ) => Promise<boolean>;
 }
 
 export interface ParcnetIdentityRPC {

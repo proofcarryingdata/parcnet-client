@@ -1,5 +1,5 @@
 import { PODValue } from "@pcd/pod";
-import { EntriesSchema } from "./entries";
+import { EntriesSchema } from "./entries.js";
 
 export type PODTupleSchema<E extends EntriesSchema> = {
   entries: (keyof (E & { $signerPublicKey: never }))[];

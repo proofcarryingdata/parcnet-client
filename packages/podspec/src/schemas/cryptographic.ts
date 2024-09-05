@@ -4,12 +4,12 @@ import {
   PODCryptographicValue,
   PODName
 } from "@pcd/pod";
-import { IssueCode, PodspecInvalidTypeIssue } from "../error";
+import { IssueCode, PodspecInvalidTypeIssue } from "../error.js";
 import {
   FAILURE,
   ParseResult,
   safeCheckBigintBounds
-} from "../parse/parseUtils";
+} from "../parse/parseUtils.js";
 
 export interface CryptographicSchema {
   type: "cryptographic";

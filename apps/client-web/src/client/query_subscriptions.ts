@@ -1,12 +1,10 @@
 import { SubscriptionUpdateResult } from "@parcnet/client-rpc";
-import { p } from "@pcd/podspec";
+import { EntriesSchema, PodSpec } from "@parcnet/podspec";
 import { EventEmitter } from "eventemitter3";
 import { PODCollection } from "./pod_collection";
 
-type PODQuery = ReturnType<typeof p.pod>;
-
 interface Subscription {
-  query: PODQuery;
+  query: PodSpec<EntriesSchema>;
   serial: number;
 }
 
@@ -59,7 +57,7 @@ export class QuerySubscriptions {
     });
   }
 
-  public async subscribe(query: PODQuery): Promise<string> {
+  public async subscribe(query: PodSpec<EntriesSchema>): Promise<string> {
     const subscriptionId = (this.nextSubscriptionId++).toString();
     this.subscriptions.set(subscriptionId, { query, serial: 0 });
 

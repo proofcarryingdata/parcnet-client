@@ -1,11 +1,16 @@
-import { ParcnetIdentityRPC, ParcnetRPC } from "@parcnet/client-rpc";
-import { GPCPCD, GPCPCDArgs, GPCPCDPackage } from "@pcd/gpc-pcd";
+import {
+  ParcnetIdentityRPC,
+  ParcnetRPC,
+  ProveResult
+} from "@parcnet/client-rpc";
+import * as p from "@parcnet/podspec";
+import { GPCProof, GPCRevealedClaims } from "@pcd/gpc";
 import { POD } from "@pcd/pod";
-import { p } from "@pcd/podspec";
 import { EventEmitter } from "eventemitter3";
+import { PodspecProofRequest } from "../../podspec/src/index.js";
 import { ParcnetRPCConnector } from "./rpc_client.js";
 
-type QueryType = ReturnType<typeof p.pod>;
+type QueryType = p.PodSpec<p.EntriesSchema>;
 
 /**
  * A Subscription object is returned to the caller when a subscription is
@@ -15,12 +20,16 @@ type QueryType = ReturnType<typeof p.pod>;
  * It also allows the caller to run the query immediately, which is useful on
  * first creating the subscription, before any updates are available.
  */
-export class Subscription {
+export class Subscription<E extends p.EntriesSchema> {
   #emitter: EventEmitter;
-  #query: QueryType;
+  #query: p.PodSpec<E>;
   #api: ParcnetPODWrapper;
 
-  constructor(query: QueryType, emitter: EventEmitter, api: ParcnetPODWrapper) {
+  constructor(
+    query: p.PodSpec<E>,
+    emitter: EventEmitter,
+    api: ParcnetPODWrapper
+  ) {
     this.#emitter = emitter;
     this.#query = query;
     this.#api = api;
@@ -57,15 +66,15 @@ class ParcnetPODWrapper {
     });
   }
 
-  async query(query: QueryType): Promise<POD[]> {
-    const serialized = query.serialize();
-    const pods = await this.#api.pod.query(serialized);
+  async query<E extends p.EntriesSchema>(query: p.PodSpec<E>): Promise<POD[]> {
+    const pods = await this.#api.pod.query(query.schema);
     return pods.map((pod) => POD.deserialize(pod));
   }
 
-  async subscribe(query: QueryType): Promise<Subscription> {
-    const serialized = query.serialize();
-    const subscriptionId = await this.#api.pod.subscribe(serialized);
+  async subscribe<E extends p.EntriesSchema>(
+    query: p.PodSpec<E>
+  ): Promise<Subscription<E>> {
+    const subscriptionId = await this.#api.pod.subscribe(query.schema);
     const emitter = new EventEmitter();
     const subscription = new Subscription(query, emitter, this);
     this.#subscriptionEmitters.set(subscriptionId, emitter);
@@ -91,14 +100,17 @@ class ParcnetGPCWrapper {
 
   // In a world with POD2, we would use new POD2 types rather than GPCPCD.
   // The existing args system and GPC wrapper works well, so we can use that.
-  async prove(args: GPCPCDArgs): Promise<GPCPCD> {
-    const serialized = await this.#api.gpc.prove(args);
-    return GPCPCDPackage.deserialize(serialized.pcd);
+  async prove(args: PodspecProofRequest): Promise<ProveResult> {
+    const result = await this.#api.gpc.prove(args);
+    return result;
   }
 
-  async verify(pcd: GPCPCD): Promise<boolean> {
-    const serialized = await GPCPCDPackage.serialize(pcd);
-    return this.#api.gpc.verify(serialized);
+  async verify(
+    proof: GPCProof,
+    revealedClaims: GPCRevealedClaims,
+    proofRequest: PodspecProofRequest
+  ): Promise<boolean> {
+    return this.#api.gpc.verify(proof, revealedClaims, proofRequest);
   }
 }
 

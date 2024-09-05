@@ -1,10 +1,11 @@
 import {
   RPCMessage,
   RPCMessageSchema,
-  RPCMessageType
+  RPCMessageType,
+  SubscriptionUpdateResult
 } from "@parcnet/client-rpc";
+import * as p from "@parcnet/podspec";
 import { POD } from "@pcd/pod";
-import { p } from "@pcd/podspec";
 import { assert, expect, use } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import crypto from "crypto";
@@ -12,7 +13,7 @@ import "mocha";
 import { ZodError } from "zod";
 import { postRPCMessage } from "../src/index.js";
 import { ParcnetRPCConnector } from "../src/rpc_client.js";
-import { connectedClient, mockDialog } from "./utils";
+import { connectedClient, mockDialog } from "./utils.js";
 
 function generateRandomHex(byteLength: number): string {
   const randomBytes = crypto.randomBytes(byteLength);
@@ -109,13 +110,13 @@ describe("parcnet-client should work", async function () {
     );
     const serializedPod = pod.serialize();
 
-    const serializedQuery = p
-      .pod({
-        testEntry: p.string()
-      })
-      .serialize();
+    const query = p.pod({
+      entries: {
+        testEntry: { type: "string" }
+      }
+    });
 
-    const subscriptionId = client.pod.subscribe(serializedQuery);
+    const subscriptionId = client.pod.subscribe(query.schema);
 
     postRPCMessage(chan.port1, {
       type: RPCMessageType.PARCNET_CLIENT_INVOKE_RESULT,
@@ -127,7 +128,7 @@ describe("parcnet-client should work", async function () {
     await expect(subscriptionId).to.eventually.equal("test");
 
     const waitForUpdatePromise = new Promise((resolve) => {
-      client.on("subscription-update", (result) => {
+      client.on("subscription-update", (result: SubscriptionUpdateResult) => {
         resolve(result);
       });
     });

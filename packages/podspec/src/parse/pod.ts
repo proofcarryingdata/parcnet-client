@@ -1,20 +1,21 @@
 import { POD, PODContent, PODEntries, PODValue } from "@pcd/pod";
 import {
   IssueCode,
+  PodspecError,
   PodspecSignatureExcludedByListIssue,
   PodspecSignatureNotInListIssue,
   PodspecSignerExcludedByListIssue,
   PodspecSignerNotInListIssue
-} from "../error";
-import { EntriesSchema } from "../schemas/entries";
-import { PODSchema } from "../schemas/pod";
+} from "../error.js";
+import { EntriesSchema } from "../schemas/entries.js";
+import { PODSchema, PODTupleSchema } from "../schemas/pod.js";
 import {
   DEFAULT_ENTRIES_PARSE_OPTIONS,
   EntriesOutputType,
   EntriesParseOptions,
   safeParseEntries
-} from "./entries";
-import { FAILURE, ParseResult, safeCheckTuple, SUCCESS } from "./parseUtils";
+} from "./entries.js";
+import { FAILURE, ParseResult, safeCheckTuple, SUCCESS } from "./parseUtils.js";
 
 /**
  * "Strong" PODContent is an extension of PODContent which extends the
@@ -27,7 +28,7 @@ interface StrongPODContent<T extends PODEntries> extends PODContent {
 /**
  * A "strong" POD is a POD with a strongly-typed entries.
  */
-interface StrongPOD<T extends PODEntries> extends POD {
+export interface StrongPOD<T extends PODEntries> extends POD {
   content: StrongPODContent<T>;
 }
 
@@ -36,10 +37,23 @@ export class PodSpec<E extends EntriesSchema> {
 
   public safeParse(
     input: POD,
-    options: EntriesParseOptions = DEFAULT_ENTRIES_PARSE_OPTIONS,
+    options: EntriesParseOptions<E> = DEFAULT_ENTRIES_PARSE_OPTIONS,
     path: string[] = []
   ): ParseResult<StrongPOD<EntriesOutputType<E>>> {
     return safeParsePod(this.schema, input, options, path);
+  }
+
+  public parse(
+    input: POD,
+    options: EntriesParseOptions<E> = DEFAULT_ENTRIES_PARSE_OPTIONS,
+    path: string[] = []
+  ): StrongPOD<EntriesOutputType<E>> {
+    const result = this.safeParse(input, options, path);
+    if (result.isValid) {
+      return result.value;
+    } else {
+      throw new PodspecError(result.issues);
+    }
   }
 
   public query(input: POD[]): { matches: POD[]; matchingIndexes: number[] } {
@@ -70,7 +84,7 @@ export const pod = PodSpec.create;
 export function safeParsePod<E extends EntriesSchema>(
   schema: PODSchema<E>,
   data: POD,
-  options: EntriesParseOptions = DEFAULT_ENTRIES_PARSE_OPTIONS,
+  options: EntriesParseOptions<E> = DEFAULT_ENTRIES_PARSE_OPTIONS,
   path: string[] = []
 ): ParseResult<StrongPOD<EntriesOutputType<E>>> {
   const entriesResult = safeParseEntries(
@@ -81,7 +95,7 @@ export function safeParsePod<E extends EntriesSchema>(
   );
 
   if (!entriesResult.isValid) {
-    return FAILURE(entriesResult.errors);
+    return FAILURE(entriesResult.issues);
   }
 
   const issues = [];
@@ -158,7 +172,9 @@ export function safeParsePod<E extends EntriesSchema>(
 
   if (schema.tuples) {
     for (const tupleIndex in schema.tuples) {
-      const tupleSchema = schema.tuples[tupleIndex];
+      const tupleSchema: PODTupleSchema<E> = schema.tuples[
+        tupleIndex
+      ] as PODTupleSchema<E>;
 
       const result = safeCheckTuple(
         {
@@ -175,9 +191,9 @@ export function safeParsePod<E extends EntriesSchema>(
 
       if (!result.isValid) {
         if (options.exitEarly) {
-          return FAILURE(result.errors);
+          return FAILURE(result.issues);
         } else {
-          issues.push(...result.errors);
+          issues.push(...result.issues);
         }
       }
     }

@@ -7,21 +7,21 @@ import type {
   PODMembershipLists
 } from "@pcd/gpc";
 import { POD, PODName, PODValue } from "@pcd/pod";
-import { PodSpec } from "../parse/pod";
-import { EntriesSchema } from "../schemas/entries";
-import { PODSchema } from "../schemas/pod";
+import { PodSpec } from "../parse/pod.js";
+import { EntriesSchema } from "../schemas/entries.js";
+import { PODSchema } from "../schemas/pod.js";
 
 export type ProofRequest = {
   proofConfig: GPCProofConfig;
   membershipLists: PODMembershipLists;
-  externalNullifier: PODValue;
-  watermark: PODValue;
+  externalNullifier?: PODValue;
+  watermark?: PODValue;
 };
 
 export interface PodspecProofRequest {
   pods: Record<string, PODSchema<EntriesSchema>>;
-  externalNullifier: PODValue;
-  watermark: PODValue;
+  externalNullifier?: PODValue;
+  watermark?: PODValue;
 }
 
 export class ProofRequestSpec<P extends PodspecProofRequest> {

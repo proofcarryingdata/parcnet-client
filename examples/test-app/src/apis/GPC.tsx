@@ -1,8 +1,10 @@
-import { GPCPCD, GPCPCDArgs } from "@pcd/gpc-pcd";
+import { PodspecProofRequest } from "@parcnet/podspec";
+import { GPCPCDArgs } from "@pcd/gpc-pcd";
 import { ArgumentTypeName } from "@pcd/pcd-types";
 import { PODPCDPackage } from "@pcd/pod-pcd";
 import { SemaphoreIdentityPCDPackage } from "@pcd/semaphore-identity-pcd";
 import { ReactNode, useState } from "react";
+import { ProveResult } from "../../../../packages/client-rpc/src";
 import { TryIt } from "../components/TryIt";
 import { useParcnetClient } from "../hooks/useParcnetClient";
 
@@ -65,9 +67,28 @@ const args: GPCPCDArgs = {
   }
 };
 
+const request: PodspecProofRequest = {
+  pods: {
+    pod1: {
+      entries: {
+        wis: { type: "int", inRange: { min: BigInt(5), max: BigInt(1000) } },
+        str: { type: "int", inRange: { min: BigInt(5), max: BigInt(1000) } }
+      }
+    },
+    pod2: {
+      entries: {
+        test: {
+          type: "string",
+          isMemberOf: [{ type: "string", value: "secret" }]
+        }
+      }
+    }
+  }
+};
+
 export function GPC(): ReactNode {
   const { z, connected } = useParcnetClient();
-  const [proof, setProof] = useState<GPCPCD>();
+  const [proof, setProof] = useState<ProveResult>();
   const [verified, setVerified] = useState<boolean | undefined>();
 
   return !connected ? null : (
@@ -79,73 +100,33 @@ export function GPC(): ReactNode {
             Generating a GPC proof is done like this:
             <code className="block text-xs font-base rounded-md p-2 whitespace-pre-wrap">
               {`
-const EXAMPLE_GPC_CONFIG = \`{
-  "pods": {
-    "examplePOD": {
-      "entries": {
-        "origin": {
-          "isRevealed": true
+const request: PodspecProofRequest = {
+  pods: {
+    pod1: {
+      entries: {
+        wis: { type: "int", inRange: { min: BigInt(5), max: BigInt(1000) } },
+        str: { type: "int", inRange: { min: BigInt(5), max: BigInt(1000) } }
+      }
+    },
+    pod2: {
+      entries: {
+        test: {
+          type: "string",
+          isMemberOf: [{ type: "string", value: "secret" }]
         }
       }
     }
   }
-}\`;
-
-const args: GPCPCDArgs = {
-  proofConfig: {
-    argumentType: ArgumentTypeName.String,
-    value: EXAMPLE_GPC_CONFIG,
-    userProvided: false
-  },
-  pods: {
-    argumentType: ArgumentTypeName.RecordContainer,
-    value: {
-      examplePOD: {
-        argumentType: ArgumentTypeName.PCD,
-        pcdType: PODPCDPackage.name,
-        value: undefined,
-        userProvided: true,
-        displayName: "Example POD"
-      }
-    },
-    validatorParams: {
-      proofConfig: EXAMPLE_GPC_CONFIG,
-      membershipLists: undefined,
-      prescribedEntries: undefined,
-      prescribedSignerPublicKeys: undefined
-    }
-  },
-  identity: {
-    argumentType: ArgumentTypeName.PCD,
-    pcdType: SemaphoreIdentityPCDPackage.name,
-    value: undefined,
-    userProvided: true
-  },
-  externalNullifier: {
-    argumentType: ArgumentTypeName.String,
-    value: undefined,
-    userProvided: false
-  },
-  membershipLists: {
-    argumentType: ArgumentTypeName.String,
-    value: undefined,
-    userProvided: false
-  },
-  watermark: {
-    argumentType: ArgumentTypeName.String,
-    value: "watermark",
-    userProvided: false
-  }
 };
   
 `}
-              const gpcProof = await z.gpc.prove(args);
+              const gpcProof = await z.gpc.prove(request);
             </code>
           </p>
           <TryIt
             onClick={async () => {
               try {
-                setProof(await z.gpc.prove(args));
+                setProof(await z.gpc.prove(request));
               } catch (e) {
                 console.log(e);
               }
@@ -174,7 +155,7 @@ const verified = await z.gpc.verify(proof);
             <TryIt
               onClick={async () => {
                 try {
-                  setVerified(await z.gpc.verify(proof));
+                  // setVerified(await z.gpc.verify(proof));
                 } catch (e) {
                   console.log(e);
                 }

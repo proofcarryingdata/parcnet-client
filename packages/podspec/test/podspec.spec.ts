@@ -15,10 +15,11 @@ import { v4 as uuidv4 } from "uuid";
 import { $i, $s } from "../src";
 import { IssueCode, PodspecIssue } from "../src/error";
 import * as p from "../src/index";
+import { EntriesTupleSchema } from "../src/schemas/entries";
 
 export const GPC_NPM_ARTIFACTS_PATH = path.join(
   __dirname,
-  "../../../../node_modules/@pcd/proto-pod-gpc-artifacts"
+  "../node_modules/@pcd/proto-pod-gpc-artifacts"
 );
 
 function generateRandomHex(byteLength: number): string {
@@ -39,21 +40,16 @@ describe("podspec should work", async function () {
     const entriesSpec = p.entries({
       firstName: {
         type: "string",
-        isMemberOf: ["test", "1234"].map((s) => ({
-          type: "string",
-          value: s
-        }))
+        // $s is a utility function for turning strings into PODStringValues
+        isMemberOf: $s(["test", "1234"])
       },
       age: {
         type: "int",
-        isNotMemberOf: [42].map((s) => ({ type: "int", value: BigInt(s) }))
+        isNotMemberOf: $i([42])
       },
       semaphoreId: {
         type: "cryptographic",
-        isMemberOf: [1000].map((s) => ({
-          type: "cryptographic",
-          value: BigInt(s)
-        }))
+        isMemberOf: p.$c([1000])
       },
       publicKey: {
         type: "eddsa_pubkey"
@@ -105,21 +101,15 @@ describe("podspec should work", async function () {
     const entriesSpec = p.entries({
       firstName: {
         type: "string",
-        isMemberOf: ["test", "1234"].map((s) => ({
-          type: "string",
-          value: s
-        }))
+        isMemberOf: $s(["test", "1234"])
       },
       age: {
         type: "int",
-        isNotMemberOf: [42].map((s) => ({ type: "int", value: BigInt(s) }))
+        isNotMemberOf: $i([42])
       },
       semaphoreId: {
         type: "cryptographic",
-        isMemberOf: [1000].map((s) => ({
-          type: "cryptographic",
-          value: BigInt(s)
-        }))
+        isMemberOf: p.$c([1000])
       },
       publicKey: {
         type: "eddsa_pubkey"
@@ -166,7 +156,7 @@ describe("podspec should work", async function () {
     );
     expect(result.isValid).to.eq(false);
     assert(result.isValid === false);
-    expect(result.errors).to.eql([
+    expect(result.issues).to.eql([
       {
         code: IssueCode.invalid_pod_value,
         value: {
@@ -181,6 +171,16 @@ describe("podspec should work", async function () {
     ]);
   });
 
+  it("should fail to instantiate a Podspec with invalid entries", function () {
+    expect(() =>
+      p.entries({
+        foo: { type: "string" },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        bar: { type: "invalid" } as any
+      })
+    ).to.throw;
+  });
+
   it("should apply range checks", function () {
     const myPodSpec = p.entries({
       foo: { type: "int", inRange: { min: 1n, max: 10n } }
@@ -191,7 +191,7 @@ describe("podspec should work", async function () {
     });
     expect(result.isValid).to.eq(false);
     assert(result.isValid === false);
-    expect(result.errors).to.eql([
+    expect(result.issues).to.eql([
       {
         code: IssueCode.not_in_range,
         min: 1n,
@@ -221,7 +221,7 @@ describe("podspec should work", async function () {
     });
     expect(result2.isValid).to.eq(false);
     assert(result2.isValid === false);
-    expect(result2.errors).to.eql([
+    expect(result2.issues).to.eql([
       {
         code: IssueCode.not_in_list,
         value: { type: "string", value: "not in list" },
@@ -253,7 +253,7 @@ describe("podspec should work", async function () {
     });
     expect(result2.isValid).to.eq(false);
     assert(!result2.isValid);
-    expect(result2.errors).to.eql([
+    expect(result2.issues).to.eql([
       {
         code: IssueCode.not_in_list,
         value: { type: "int", value: 4n },
@@ -263,83 +263,93 @@ describe("podspec should work", async function () {
     ]);
   });
 
-  // it("should match on tuples", function () {
-  //   const myPodSpec = p.entries({
-  //     entries: {
-  //       foo: { type: "string" },
-  //       bar: { type: "int" }
-  //     },
-  //     tuples: [
-  //       {
-  //         entries: ["foo", "bar"],
-  //         isMemberOf: [
-  //           [
-  //             { type: "string", value: "test" },
-  //             { type: "int", value: 1n }
-  //           ]
-  //         ]
-  //       }
-  //     ]
-  //   });
+  it("should match on tuples", function () {
+    const myPodSpec = p.entries({
+      foo: { type: "string" },
+      bar: { type: "int" }
+    });
 
-  //   {
-  //     const result = myPodSpec.safeParse({
-  //       foo: { type: "string", value: "test" },
-  //       bar: { type: "int", value: 1n }
-  //     });
-  //     expect(result.isValid).to.eq(true);
-  //   }
-  //   {
-  //     const result = myPodSpec.safeParse({
-  //       foo: { type: "string", value: "other string" },
-  //       bar: { type: "int", value: 1n }
-  //     });
-  //     expect(result.isValid).to.eq(false);
-  //     assert(result.isValid === false);
-  //     expect(result.errors).to.eql([
-  //       {
-  //         code: IssueCode.not_in_tuple_list,
-  //         value: [
-  //           { type: "string", value: "other string" },
-  //           { type: "int", value: 1n }
-  //         ],
-  //         list: [
-  //           [
-  //             { type: "string", value: "test" },
-  //             { type: "int", value: 1n }
-  //           ]
-  //         ],
-  //         path: ["$tuples", "0"]
-  //       } satisfies PodspecIssue
-  //     ]);
-  //   }
-  //   {
-  //     const result = myPodSpec.safeParse({
-  //       foo: { type: "string", value: "test" },
-  //       bar: { type: "int", value: 2n }
-  //     });
-  //     expect(result.isValid).to.eq(false);
-  //     assert(result.isValid === false);
-  //     expect(result.errors).to.eql([
-  //       {
-  //         code: IssueCode.not_in_tuple_list,
-  //         value: [
-  //           { type: "string", value: "test" },
-  //           { type: "int", value: 2n }
-  //         ],
-  //         list: [
-  //           [
-  //             { type: "string", value: "test" },
-  //             { type: "int", value: 1n }
-  //           ]
-  //         ],
-  //         path: ["$tuples", "0"]
-  //       } satisfies PodspecIssue
-  //     ]);
-  //   }
-  // });
+    const tuples: EntriesTupleSchema<typeof myPodSpec.schema>[] = [
+      {
+        entries: ["foo", "bar"],
+        isMemberOf: [
+          [
+            { type: "string", value: "test" },
+            { type: "int", value: 1n }
+          ]
+        ]
+      }
+    ];
 
-  it("should handle optional fields", function () {
+    {
+      const result = myPodSpec.safeParse(
+        {
+          foo: { type: "string", value: "test" },
+          bar: { type: "int", value: 1n }
+        },
+        {
+          tuples
+        }
+      );
+      expect(result.isValid).to.eq(true);
+    }
+    {
+      const result = myPodSpec.safeParse(
+        {
+          foo: { type: "string", value: "other string" },
+          bar: { type: "int", value: 1n }
+        },
+        { tuples }
+      );
+      expect(result.isValid).to.eq(false);
+      assert(result.isValid === false);
+      expect(result.issues).to.eql([
+        {
+          code: IssueCode.not_in_tuple_list,
+          value: [
+            { type: "string", value: "other string" },
+            { type: "int", value: 1n }
+          ],
+          list: [
+            [
+              { type: "string", value: "test" },
+              { type: "int", value: 1n }
+            ]
+          ],
+          path: ["$tuples", "0"]
+        } satisfies PodspecIssue
+      ]);
+    }
+    {
+      const result = myPodSpec.safeParse(
+        {
+          foo: { type: "string", value: "test" },
+          bar: { type: "int", value: 2n }
+        },
+        { tuples }
+      );
+      expect(result.isValid).to.eq(false);
+      assert(result.isValid === false);
+      expect(result.issues).to.eql([
+        {
+          code: IssueCode.not_in_tuple_list,
+          value: [
+            { type: "string", value: "test" },
+            { type: "int", value: 2n }
+          ],
+          list: [
+            [
+              { type: "string", value: "test" },
+              { type: "int", value: 1n }
+            ]
+          ],
+          path: ["$tuples", "0"]
+        } satisfies PodspecIssue
+      ]);
+    }
+  });
+
+  it("should handle optional entries", function () {
     const optionalPodSpec = p.entries({
       foo: { type: "string" },
       bar: { type: "optional", innerType: { type: "int" } }
@@ -417,6 +427,7 @@ describe("podspec should work", async function () {
 
       const result = myPodSpec.safeParse(pod);
       expect(result.isValid).to.eq(true);
+      assert(result.isValid);
     }
     {
       const pod = POD.sign(
@@ -431,7 +442,7 @@ describe("podspec should work", async function () {
       const result = myPodSpec.safeParse(pod);
       expect(result.isValid).to.eq(false);
       assert(result.isValid === false);
-      expect(result.errors[0].code).to.eq(IssueCode.not_in_tuple_list);
+      expect(result.issues[0].code).to.eq(IssueCode.not_in_tuple_list);
     }
   });
 
@@ -601,7 +612,7 @@ describe("podspec should work", async function () {
         }
       },
       watermark: { type: "string", value: "1" },
-      owner: { externalNullifier: { type: "string", value: "1" } }
+      externalNullifier: { type: "string", value: "1" }
     });
 
     const { privateKey } = generateKeyPair();
@@ -660,7 +671,7 @@ describe("podspec should work", async function () {
         }
       },
       watermark: { type: "string", value: "1" },
-      owner: { externalNullifier: { type: "string", value: "1" } }
+      externalNullifier: { type: "string", value: "1" }
     });
 
     const { privateKey } = generateKeyPair();

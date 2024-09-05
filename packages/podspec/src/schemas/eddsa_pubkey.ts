@@ -1,10 +1,10 @@
 import { PODEdDSAPublicKeyValue, PODName } from "@pcd/pod";
-import { IssueCode, PodspecInvalidTypeIssue } from "../error";
+import { IssueCode, PodspecInvalidTypeIssue } from "../error.js";
 import {
   FAILURE,
   ParseResult,
   safeCheckPublicKeyFormat
-} from "../parse/parseUtils";
+} from "../parse/parseUtils.js";
 
 export interface EdDSAPublicKeySchema {
   type: "eddsa_pubkey";

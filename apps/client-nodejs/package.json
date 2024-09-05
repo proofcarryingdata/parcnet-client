@@ -11,9 +11,8 @@
     "@inquirer/prompts": "^5.3.8",
     "@parcnet/client-helpers": "workspace:*",
     "@parcnet/client-rpc": "workspace:*",
-    "@pcd/gpc-pcd": "^0.0.6",
     "@pcd/pod": "0.1.5",
-    "@pcd/podspec": "0.0.2",
+    "@parcnet/podspec": "workspace:*",
     "@types/express": "^4.17.21",
     "@types/ws": "^8.5.12",
     "cors": "^2.8.5",
@@ -22,8 +21,7 @@
     "https": "^1.0.0",
     "json-bigint": "^1.0.0",
     "uuid": "^10.0.0",
-    "ws": "^8.18.0",
-    "zod": "^3.23.8"
+    "ws": "^8.18.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",
