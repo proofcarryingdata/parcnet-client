@@ -247,7 +247,7 @@ await z.pod.insert(pod);`}
             await z.pod.insert(pod);
             setSignature(pod.signature);
             setCreationState(PODCreationState.Success);
-          } catch (e) {
+          } catch (_e) {
             setCreationState(PODCreationState.Failure);
           }
         }}
@@ -381,7 +381,7 @@ function DeletePOD({ z }: { z: ParcnetAPI }): ReactNode {
           try {
             await z.pod.delete(signature);
             setDeletionState(PODDeletionState.Success);
-          } catch (e) {
+          } catch (_e) {
             setDeletionState(PODDeletionState.Failure);
           }
         }}
@@ -403,6 +403,7 @@ function DeletePOD({ z }: { z: ParcnetAPI }): ReactNode {
 
 function SubscribeToPODs({ z }: { z: ParcnetAPI }): ReactNode {
   const [pods, setPODs] = useState<POD[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [subscription, setSubscription] = useState<Subscription<any> | null>(
     null
   );

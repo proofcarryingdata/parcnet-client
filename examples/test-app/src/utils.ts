@@ -23,7 +23,7 @@ export function getConnectionInfo(): ClientConnectionInfo {
       ) {
         connectionInfo = parsedConnectionInfo;
       }
-    } catch (e) {
+    } catch (_e) {
       // JSON parsing failed
     }
   }

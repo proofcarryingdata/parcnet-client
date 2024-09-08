@@ -67,7 +67,7 @@ export function parseEntry<S extends DefinedEntrySchema>(
       const valueToCheck = (value as PODIntValue | PODCryptographicValue).value;
       try {
         checkBigintBounds("", valueToCheck, min, max);
-      } catch (error) {
+      } catch (_error) {
         const issue: PodspecNotInRangeIssue = {
           code: IssueCode.not_in_range,
           value: valueToCheck,

@@ -1,25 +1,6 @@
 import { z } from "zod";
 import { ParcnetRPC } from "./rpc_interfaces.js";
 
-const PODValueSchema = z.discriminatedUnion("type", [
-  z.object({
-    type: z.literal("string"),
-    value: z.string()
-  }),
-  z.object({
-    type: z.literal("int"),
-    value: z.bigint()
-  }),
-  z.object({
-    type: z.literal("cryptographic"),
-    value: z.bigint()
-  }),
-  z.object({
-    type: z.literal("eddsa_pubkey"),
-    value: z.string()
-  })
-]);
-
 export const ParcnetRPCSchema = z.object({
   _version: z.literal("1"),
   gpc: z.object({

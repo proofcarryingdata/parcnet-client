@@ -10,8 +10,6 @@ import { EventEmitter } from "eventemitter3";
 import { PodspecProofRequest } from "../../podspec/src/index.js";
 import { ParcnetRPCConnector } from "./rpc_client.js";
 
-type QueryType = p.PodSpec<p.EntriesSchema>;
-
 /**
  * A Subscription object is returned to the caller when a subscription is
  * created. It allows the caller to attach event listeners to the subscription
@@ -120,13 +118,11 @@ class ParcnetGPCWrapper {
  * query data.
  */
 export class ParcnetAPI {
-  #api: ParcnetRPCConnector;
   public pod: ParcnetPODWrapper;
   public identity: ParcnetIdentityRPC;
   public gpc: ParcnetGPCWrapper;
 
   constructor(api: ParcnetRPCConnector) {
-    this.#api = api;
     this.pod = new ParcnetPODWrapper(api);
     this.identity = api.identity;
     this.gpc = new ParcnetGPCWrapper(api);

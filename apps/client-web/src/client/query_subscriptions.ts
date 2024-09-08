@@ -13,7 +13,7 @@ interface QuerySubscriptionEvents {
 }
 
 export class QuerySubscriptions {
-  private subscriptions: Map<string, Subscription> = new Map();
+  private subscriptions = new Map<string, Subscription>();
   private emitter = new EventEmitter<QuerySubscriptionEvents>();
   private nextSubscriptionId = 0;
 

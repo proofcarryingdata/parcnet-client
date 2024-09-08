@@ -31,8 +31,6 @@ export class ParcnetClientProcessor implements ParcnetRPC {
     });
     this.pod = new ParcnetPODProcessor(this.pods, this.subscriptions);
     this.identity = new ParcnetIdentityProcessor();
-    // @todo: implement gpc
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
     this.gpc = new ParcnetGPCProcessor(this.pods, dispatch, this.clientChannel);
   }
 }

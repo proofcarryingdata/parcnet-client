@@ -36,11 +36,10 @@
     "@types/mocha": "^10.0.1",
     "@types/node": "^22.5.4",
     "chai-as-promised": "^7.1.1",
-    "eslint": "^8",
     "mocha": "^10.2.0",
     "tsup": "^8.2.4",
     "tsx": "^4.19.0",
-    "typescript": "^5.3.3"
+    "typescript": "^5.5"
   },
   "publishConfig": {
     "access": "public",
