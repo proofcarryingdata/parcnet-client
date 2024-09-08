@@ -1,0 +1,38 @@
+name: Build and Test
+run-name: Build and Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - "**"
+  merge_group:
+
+# https://docs.github.com/en/actions/using-jobs/using-concurrency#example-using-concurrency-and-the-default-behavior
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  Build-and-Test:
+    #env:
+    #TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+    #TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+    runs-on:
+      labels: ubuntu-latest-l
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: "pnpm"
+
+      - run: "pnpm install --frozen-lockfile"
+      - run: "pnpm build"
+      - run: "pnpm lint"
+      - run: "pnpm test"
