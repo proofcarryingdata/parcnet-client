@@ -30,11 +30,10 @@
     "@types/mocha": "^10.0.1",
     "@types/uuid": "^9.0.0",
     "@zk-kit/eddsa-poseidon": "1.0.2",
-    "eslint": "^8.57.0",
     "mocha": "^10.2.0",
     "tsup": "^8.2.4",
     "tsx": "^4.19.0",
-    "typescript": "^5.3.3",
+    "typescript": "^5.5",
     "uuid": "^9.0.0"
   },
   "publishConfig": {

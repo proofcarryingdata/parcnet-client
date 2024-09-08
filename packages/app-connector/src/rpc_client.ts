@@ -48,7 +48,7 @@ export class ParcnetRPCConnector implements ParcnetRPC, ParcnetEvents {
     { resolve: (value: unknown) => void; reject: (reason?: unknown) => void }
   >();
   #emitter: EventEmitter;
-  #connected: boolean = false;
+  #connected = false;
 
   /**
    * Invoke a method on the remote client.

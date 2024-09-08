@@ -4,8 +4,12 @@ import { DialogController, postRPCMessage } from "../src";
 import { ParcnetRPCConnector } from "../src/rpc_client";
 
 export const mockDialog: DialogController = {
-  show: () => {},
-  close: () => {}
+  show: () => {
+    // Intentionally empty
+  },
+  close: () => {
+    // Intentionally empty
+  }
 };
 
 export async function connectedClient(): Promise<{

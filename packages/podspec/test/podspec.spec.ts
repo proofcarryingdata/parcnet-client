@@ -178,7 +178,7 @@ describe("podspec should work", async function () {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         bar: { type: "invalid" } as any
       })
-    ).to.throw;
+    ).to.throw();
   });
 
   it("should apply range checks", function () {

@@ -1,71 +1,8 @@
 import { PodspecProofRequest } from "@parcnet/podspec";
-import { GPCPCDArgs } from "@pcd/gpc-pcd";
-import { ArgumentTypeName } from "@pcd/pcd-types";
-import { PODPCDPackage } from "@pcd/pod-pcd";
-import { SemaphoreIdentityPCDPackage } from "@pcd/semaphore-identity-pcd";
 import { ReactNode, useState } from "react";
 import { ProveResult } from "../../../../packages/client-rpc/src";
 import { TryIt } from "../components/TryIt";
 import { useParcnetClient } from "../hooks/useParcnetClient";
-
-const EXAMPLE_GPC_CONFIG = `{
-  "pods": {
-    "examplePOD": {
-      "entries": {
-        "origin": {
-          "isRevealed": true
-        }
-      }
-    }
-  }
-}`;
-
-const args: GPCPCDArgs = {
-  proofConfig: {
-    argumentType: ArgumentTypeName.String,
-    value: EXAMPLE_GPC_CONFIG,
-    userProvided: false
-  },
-  pods: {
-    argumentType: ArgumentTypeName.RecordContainer,
-    value: {
-      examplePOD: {
-        argumentType: ArgumentTypeName.PCD,
-        pcdType: PODPCDPackage.name,
-        value: undefined,
-        userProvided: true,
-        displayName: "Example POD"
-      }
-    },
-    validatorParams: {
-      proofConfig: EXAMPLE_GPC_CONFIG,
-      membershipLists: undefined,
-      prescribedEntries: undefined,
-      prescribedSignerPublicKeys: undefined
-    }
-  },
-  identity: {
-    argumentType: ArgumentTypeName.PCD,
-    pcdType: SemaphoreIdentityPCDPackage.name,
-    value: undefined,
-    userProvided: true
-  },
-  externalNullifier: {
-    argumentType: ArgumentTypeName.String,
-    value: undefined,
-    userProvided: false
-  },
-  membershipLists: {
-    argumentType: ArgumentTypeName.String,
-    value: undefined,
-    userProvided: false
-  },
-  watermark: {
-    argumentType: ArgumentTypeName.String,
-    value: "watermark",
-    userProvided: false
-  }
-};
 
 const request: PodspecProofRequest = {
   pods: {
@@ -89,7 +26,7 @@ const request: PodspecProofRequest = {
 export function GPC(): ReactNode {
   const { z, connected } = useParcnetClient();
   const [proof, setProof] = useState<ProveResult>();
-  const [verified, setVerified] = useState<boolean | undefined>();
+  const [verified, _setVerified] = useState<boolean | undefined>();
 
   return !connected ? null : (
     <div>

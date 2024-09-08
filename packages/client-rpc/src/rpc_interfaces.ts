@@ -7,6 +7,7 @@ import { GPCBoundConfig, GPCProof, GPCRevealedClaims } from "@pcd/gpc";
  * These interfaces are implemented in rpc_client.ts.
  */
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type PODQuery = PODSchema<any>;
 
 export interface SubscriptionUpdateResult {
