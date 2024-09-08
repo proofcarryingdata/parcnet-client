@@ -13,7 +13,7 @@
   "ignoreWorkspaces": [],
   "rules": {
     "binaries": "off",
-    "dependencies": "error",
+    "dependencies": "warn",
     "devDependencies": "warn",
     "files": "warn",
     "unlisted": "error",

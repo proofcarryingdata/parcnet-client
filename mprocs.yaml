@@ -5,10 +5,6 @@ procs:
     cwd: "apps/client-web"
     shell: "pnpm dev"
     autostart: false
-  client-nodejs:
-    cwd: "apps/client-nodejs"
-    shell: "pnpm dev"
-    autostart: false
   test-app:
     cwd: "examples/test-app"
     shell: "pnpm dev"

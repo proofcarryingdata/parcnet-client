@@ -7,6 +7,7 @@
     "dev": "turbo dev",
     "lint": "turbo lint",
     "test": "turbo test",
+    "knip": "knip --no-gitignore",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "watch": "turbo watch build --filter='./packages/**'"
   },
