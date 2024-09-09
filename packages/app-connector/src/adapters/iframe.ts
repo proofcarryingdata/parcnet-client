@@ -102,7 +102,7 @@ export function connect(
   iframe.src = normalizedUrl.toString();
 
   return new Promise<ParcnetAPI>((resolve) => {
-    iframe.addEventListener("load", async () => {
+    iframe.addEventListener("load", () => {
       // Create a new MessageChannel to communicate with the iframe
       const chan = new MessageChannel();
 
@@ -121,24 +121,30 @@ export function connect(
       });
 
       if (iframe.contentWindow) {
+        const contentWindow = iframe.contentWindow;
         // @todo Blink (and maybe Webkit) will discard messages if there's no
         // handler yet, so we need to wait a bit and/or retry until the client is
         // ready
         // The client takes a few seconds to load, so waiting isn't a bad solution
-        await new Promise<void>((resolve) => {
+        new Promise<void>((resolve) => {
           window.setTimeout(() => resolve(), 1000);
-        });
-        // Send the other port of the message channel to the client
-        postWindowMessage(
-          iframe.contentWindow,
-          {
-            type: InitializationMessageType.PARCNET_CLIENT_CONNECT,
-            zapp: zapp
-          },
-          "*",
-          // Our RPC client has port2, send port1 to the client
-          [chan.port1]
-        );
+        })
+          .then(() => {
+            // Send the other port of the message channel to the client
+            postWindowMessage(
+              contentWindow,
+              {
+                type: InitializationMessageType.PARCNET_CLIENT_CONNECT,
+                zapp: zapp
+              },
+              "*",
+              // Our RPC client has port2, send port1 to the client
+              [chan.port1]
+            );
+          })
+          .catch((err) => {
+            console.error("Error sending initialization message", err);
+          });
       } else {
         console.error("no iframe content window!");
       }

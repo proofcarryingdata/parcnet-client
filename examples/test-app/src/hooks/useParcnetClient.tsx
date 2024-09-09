@@ -92,7 +92,7 @@ export function ParcnetIframeProvider({
 
   useEffect(() => {
     if (ref.current) {
-      connect(zapp, ref.current, url).then((zupass) => {
+      void connect(zapp, ref.current, url).then((zupass) => {
         setValue({
           state: ClientConnectionState.CONNECTED,
           z: zupass,
@@ -125,7 +125,7 @@ function ParcnetWebsocketProvider({
   });
 
   useEffect(() => {
-    connectWebsocket(zapp, url).then((api) => {
+    void connectWebsocket(zapp, url).then((api) => {
       setValue({
         state: ClientConnectionState.CONNECTED,
         z: api

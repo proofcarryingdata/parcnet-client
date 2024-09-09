@@ -1,7 +1,7 @@
 import { RPCMessageType } from "@parcnet/client-rpc";
 import { expect } from "chai";
-import { DialogController, postRPCMessage } from "../src";
-import { ParcnetRPCConnector } from "../src/rpc_client";
+import { DialogController, postRPCMessage } from "../src/index.js";
+import { ParcnetRPCConnector } from "../src/rpc_client.js";
 
 export const mockDialog: DialogController = {
   show: () => {

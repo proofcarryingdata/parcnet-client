@@ -17,7 +17,7 @@ function App() {
   });
 
   useEffect(() => {
-    (async () => {
+    void (async () => {
       const { zapp, advice } = await listen();
       dispatch({ type: "set-zapp", zapp });
       dispatch({ type: "set-advice", advice });

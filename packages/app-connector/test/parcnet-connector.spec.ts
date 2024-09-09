@@ -23,8 +23,8 @@ function generateRandomHex(byteLength: number): string {
 // eslint-disable-next-line react-hooks/rules-of-hooks
 use(chaiAsPromised);
 
-describe("parcnet-client should work", async function () {
-  it("parcnet-client should throw when not connected", async function () {
+describe("parcnet-client should work", function () {
+  it("parcnet-client should throw when not connected", function () {
     const chan = new MessageChannel();
 
     const client = new ParcnetRPCConnector(chan.port2, mockDialog);

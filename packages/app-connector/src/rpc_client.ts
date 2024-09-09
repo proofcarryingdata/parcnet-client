@@ -84,7 +84,7 @@ export class ParcnetRPCConnector implements ParcnetRPC, ParcnetEvents {
    * @param args - The arguments to pass to the method.
    * @returns A promise that resolves to the method's return value.
    */
-  async #typedInvoke<
+  #typedInvoke<
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     A extends ZodTuple<any, any>,
     R extends ZodTypeAny,
@@ -100,10 +100,11 @@ export class ParcnetRPCConnector implements ParcnetRPC, ParcnetEvents {
     // by safeParse.
     const parsedResult = functionSchema.returnType().safeParse(result);
     if (parsedResult.success) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return parsedResult.data;
     } else {
       throw new Error(
-        `Failed to parse result for ${fn}: ${parsedResult.error}`
+        `Failed to parse result for ${fn}: ${parsedResult.error.message}`
       );
     }
   }

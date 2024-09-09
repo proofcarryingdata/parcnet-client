@@ -16,7 +16,9 @@ export function getConnectionInfo(): ClientConnectionInfo {
   const storedConnectionInfo = localStorage.getItem("clientConnectionInfo");
   if (storedConnectionInfo) {
     try {
-      const parsedConnectionInfo = JSON.parse(storedConnectionInfo);
+      const parsedConnectionInfo = JSON.parse(
+        storedConnectionInfo
+      ) as ClientConnectionInfo;
       if (
         ["iframe", "websocket"].includes(connectionInfo.type) &&
         typeof connectionInfo.url === "string"

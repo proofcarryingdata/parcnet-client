@@ -8,7 +8,7 @@ import {
   PodspecSignerNotInListIssue
 } from "../error.js";
 import { EntriesSchema } from "../schemas/entries.js";
-import { PODSchema, PODTupleSchema } from "../schemas/pod.js";
+import { PODSchema } from "../schemas/pod.js";
 import {
   DEFAULT_ENTRIES_PARSE_OPTIONS,
   EntriesOutputType,
@@ -124,7 +124,8 @@ export class PodSpec<E extends EntriesSchema> {
 /**
  * Exported version of static create method, for convenience.
  */
-export const pod = PodSpec.create;
+export const pod = <E extends EntriesSchema>(schema: PODSchema<E>) =>
+  PodSpec.create(schema);
 
 /**
  * Parses the POD and its entries, returning a {@link ParseResult}.
@@ -225,11 +226,7 @@ export function safeParsePod<E extends EntriesSchema>(
   }
 
   if (schema.tuples) {
-    for (const tupleIndex in schema.tuples) {
-      const tupleSchema: PODTupleSchema<E> = schema.tuples[
-        tupleIndex
-      ] as PODTupleSchema<E>;
-
+    for (const [tupleIndex, tupleSchema] of schema.tuples.entries()) {
       const result = safeCheckTuple(
         {
           ...entriesResult.value,
@@ -240,7 +237,7 @@ export function safeParsePod<E extends EntriesSchema>(
         } as Record<string, PODValue>,
         tupleSchema,
         options,
-        [...path, "$tuples", tupleIndex]
+        [...path, "$tuples", tupleIndex.toString()]
       );
 
       if (!result.isValid) {

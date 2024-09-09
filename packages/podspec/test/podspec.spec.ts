@@ -12,10 +12,10 @@ import crypto from "crypto";
 import "mocha";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
-import { $i, $s } from "../src";
-import { IssueCode, PodspecIssue } from "../src/error";
-import * as p from "../src/index";
-import { EntriesTupleSchema } from "../src/schemas/entries";
+import { IssueCode, PodspecIssue } from "../src/error.js";
+import * as p from "../src/index.js";
+import { EntriesTupleSchema } from "../src/schemas/entries.js";
+import { $i, $s } from "../src/utils.js";
 
 export const GPC_NPM_ARTIFACTS_PATH = path.join(
   __dirname,
@@ -30,12 +30,13 @@ function generateRandomHex(byteLength: number): string {
 function generateKeyPair(): { privateKey: string; publicKey: string } {
   const privateKey = generateRandomHex(32);
   const publicKey = encodePublicKey(
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     derivePublicKey(decodePrivateKey(privateKey))
   );
   return { privateKey, publicKey };
 }
 
-describe("podspec should work", async function () {
+describe("podspec should work", function () {
   it("should validate POD entries", function () {
     const entriesSpec = p.entries({
       firstName: {
@@ -175,8 +176,7 @@ describe("podspec should work", async function () {
     expect(() =>
       p.entries({
         foo: { type: "string" },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        bar: { type: "invalid" } as any
+        bar: { type: "invalid" } as never
       })
     ).to.throw();
   });
@@ -442,6 +442,7 @@ describe("podspec should work", async function () {
       const result = myPodSpec.safeParse(pod);
       expect(result.isValid).to.eq(false);
       assert(result.isValid === false);
+      assert(result.issues[0] !== undefined);
       expect(result.issues[0].code).to.eq(IssueCode.not_in_tuple_list);
     }
   });
@@ -568,7 +569,7 @@ describe("podspec should work", async function () {
         },
         privateKey
       )
-    ];
+    ] as const;
 
     const myPodSpec = p.pod({
       entries: {
@@ -580,7 +581,7 @@ describe("podspec should work", async function () {
       }
     });
 
-    const queryResult = myPodSpec.query(pods);
+    const queryResult = myPodSpec.query(pods.slice());
 
     expect(queryResult.matches).to.eql([pods[1]]);
     expect(queryResult.matchingIndexes).to.eql([1]);
@@ -713,6 +714,8 @@ describe("podspec should work", async function () {
 
     expect(candidatePODs.pod1).to.eql([pods[1]]);
     expect(candidatePODs.pod2).to.eql([pods[3]]);
+    assert(candidatePODs.pod1[0] !== undefined);
+    assert(candidatePODs.pod2[0] !== undefined);
 
     const pr = prs.getProofRequest();
 

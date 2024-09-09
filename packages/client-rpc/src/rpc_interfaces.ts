@@ -1,4 +1,8 @@
-import { PODSchema, PodspecProofRequest } from "@parcnet/podspec";
+import {
+  EntriesSchema,
+  PODSchema,
+  PodspecProofRequest
+} from "@parcnet/podspec";
 import { GPCBoundConfig, GPCProof, GPCRevealedClaims } from "@pcd/gpc";
 
 /**
@@ -7,8 +11,7 @@ import { GPCBoundConfig, GPCProof, GPCRevealedClaims } from "@pcd/gpc";
  * These interfaces are implemented in rpc_client.ts.
  */
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type PODQuery = PODSchema<any>;
+export type PODQuery = PODSchema<EntriesSchema>;
 
 export interface SubscriptionUpdateResult {
   subscriptionId: string;

@@ -80,6 +80,7 @@ export async function listen(ws: WebSocket): Promise<ListenResult> {
   return new Promise((resolve) => {
     const initialEventHandler = (initialEvent: MessageEvent) => {
       const data = InitializationMessageSchema.safeParse(
+        // eslint-disable-next-line @typescript-eslint/no-base-to-string
         JSONBig.parse(initialEvent.data.toString())
       );
       if (!data.success) {
@@ -95,13 +96,14 @@ export async function listen(ws: WebSocket): Promise<ListenResult> {
             onReady: (rpc) => {
               rpcMessageHandler = (ev: MessageEvent) => {
                 const message = RPCMessageSchema.safeParse(
+                  // eslint-disable-next-line @typescript-eslint/no-base-to-string
                   JSONBig.parse(ev.data.toString())
                 );
                 if (message.success === false) {
                   return;
                 }
 
-                handleMessage(rpc, ws, message.data);
+                void handleMessage(rpc, ws, message.data);
               };
 
               ws.addEventListener("message", rpcMessageHandler);
@@ -132,6 +134,7 @@ async function handleMessage(
     try {
       if (functionToInvoke && typeof functionToInvoke === "function") {
         try {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           const result = await functionToInvoke.apply(object, message.args);
           socket.send(
             JSONBig.stringify({

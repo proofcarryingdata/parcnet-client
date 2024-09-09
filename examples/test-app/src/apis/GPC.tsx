@@ -90,7 +90,7 @@ const verified = await z.gpc.verify(proof);
           )}
           {proof && (
             <TryIt
-              onClick={async () => {
+              onClick={() => {
                 try {
                   // setVerified(await z.gpc.verify(proof));
                 } catch (e) {

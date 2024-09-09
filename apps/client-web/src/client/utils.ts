@@ -27,8 +27,8 @@ export function loadPODsFromStorage(): POD[] {
     return pods;
   }
   try {
-    const serializedPODs = JSON.parse(storedSerializedPODs);
-    pods = serializedPODs.map(POD.deserialize);
+    const serializedPODs = JSON.parse(storedSerializedPODs) as string[];
+    pods = serializedPODs.map((str) => POD.deserialize(str));
   } catch (e) {
     // JSON parsing failed or POD deserialization failed
     console.error(e);

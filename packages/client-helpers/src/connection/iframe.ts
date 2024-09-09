@@ -74,6 +74,7 @@ async function handleMessage(
     try {
       if (functionToInvoke && typeof functionToInvoke === "function") {
         try {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           const result = await functionToInvoke.apply(object, message.args);
           port.postMessage({
             type: RPCMessageType.PARCNET_CLIENT_INVOKE_RESULT,
@@ -109,7 +110,7 @@ export async function listen(): Promise<ListenResult> {
   let portMessageHandler: (message: MessageEvent) => void;
 
   return new Promise((resolve) => {
-    const windowEventHandler = async (event: MessageEvent) => {
+    const windowEventHandler = (event: MessageEvent) => {
       const data = InitializationMessageSchema.safeParse(event.data);
       if (!data.success) {
         return;
@@ -130,7 +131,7 @@ export async function listen(): Promise<ListenResult> {
             onReady: (rpc) => {
               portMessageHandler = (ev) => {
                 const message = RPCMessageSchema.parse(ev.data);
-                handleMessage(rpc, port, message);
+                void handleMessage(rpc, port, message);
               };
 
               port.addEventListener("message", portMessageHandler);

@@ -86,7 +86,8 @@ export class ProofRequestSpec<P extends PodspecProofRequest> {
 /**
  * Export for convenience.
  */
-export const proofRequest = ProofRequestSpec.create;
+export const proofRequest = <P extends PodspecProofRequest>(schema: P) =>
+  ProofRequestSpec.create(schema);
 
 /**
  * Generates a {@link ProofRequest}.

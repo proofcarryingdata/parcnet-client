@@ -11,7 +11,9 @@ import { DialogController } from "./iframe.js";
 
 class DialogControllerImpl implements DialogController {
   public show(): void {
-    toast.info("Your PARCNET client requests interaction");
+    toast.info("Your PARCNET client requests interaction").catch(() => {
+      // Do nothing
+    });
   }
 
   public close(): void {
@@ -23,7 +25,7 @@ export function connectWebsocket(zapp: Zapp, url: string): Promise<ParcnetAPI> {
   const ws = new WebSocket(url);
   const chan = new MessageChannel();
 
-  ws.addEventListener("open", async () => {
+  ws.addEventListener("open", () => async () => {
     const connectMsg = JSONBig.stringify({
       type: InitializationMessageType.PARCNET_CLIENT_CONNECT,
       zapp
@@ -33,10 +35,10 @@ export function connectWebsocket(zapp: Zapp, url: string): Promise<ParcnetAPI> {
   });
 
   ws.addEventListener("message", (ev) => {
-    chan.port1.postMessage(JSONBig.parse(ev.data));
+    chan.port1.postMessage(JSONBig.parse(ev.data as string));
   });
 
-  chan.port1.addEventListener("message", async (message) => {
+  chan.port1.addEventListener("message", (message) => {
     ws.send(JSONBig.stringify(message.data));
   });
 

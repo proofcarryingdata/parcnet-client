@@ -120,7 +120,8 @@ export class EntriesSpec<E extends EntriesSchema> {
 /**
  * Exported creation function, for convenience.
  */
-export const entries = EntriesSpec.create;
+export const entries = <E extends EntriesSchema>(schema: E) =>
+  EntriesSpec.create(schema);
 
 /**
  * Default entries parsing options.
@@ -234,14 +235,11 @@ export function safeParseEntries<E extends EntriesSchema>(
   }
 
   if (options.tuples) {
-    const tuples = options.tuples as EntriesTupleSchema<E>[];
-    for (const tupleIndex in tuples) {
-      const tupleSchema = tuples[tupleIndex] as EntriesTupleSchema<E>;
-
+    for (const [tupleIndex, tupleSchema] of options.tuples.entries()) {
       const result = safeCheckTuple(output, tupleSchema, options, [
         ...path,
         "$tuples",
-        tupleIndex
+        tupleIndex.toString()
       ]);
 
       if (!result.isValid) {
