@@ -47,6 +47,9 @@ const TYPE_VALIDATORS = {
   cryptographic: checkPODCryptographicValue
 };
 
+/**
+ * Options controlling how parsing of entries is performed.
+ */
 export interface EntriesParseOptions<E extends EntriesSchema> {
   // Exit as soon as the first issue is encountered, useful when you just want
   // to validate if some data is correct
@@ -56,12 +59,29 @@ export interface EntriesParseOptions<E extends EntriesSchema> {
   // Allow certain JavaScript types as inputs, where conversion to PODValue is
   // straightforward
   coerce?: boolean;
+  // Tuples to check against the entries provided.
   tuples?: EntriesTupleSchema<E>[];
 }
 
+/**
+ * A specification for a set of entries.
+ */
 export class EntriesSpec<E extends EntriesSchema> {
+  /**
+   * The constructor is private - see {@link create} for public construction.
+   *
+   * @param schema The schema to use for this set of entries.
+   */
   private constructor(public readonly schema: E) {}
 
+  /**
+   * Parse entries without throwing an exception.
+   *
+   * @param input A record of string keys to PODValues, strings, bigints or numbers.
+   * @param options Options controlling how parsing of entries is performed.
+   * @param path The path leading to this object.
+   * @returns A ParseResult containing either a valid result or list of issues.
+   */
   public safeParse(
     input: Record<string, PODValue | string | bigint | number>,
     options: EntriesParseOptions<E> = DEFAULT_ENTRIES_PARSE_OPTIONS,
@@ -70,6 +90,9 @@ export class EntriesSpec<E extends EntriesSchema> {
     return safeParseEntries(this.schema, input, options, path);
   }
 
+  /**
+   * As {@link safeParse} but will throw an exception if errors are encountered.
+   */
   public parse(
     input: Record<string, PODValue | string | bigint | number>,
     options: EntriesParseOptions<E> = DEFAULT_ENTRIES_PARSE_OPTIONS,
@@ -83,13 +106,25 @@ export class EntriesSpec<E extends EntriesSchema> {
     }
   }
 
+  /**
+   * Creates an EntriesSpec object from a given schema.
+   *
+   * @param schema The schema to use for this set of entries.
+   * @returns A new EntriesSpec object
+   */
   public static create<E extends EntriesSchema>(schema: E): EntriesSpec<E> {
     return new EntriesSpec(schema);
   }
 }
 
+/**
+ * Exported creation function, for convenience.
+ */
 export const entries = EntriesSpec.create;
 
+/**
+ * Default entries parsing options.
+ */
 export const DEFAULT_ENTRIES_PARSE_OPTIONS: EntriesParseOptions<EntriesSchema> =
   {
     exitEarly: false,
@@ -97,6 +132,15 @@ export const DEFAULT_ENTRIES_PARSE_OPTIONS: EntriesParseOptions<EntriesSchema> =
     coerce: false
   } as const;
 
+/**
+ * Parser function for entries.
+ *
+ * @param schema The schema for the entries
+ * @param input Input values for parsing
+ * @param options Options controlling how parsing of entries is performed.
+ * @param path The path leading to this object.
+ * @returns A ParseResult containing either a valid result or list of issues.
+ */
 export function safeParseEntries<E extends EntriesSchema>(
   schema: E,
   input: Record<string, PODValue | string | bigint | number>,
@@ -215,6 +259,12 @@ export function safeParseEntries<E extends EntriesSchema>(
     : SUCCESS(output as EntriesOutputType<E>);
 }
 
+/**
+ * Gets the output type for entries matching a given schema.
+ * The output type is a record mapping string keys to PODValues, and is
+ * therefore similar to {@link PODEntries}, but is specific about the values
+ * that certain entries ought to have.
+ */
 export type EntriesOutputType<E extends EntriesSchema> = AddQuestionMarks<{
   [k in keyof E]: E[k] extends DefinedEntrySchema
     ? {
@@ -233,12 +283,12 @@ export type EntriesOutputType<E extends EntriesSchema> = AddQuestionMarks<{
 type optionalKeys<T extends object> = {
   [k in keyof T]: undefined extends T[k] ? k : never;
 }[keyof T];
-export type requiredKeys<T extends object> = {
+type requiredKeys<T extends object> = {
   [k in keyof T]: undefined extends T[k] ? never : k;
 }[keyof T];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type AddQuestionMarks<T extends object, _O = any> = {
+type AddQuestionMarks<T extends object, _O = any> = {
   [K in requiredKeys<T>]: T[K];
 } & {
   [K in optionalKeys<T>]?: T[K];

@@ -6,6 +6,9 @@ import {
   safeCheckPublicKeyFormat
 } from "../parse/parseUtils.js";
 
+/**
+ * Schema for an EdDSA public key.
+ */
 export interface EdDSAPublicKeySchema {
   type: "eddsa_pubkey";
   isMemberOf?: PODEdDSAPublicKeyValue[];
@@ -42,6 +45,13 @@ export function checkPODEdDSAPublicKeyValue(
   return safeCheckPublicKeyFormat(path, data as PODEdDSAPublicKeyValue);
 }
 
+/**
+ * Coerces an input to a PODEdDSAPublicKeyValue.
+ * Supports the conversion of JavaScript strings to PODEdDSAPublicKeyValue.
+ *
+ * @param input - The input to coerce.
+ * @returns A PODEdDSAPublicKeyValue or undefined if coercion is not possible.
+ */
 export function eddsaPublicKeyCoercer(
   input: unknown
 ): PODEdDSAPublicKeyValue | undefined {

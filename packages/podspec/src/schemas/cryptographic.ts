@@ -11,6 +11,9 @@ import {
   safeCheckBigintBounds
 } from "../parse/parseUtils.js";
 
+/**
+ * Schema for a cryptographic value.
+ */
 export interface CryptographicSchema {
   type: "cryptographic";
   isMemberOf?: PODCryptographicValue[];
@@ -18,6 +21,7 @@ export interface CryptographicSchema {
   isRevealed?: boolean;
   equalsEntry?: PODName;
   inRange?: { min: bigint; max: bigint };
+  // isOwnerID is supported for cryptographic values, e.g. a Semaphore commitment
   isOwnerID?: boolean;
 }
 
@@ -55,6 +59,13 @@ export function checkPODCryptographicValue(
   );
 }
 
+/**
+ * Coerces an input to a PODCryptographicValue.
+ * Supports the conversion of JavaScript numbers and bigints to PODCryptographicValue.
+ *
+ * @param input - The input to coerce.
+ * @returns A PODCryptographicValue or undefined if coercion is not possible.
+ */
 export function cryptographicCoercer(
   input: unknown
 ): PODCryptographicValue | undefined {

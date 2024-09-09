@@ -6,6 +6,9 @@ import {
   safeCheckBigintBounds
 } from "../parse/parseUtils.js";
 
+/**
+ * Schema for a PODIntValue.
+ */
 export interface IntSchema {
   type: "int";
   isMemberOf?: PODIntValue[];
@@ -49,6 +52,13 @@ export function checkPODIntValue(
   );
 }
 
+/**
+ * Coerces an input to a PODIntValue.
+ * Supports the conversion of JavaScript numbers and bigints to PODIntValue.
+ *
+ * @param input - The input to coerce.
+ * @returns A PODIntValue or undefined if coercion is not possible.
+ */
 export function intCoercer(input: unknown): PODIntValue | undefined {
   let value: PODIntValue | undefined = undefined;
   if (typeof input === "number") {

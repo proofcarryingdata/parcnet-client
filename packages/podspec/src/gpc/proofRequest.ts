@@ -11,6 +11,10 @@ import { PodSpec } from "../parse/pod.js";
 import { EntriesSchema } from "../schemas/entries.js";
 import { PODSchema } from "../schemas/pod.js";
 
+/**
+ * A ProofRequest contains the data necessary to verify that a given GPC proof
+ * matches our expectations of it.
+ */
 export type ProofRequest = {
   proofConfig: GPCProofConfig;
   membershipLists: PODMembershipLists;
@@ -18,25 +22,58 @@ export type ProofRequest = {
   watermark?: PODValue;
 };
 
+/**
+ * A PodspecProofRequest allows us to generate a {@link ProofRequest} from a
+ * set of Podspecs defining the allowable PODs.
+ */
 export interface PodspecProofRequest {
   pods: Record<string, PODSchema<EntriesSchema>>;
   externalNullifier?: PODValue;
   watermark?: PODValue;
 }
 
+/**
+ * A ProofRequestSpec allows us to generate a {@link ProofRequest} from a
+ * set of Podspecs defining the allowable PODs.
+ */
 export class ProofRequestSpec<P extends PodspecProofRequest> {
+  /**
+   * Private constructor, see {@link create}.
+   * @param schema The schema of the PODs that are allowed in this proof.
+   */
   private constructor(public readonly schema: P) {}
 
+  /**
+   * Create a new ProofRequestSpec.
+   * @param schema The schema of the PODs that are allowed in this proof.
+   * @returns A new ProofRequestSpec.
+   */
   public static create<P extends PodspecProofRequest>(
-    proofRequest: P
+    schema: P
   ): ProofRequestSpec<P> {
-    return new ProofRequestSpec(proofRequest);
+    return new ProofRequestSpec(schema);
   }
 
+  /**
+   * Get the {@link ProofRequest} that this ProofRequestSpec defines.
+   * @returns A {@link ProofRequest}.
+   */
   public getProofRequest(): ProofRequest {
     return makeProofRequest(this.schema);
   }
 
+  /**
+   * A ProofRequest defines a {@link GPCProofConfig} and part of the
+   * {@link GPCProofInputs} - specifically the watermark, external nullifier,
+   * and membership lists. However, a GPC proof also requires PODs as inputs.
+   * Since we know from our schema which PODs would be acceptable inputs, we
+   * can take an array of PODs and return a mapping of the require POD names
+   * to the PODs from the array which would be suitable as inputs in each slot
+   * respectively.
+   *
+   * @param pods The PODs to query.
+   * @returns A record of the PODs that are allowed in this proof.
+   */
   public queryForInputs(pods: POD[]): Record<keyof P["pods"], POD[]> {
     const result: Record<string, POD[]> = {};
     for (const [podName, podSchema] of Object.entries(this.schema.pods)) {
@@ -46,8 +83,17 @@ export class ProofRequestSpec<P extends PodspecProofRequest> {
   }
 }
 
+/**
+ * Export for convenience.
+ */
 export const proofRequest = ProofRequestSpec.create;
 
+/**
+ * Generates a {@link ProofRequest}.
+ *
+ * @param request The PodspecProofRequest to derive the ProofRequest from.
+ * @returns A ProofRequest.
+ */
 function makeProofRequest(request: PodspecProofRequest): ProofRequest {
   const pods: Record<PODName, GPCProofObjectConfig> = {};
   const membershipLists: PODMembershipLists = {};
@@ -113,7 +159,7 @@ function makeProofRequest(request: PodspecProofRequest): ProofRequest {
     }
   }
 
-  const p: ProofRequest = {
+  return {
     proofConfig: {
       pods,
       tuples
@@ -121,7 +167,5 @@ function makeProofRequest(request: PodspecProofRequest): ProofRequest {
     membershipLists,
     watermark: request.watermark,
     externalNullifier: request.externalNullifier
-  };
-
-  return p;
+  } satisfies ProofRequest;
 }

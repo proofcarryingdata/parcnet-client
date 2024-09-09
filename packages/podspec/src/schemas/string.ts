@@ -2,6 +2,9 @@ import { PODName, PODStringValue } from "@pcd/pod";
 import { IssueCode, PodspecInvalidTypeIssue } from "../error.js";
 import { FAILURE, ParseResult, SUCCESS } from "../parse/parseUtils.js";
 
+/**
+ * Schema for a PODStringValue.
+ */
 export interface StringSchema {
   type: "string";
   isMemberOf?: PODStringValue[];
@@ -38,13 +41,18 @@ export function checkPODStringValue(
   return SUCCESS(data as PODStringValue);
 }
 
-export function stringCoercer(input: unknown): unknown {
+/**
+ * @param input - The input to coerce.
+ * @returns A PODStringValue or undefined if coercion is not possible.
+ */
+export function stringCoercer(input: unknown): PODStringValue | undefined {
+  let value: PODStringValue | undefined = undefined;
   if (typeof input === "string") {
-    return {
+    value = {
       type: "string",
       value: input
     };
-  } else {
-    return input;
   }
+
+  return value;
 }

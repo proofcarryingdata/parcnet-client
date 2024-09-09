@@ -32,9 +32,28 @@ export interface StrongPOD<T extends PODEntries> extends POD {
   content: StrongPODContent<T>;
 }
 
+/**
+ * A PodSpec is a specification for a POD, including its schema and any
+ * additional constraints.
+ */
 export class PodSpec<E extends EntriesSchema> {
+  /**
+   * Create a new PodSpec. The constructor is private, see {@link create} for
+   * public creation.
+   *
+   * @param schema The schema for the POD.
+   */
   private constructor(public readonly schema: PODSchema<E>) {}
 
+  /**
+   * Parse a POD according to this PodSpec.
+   * Returns a {@link ParseResult} rather than throwing an exception.
+   *
+   * @param input The POD to parse.
+   * @param options The options to use when parsing.
+   * @param path The path to use when parsing.
+   * @returns A result containing either a valid value or a list of errors.
+   */
   public safeParse(
     input: POD,
     options: EntriesParseOptions<E> = DEFAULT_ENTRIES_PARSE_OPTIONS,
@@ -43,6 +62,15 @@ export class PodSpec<E extends EntriesSchema> {
     return safeParsePod(this.schema, input, options, path);
   }
 
+  /**
+   * Identical to {@link safeParse}, except it throws an exception if errors
+   * are found, rather than returning a {@link ParseResult}.
+   *
+   * @param input The POD to parse.
+   * @param options The options to use when parsing.
+   * @param path The path to use when parsing.
+   * @returns The parsed POD.
+   */
   public parse(
     input: POD,
     options: EntriesParseOptions<E> = DEFAULT_ENTRIES_PARSE_OPTIONS,
@@ -56,6 +84,14 @@ export class PodSpec<E extends EntriesSchema> {
     }
   }
 
+  /**
+   * Tests an array of PODs against this Podspec.
+   * Useful for query-like operations where you need to find the matching PODs
+   * from a list.
+   *
+   * @param input The PODs to test
+   * @returns An array of matches and their indexes within the input array.
+   */
   public query(input: POD[]): { matches: POD[]; matchingIndexes: number[] } {
     const matchingIndexes: number[] = [];
     const matches: POD[] = [];
@@ -72,6 +108,12 @@ export class PodSpec<E extends EntriesSchema> {
     };
   }
 
+  /**
+   * Creates a new PodSpec instance.
+   *
+   * @param schema The schema defining the valid POD.
+   * @returns A new PodSpec instance.
+   */
   public static create<E extends EntriesSchema>(
     schema: PODSchema<E>
   ): PodSpec<E> {
@@ -79,8 +121,20 @@ export class PodSpec<E extends EntriesSchema> {
   }
 }
 
+/**
+ * Exported version of static create method, for convenience.
+ */
 export const pod = PodSpec.create;
 
+/**
+ * Parses the POD and its entries, returning a {@link ParseResult}.
+ *
+ * @param schema The schema defining the valid POD.
+ * @param data A POD.
+ * @param options Options determining how parsing is performed.
+ * @param path The path to this object.
+ * @returns A result containing either a valid value or a list of errors.
+ */
 export function safeParsePod<E extends EntriesSchema>(
   schema: PODSchema<E>,
   data: POD,

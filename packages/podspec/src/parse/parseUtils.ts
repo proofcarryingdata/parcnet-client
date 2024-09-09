@@ -34,12 +34,27 @@ type ParseFailure = {
   isValid: false;
 };
 
+/**
+ * A ParseResult is a container for either a valid value or a list of issues.
+ */
 export type ParseResult<T> = ParseSuccess<T> | ParseFailure;
 
+/**
+ * Creates a ParseFailure containing a list of issues.
+ *
+ * @param errors The issues to include in the failure.
+ * @returns A ParseFailure containing the issues.
+ */
 export function FAILURE(errors: PodspecIssue[]): ParseFailure {
   return { isValid: false, issues: errors ?? [] };
 }
 
+/**
+ * Creates a ParseSuccess containing a valid value.
+ *
+ * @param value The value to include in the success.
+ * @returns A ParseSuccess containing the value.
+ */
 export function SUCCESS<T>(value: T): ParseSuccess<T> {
   return {
     isValid: true,
@@ -47,6 +62,13 @@ export function SUCCESS<T>(value: T): ParseSuccess<T> {
   };
 }
 
+/**
+ * Wraps {@link checkPODValue} in a ParseResult, rather than throwing an exception.
+ *
+ * @param path The path leading to this value.
+ * @param podValue The value to check.
+ * @returns A ParseResult containing either a valid result or list of issues.
+ */
 export function safeCheckPODValue(
   path: string[],
   podValue: PODValue
@@ -66,6 +88,15 @@ export function safeCheckPODValue(
   return SUCCESS(podValue);
 }
 
+/**
+ * Wraps {@link checkBigintBounds} in a ParseResult, rather than throwing an exception.
+ *
+ * @param path The path leading to this value.
+ * @param podValue The value to check.
+ * @param min The minimum value for the range.
+ * @param max The maximum value for the range.
+ * @returns A ParseResult containing either a valid result or list of issues.
+ */
 export function safeCheckBigintBounds<
   T extends PODCryptographicValue | PODIntValue
 >(path: string[], podValue: T, min: bigint, max: bigint): ParseResult<T> {
@@ -85,6 +116,13 @@ export function safeCheckBigintBounds<
   return SUCCESS(podValue);
 }
 
+/**
+ * Wraps {@link checkPublicKeyFormat} in a ParseResult, rather than throwing an exception.
+ *
+ * @param path The path leading to this value.
+ * @param podValue The value to check.
+ * @returns A ParseResult containing either a valid result or list of issues.
+ */
 export function safeCheckPublicKeyFormat(
   path: string[],
   podValue: PODEdDSAPublicKeyValue
@@ -104,10 +142,26 @@ export function safeCheckPublicKeyFormat(
   return SUCCESS(podValue);
 }
 
+/**
+ * Checks if two PODValues are equal.
+ *
+ * @param a The first value to compare.
+ * @param b The second value to compare.
+ * @returns True if the values are equal, false otherwise.
+ */
 export function isEqualPODValue(a: PODValue, b: PODValue): boolean {
   return a.type === b.type && a.value === b.value;
 }
 
+/**
+ * Checks if a PODValue is a member of a list of PODValues.
+ *
+ * @param schema The schema to check against.
+ * @param value The value to check.
+ * @param options The parse options.
+ * @param path The path leading to this value.
+ * @returns A ParseResult containing either a valid result or list of issues.
+ */
 export function safeMembershipChecks<
   S extends DefinedEntrySchema,
   T extends PODValue
@@ -156,6 +210,16 @@ export function safeMembershipChecks<
   return issues.length > 0 ? FAILURE(issues) : SUCCESS(value);
 }
 
+/**
+ * Checks if the tuples specified for a set of entries match the values of
+ * the entries provided.
+ *
+ * @param output The output to check.
+ * @param tupleSchema The schema to check against.
+ * @param options The parse options.
+ * @param path The path leading to this value.
+ * @returns A ParseResult containing either a valid result or list of issues.
+ */
 export function safeCheckTuple<E extends EntriesSchema>(
   output: Record<string, PODValue>,
   tupleSchema: PODTupleSchema<E>,
@@ -233,6 +297,9 @@ export function safeCheckTuple<E extends EntriesSchema>(
   return issues.length > 0 ? FAILURE(issues) : SUCCESS(output);
 }
 
+/**
+ * Mapping of PODValue types to their TypeScript native equivalents.
+ */
 export type PODValueNativeTypes = {
   string: string;
   int: bigint;
@@ -240,7 +307,10 @@ export type PODValueNativeTypes = {
   eddsa_pubkey: string;
 };
 
-export type PODValueTypeToPODValue = {
+/**
+ * Mapping of PODValue type names to their PODValue data types.
+ */
+export type PODValueTypeNameToPODValue = {
   string: PODStringValue;
   int: PODIntValue;
   cryptographic: PODCryptographicValue;

@@ -9,17 +9,31 @@ import { DEFAULT_ENTRIES_PARSE_OPTIONS } from "./entries.js";
 import {
   FAILURE,
   ParseResult,
-  PODValueTypeToPODValue,
+  PODValueTypeNameToPODValue,
   safeCheckPODValue,
   safeMembershipChecks,
   SUCCESS
 } from "./parseUtils.js";
 
+/**
+ * Options controlling how parsing of a single entry is performed.
+ */
 export interface EntryParseOptions {
   exitEarly?: boolean;
   coerce?: boolean;
 }
 
+/**
+ * Parses a single entry according to a given schema.
+ *
+ * @param schema The schema for the entry
+ * @param input Input values for parsing
+ * @param options Options controlling how parsing of entries is performed.
+ * @param path The path leading to this object.
+ * @param typeValidator A function that validates the type of the input.
+ * @param coercer A function that coerces the input to the correct type.
+ * @returns A ParseResult containing either a valid result or list of issues.
+ */
 export function parseEntry<S extends DefinedEntrySchema>(
   schema: S,
   input: unknown,
@@ -28,9 +42,9 @@ export function parseEntry<S extends DefinedEntrySchema>(
   typeValidator: (
     data: unknown,
     path: string[]
-  ) => ParseResult<PODValueTypeToPODValue[S["type"]]>,
+  ) => ParseResult<PODValueTypeNameToPODValue[S["type"]]>,
   coercer: (data: unknown) => unknown
-): ParseResult<PODValueTypeToPODValue[S["type"]]> {
+): ParseResult<PODValueTypeNameToPODValue[S["type"]]> {
   const issues: PodspecIssue[] = [];
 
   const checkedType = typeValidator(
