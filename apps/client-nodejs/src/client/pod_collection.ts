@@ -1,37 +1,26 @@
-import { PODQuery, SubscriptionUpdateResult } from "@parcnet/client-rpc";
+import * as p from "@parcnet/podspec";
 import { POD } from "@pcd/pod";
 import { EventEmitter } from "eventemitter3";
 
-interface Subscription {
-  query: PODQuery;
-  serial: number;
+type PODQuery = ReturnType<typeof p.pod>;
+
+export interface PODCollectionUpdate {
+  type: "insert" | "delete";
+  affectedPOD: POD;
+}
+
+interface PODCollectionEvents {
+  update: [update: PODCollectionUpdate];
 }
 
 export class PODCollection {
-  private pods: POD[] = [];
-  private subscriptions: Map<string, Subscription> = new Map();
-  private emitter = new EventEmitter();
-  private nextSubscriptionId = 0;
+  private emitter = new EventEmitter<PODCollectionEvents>();
+
+  constructor(private pods: POD[] = []) {}
 
   public insert(pod: POD): void {
     this.pods.push(pod);
-
-    for (const [id, sub] of this.subscriptions.entries()) {
-      const result = sub.query.query([pod]);
-      if (result.matches.length > 0) {
-        this.emitter.emit(
-          "subscription-updated",
-          {
-            update: sub.query
-              .query(this.pods)
-              .matches.map((pod) => pod.serialize()),
-            subscriptionId: id
-          },
-          sub.serial
-        );
-        sub.serial++;
-      }
-    }
+    this.emitter.emit("update", { type: "insert", affectedPOD: pod });
   }
 
   public delete(signature: string): void {
@@ -44,47 +33,21 @@ export class PODCollection {
     });
 
     if (podToDelete) {
-      for (const [id, sub] of this.subscriptions.entries()) {
-        const result = sub.query.query([podToDelete]);
-        if (result.matches.length > 0) {
-          this.emitter.emit(
-            "subscription-updated",
-            {
-              update: sub.query
-                .query(this.pods)
-                .matches.map((pod) => pod.serialize()),
-              subscriptionId: id
-            },
-            sub.serial
-          );
-          sub.serial++;
-        }
-      }
-    }
-
-    if (podToDelete) {
       this.pods = newCollection;
+      this.emitter.emit("update", { type: "delete", affectedPOD: podToDelete });
     }
   }
 
   public query(query: PODQuery): POD[] {
+    console.log(query);
     return query.query(this.pods).matches;
   }
 
-  public async subscribe(query: PODQuery): Promise<string> {
-    const subscriptionId = (this.nextSubscriptionId++).toString();
-    this.subscriptions.set(subscriptionId, { query, serial: 0 });
-
-    return subscriptionId;
+  public onUpdate(listener: (update: PODCollectionUpdate) => void): void {
+    this.emitter.addListener("update", listener);
   }
 
-  public unsubscribe(subscriptionId: string): void {
-    this.subscriptions.delete(subscriptionId);
-  }
-
-  public onSubscriptionUpdated(
-    callback: (update: SubscriptionUpdateResult, serial: number) => void
-  ): void {
-    this.emitter.on("subscription-updated", callback);
+  public getAll(): POD[] {
+    return this.pods;
   }
 }

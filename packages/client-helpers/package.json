@@ -24,7 +24,7 @@
     }
   },
   "scripts": {
-    "build": "tsup 'src/**/*@(ts|tsx)' --format cjs,esm --clean --sourcemap ",
+    "build": "tsup 'src/**/*@(ts|tsx)' --format cjs,esm --clean --sourcemap",
     "prepublish": "tsup 'src/**/*@(ts|tsx)' --format cjs,esm --clean --sourcemap --dts",
     "lint": "eslint . --max-warnings 0"
   },
