@@ -35,6 +35,7 @@ function generateRandomHex(byteLength: number): string {
 function generateKeyPair(): { privateKey: string; publicKey: string } {
   const privateKey = generateRandomHex(32);
   const publicKey = encodePublicKey(
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     derivePublicKey(decodePrivateKey(privateKey))
   );
   return { privateKey, publicKey };
