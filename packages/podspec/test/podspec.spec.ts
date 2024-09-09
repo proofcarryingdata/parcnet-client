@@ -12,7 +12,12 @@ import crypto from "crypto";
 import "mocha";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
-import { IssueCode, PodspecIssue } from "../src/error.js";
+import {
+  IssueCode,
+  PodspecNotInListIssue,
+  PodspecNotInRangeIssue,
+  PodspecNotInTupleListIssue
+} from "../src/error.js";
 import * as p from "../src/index.js";
 import { EntriesTupleSchema } from "../src/schemas/entries.js";
 import { $i, $s } from "../src/utils.js";
@@ -198,7 +203,7 @@ describe("podspec should work", function () {
         max: 10n,
         value: 11n,
         path: ["foo"]
-      } satisfies PodspecIssue
+      } satisfies PodspecNotInRangeIssue
     ]);
   });
 
@@ -227,7 +232,7 @@ describe("podspec should work", function () {
         value: { type: "string", value: "not in list" },
         list: $s(["test", "other_string"]),
         path: ["foo"]
-      } satisfies PodspecIssue
+      } satisfies PodspecNotInListIssue
     ]);
   });
 
@@ -259,7 +264,7 @@ describe("podspec should work", function () {
         value: { type: "int", value: 4n },
         list: $i([1n, 2n, 3n]),
         path: ["foo"]
-      } satisfies PodspecIssue
+      } satisfies PodspecNotInListIssue
     ]);
   });
 
@@ -317,7 +322,7 @@ describe("podspec should work", function () {
             ]
           ],
           path: ["$tuples", "0"]
-        } satisfies PodspecIssue
+        } satisfies PodspecNotInTupleListIssue
       ]);
     }
     {
@@ -344,7 +349,7 @@ describe("podspec should work", function () {
             ]
           ],
           path: ["$tuples", "0"]
-        } satisfies PodspecIssue
+        } satisfies PodspecNotInTupleListIssue
       ]);
     }
   });

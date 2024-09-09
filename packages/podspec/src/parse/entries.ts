@@ -1,10 +1,10 @@
 import { checkPODName, PODEntries, PODValue } from "@pcd/pod";
 import {
   IssueCode,
+  PodspecBaseIssue,
   PodspecError,
   PodspecInvalidEntryNameIssue,
   PodspecInvalidTypeIssue,
-  PodspecIssue,
   PodspecMissingEntryIssue,
   PodspecUnexpectedInputEntryIssue
 } from "../error.js";
@@ -158,7 +158,7 @@ export function safeParseEntries<E extends EntriesSchema>(
   }
 
   const output: PODEntries = {};
-  const issues: PodspecIssue[] = [];
+  const issues: PodspecBaseIssue[] = [];
 
   for (const [name, entry] of Object.entries(schema)) {
     const isOptional = entry.type === "optional";
@@ -211,7 +211,7 @@ export function safeParseEntries<E extends EntriesSchema>(
       }
     }
 
-    let entrySchema: EntrySchema = schema[key] as EntrySchema;
+    let entrySchema: EntrySchema = schema[key]!;
     if (entrySchema.type === "optional") {
       entrySchema = entrySchema.innerType;
     }

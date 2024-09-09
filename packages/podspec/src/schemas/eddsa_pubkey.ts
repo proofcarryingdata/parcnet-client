@@ -33,13 +33,12 @@ export function checkPODEdDSAPublicKeyValue(
     data.type !== "eddsa_pubkey" ||
     typeof data.value !== "string"
   ) {
-    return FAILURE([
-      {
-        code: IssueCode.invalid_type,
-        expectedType: "eddsa_pubkey",
-        path: path
-      } satisfies PodspecInvalidTypeIssue
-    ]);
+    const issue = {
+      code: IssueCode.invalid_type,
+      expectedType: "eddsa_pubkey",
+      path: path
+    } satisfies PodspecInvalidTypeIssue;
+    return FAILURE([issue]);
   }
 
   return safeCheckPublicKeyFormat(path, data as PODEdDSAPublicKeyValue);

@@ -29,13 +29,12 @@ export function checkPODStringValue(
     data.type !== "string" ||
     typeof data.value !== "string"
   ) {
-    return FAILURE([
-      {
-        code: IssueCode.invalid_type,
-        expectedType: "string",
-        path: path
-      } satisfies PodspecInvalidTypeIssue
-    ]);
+    const issue = {
+      code: IssueCode.invalid_type,
+      expectedType: "string",
+      path: path
+    } satisfies PodspecInvalidTypeIssue;
+    return FAILURE([issue]);
   }
 
   return SUCCESS(data as PODStringValue);

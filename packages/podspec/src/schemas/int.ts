@@ -35,13 +35,12 @@ export function checkPODIntValue(
     data.type !== "int" ||
     typeof data.value !== "bigint"
   ) {
-    return FAILURE([
-      {
-        code: IssueCode.invalid_type,
-        expectedType: "int",
-        path: path
-      } satisfies PodspecInvalidTypeIssue
-    ]);
+    const issue = {
+      code: IssueCode.invalid_type,
+      expectedType: "int",
+      path: path
+    } satisfies PodspecInvalidTypeIssue;
+    return FAILURE([issue]);
   }
 
   return safeCheckBigintBounds(

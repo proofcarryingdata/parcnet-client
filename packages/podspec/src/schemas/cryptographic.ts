@@ -42,13 +42,12 @@ export function checkPODCryptographicValue(
     data.type !== "cryptographic" ||
     typeof data.value !== "bigint"
   ) {
-    return FAILURE([
-      {
-        code: IssueCode.invalid_type,
-        expectedType: "cryptographic",
-        path: path
-      } satisfies PodspecInvalidTypeIssue
-    ]);
+    const issue = {
+      code: IssueCode.invalid_type,
+      expectedType: "cryptographic",
+      path: path
+    } satisfies PodspecInvalidTypeIssue;
+    return FAILURE([issue]);
   }
 
   return safeCheckBigintBounds(

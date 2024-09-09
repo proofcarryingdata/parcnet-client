@@ -3,7 +3,11 @@ import {
   PODCryptographicValue,
   PODIntValue
 } from "@pcd/pod";
-import { IssueCode, PodspecIssue, PodspecNotInRangeIssue } from "../error.js";
+import {
+  IssueCode,
+  PodspecBaseIssue,
+  PodspecNotInRangeIssue
+} from "../error.js";
 import { DefinedEntrySchema } from "../schemas/entry.js";
 import { DEFAULT_ENTRIES_PARSE_OPTIONS } from "./entries.js";
 import {
@@ -45,7 +49,7 @@ export function parseEntry<S extends DefinedEntrySchema>(
   ) => ParseResult<PODValueTypeNameToPODValue[S["type"]]>,
   coercer: (data: unknown) => unknown
 ): ParseResult<PODValueTypeNameToPODValue[S["type"]]> {
-  const issues: PodspecIssue[] = [];
+  const issues: PodspecBaseIssue[] = [];
 
   const checkedType = typeValidator(
     options.coerce ? coercer(input) : input,

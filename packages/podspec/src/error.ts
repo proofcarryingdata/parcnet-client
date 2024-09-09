@@ -167,27 +167,6 @@ export interface PodspecUnexpectedInputEntryIssue extends PodspecBaseIssue {
 }
 
 /**
- * Union of all the possible issues that can occur when validating a POD
- * against a Podspec.
- */
-export type PodspecIssue =
-  | PodspecInvalidTypeIssue
-  | PodspecNotInListIssue
-  | PodspecExcludedByListIssue
-  | PodspecNotInRangeIssue
-  | PodspecMissingEntryIssue
-  | PodspecInvalidEntryNameIssue
-  | PodspecInvalidTupleEntryIssue
-  | PodspecNotInTupleListIssue
-  | PodspecExcludedByTupleListIssue
-  | PodspecSignerNotInListIssue
-  | PodspecSignerExcludedByListIssue
-  | PodspecSignatureNotInListIssue
-  | PodspecSignatureExcludedByListIssue
-  | PodspecInvalidPodValueIssue
-  | PodspecUnexpectedInputEntryIssue;
-
-/**
  * Exception class for errors that occur when parsing.
  */
 export class PodspecError extends Error {

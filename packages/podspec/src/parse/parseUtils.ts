@@ -10,11 +10,11 @@ import {
 } from "@pcd/pod";
 import {
   IssueCode,
+  PodspecBaseIssue,
   PodspecExcludedByListIssue,
   PodspecExcludedByTupleListIssue,
   PodspecInvalidPodValueIssue,
   PodspecInvalidTupleEntryIssue,
-  PodspecIssue,
   PodspecNotInListIssue,
   PodspecNotInTupleListIssue
 } from "../error.js";
@@ -30,7 +30,7 @@ type ParseSuccess<T> = {
 };
 
 type ParseFailure = {
-  issues: PodspecIssue[];
+  issues: PodspecBaseIssue[];
   isValid: false;
 };
 
@@ -45,7 +45,7 @@ export type ParseResult<T> = ParseSuccess<T> | ParseFailure;
  * @param errors The issues to include in the failure.
  * @returns A ParseFailure containing the issues.
  */
-export function FAILURE(errors: PodspecIssue[]): ParseFailure {
+export function FAILURE(errors: PodspecBaseIssue[]): ParseFailure {
   return { isValid: false, issues: errors ?? [] };
 }
 
@@ -171,7 +171,7 @@ export function safeMembershipChecks<
   options: EntryParseOptions,
   path: string[]
 ): ParseResult<T> {
-  const issues: PodspecIssue[] = [];
+  const issues: PodspecBaseIssue[] = [];
   const isMatchingValue = (otherValue: PODValue): boolean =>
     isEqualPODValue(value, otherValue);
 
@@ -226,7 +226,7 @@ export function safeCheckTuple<E extends EntriesSchema>(
   options: EntriesParseOptions<E>,
   path: string[]
 ): ParseResult<Record<string, PODValue>> {
-  const issues: PodspecIssue[] = [];
+  const issues: PodspecBaseIssue[] = [];
   const outputKeys = Object.keys(output);
   const tuple: PODValue[] = [];
   let validTuple = true;
@@ -246,15 +246,13 @@ export function safeCheckTuple<E extends EntriesSchema>(
       }
       validTuple = false;
     }
-    tuple.push(output[entryKey] as PODValue);
+    tuple.push(output[entryKey]!);
   }
 
   if (validTuple) {
     if (tupleSchema.isMemberOf) {
       const matched = tupleSchema.isMemberOf.some((tupleToCheck) =>
-        tupleToCheck.every((val, index) =>
-          isEqualPODValue(val, tuple[index] as PODValue)
-        )
+        tupleToCheck.every((val, index) => isEqualPODValue(val, tuple[index]!))
       );
       if (!matched) {
         const issue: PodspecNotInTupleListIssue = {
@@ -273,9 +271,7 @@ export function safeCheckTuple<E extends EntriesSchema>(
 
     if (tupleSchema.isNotMemberOf && tupleSchema.isNotMemberOf.length > 0) {
       const matched = tupleSchema.isNotMemberOf.some((tupleToCheck) =>
-        tupleToCheck.every((val, index) =>
-          isEqualPODValue(val, tuple[index] as PODValue)
-        )
+        tupleToCheck.every((val, index) => isEqualPODValue(val, tuple[index]!))
       );
 
       if (matched) {
