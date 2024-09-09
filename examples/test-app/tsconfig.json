@@ -7,6 +7,7 @@
     "module": "ES2020",
     "moduleResolution": "Bundler",
     "esModuleInterop": true,
+    "strict": true,
     "sourceMap": true
   },
   "include": ["**/*.ts", "**/*.tsx"],

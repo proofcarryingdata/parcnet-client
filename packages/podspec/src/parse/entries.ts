@@ -63,6 +63,31 @@ export interface EntriesParseOptions<E extends EntriesSchema> {
   tuples?: EntriesTupleSchema<E>[];
 }
 
+const VALID_ENTRY_SCHEMA_TYPES = [
+  "int",
+  "string",
+  "cryptographic",
+  "eddsa_pubkey",
+  "optional"
+] as const;
+
+type ValidEntrySchemaType = (typeof VALID_ENTRY_SCHEMA_TYPES)[number];
+
+// Type assertion to ensure ValidEntrySchemaType matches EntrySchema["type"]
+type AssertEntrySchemaType = ValidEntrySchemaType extends EntrySchema["type"]
+  ? EntrySchema["type"] extends ValidEntrySchemaType
+    ? true
+    : false
+  : false;
+
+// This will cause a compile-time error if the types don't match
+const _: AssertEntrySchemaType = true;
+
+// Runtime check function
+function isValidEntryType(type: string): type is EntrySchema["type"] {
+  return (VALID_ENTRY_SCHEMA_TYPES as readonly string[]).includes(type);
+}
+
 /**
  * A specification for a set of entries.
  */
@@ -72,7 +97,17 @@ export class EntriesSpec<E extends EntriesSchema> {
    *
    * @param schema The schema to use for this set of entries.
    */
-  private constructor(public readonly schema: E) {}
+  private constructor(public readonly schema: E) {
+    for (const [name, entry] of Object.entries(schema)) {
+      const entryType =
+        entry.type === "optional" ? entry.innerType.type : entry.type;
+      if (!isValidEntryType(entryType)) {
+        throw new Error(
+          `Entry ${name} contains invalid entry type: ${entryType as string}`
+        );
+      }
+    }
+  }
 
   /**
    * Parse entries without throwing an exception.
