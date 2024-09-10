@@ -5,7 +5,7 @@ export function cn(...classes: string[]): string {
 }
 
 export const DEFAULT_CONNECTION_INFO: ClientConnectionInfo = {
-  url: process.env.CLIENT_URL || "https://staging-rob.zupass.org",
+  url: process.env.CLIENT_URL ?? "https://staging-rob.zupass.org",
   type: (["iframe", "websocket"].includes(process.env.CLIENT_TYPE)
     ? process.env.CLIENT_TYPE
     : "iframe") as "iframe" | "websocket"

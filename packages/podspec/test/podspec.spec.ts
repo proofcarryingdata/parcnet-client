@@ -7,11 +7,10 @@ import {
   POD_INT_MIN
 } from "@pcd/pod";
 import { derivePublicKey } from "@zk-kit/eddsa-poseidon";
-import { assert, expect } from "chai";
 import crypto from "crypto";
-import "mocha";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
+import { assert, describe, expect, it } from "vitest";
 import {
   IssueCode,
   PodspecNotInListIssue,
@@ -35,14 +34,13 @@ function generateRandomHex(byteLength: number): string {
 function generateKeyPair(): { privateKey: string; publicKey: string } {
   const privateKey = generateRandomHex(32);
   const publicKey = encodePublicKey(
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     derivePublicKey(decodePrivateKey(privateKey))
   );
   return { privateKey, publicKey };
 }
 
-describe("podspec should work", function () {
-  it("should validate POD entries", function () {
+describe.concurrent("podspec should work", function () {
+  it("should validate POD entries", () => {
     const entriesSpec = p.entries({
       firstName: {
         type: "string",

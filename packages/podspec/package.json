@@ -11,7 +11,7 @@
     "lint": "eslint . --max-warnings 0",
     "build": "tsup 'src/**/*@(ts|tsx)' --format cjs,esm --clean --sourcemap",
     "prepublish": "tsup 'src/**/*@(ts|tsx)' --format cjs,esm --clean --sourcemap --dts",
-    "test": "mocha --loader=tsx --exit 'test/**/*.spec.ts'"
+    "test": "vitest run"
   },
   "files": [
     "dist",
@@ -26,15 +26,12 @@
     "@parcnet/eslint-config": "workspace:*",
     "@parcnet/typescript-config": "workspace:*",
     "@pcd/proto-pod-gpc-artifacts": "^0.5.0",
-    "@types/chai": "^4.3.5",
-    "@types/mocha": "^10.0.1",
     "@types/uuid": "^9.0.0",
     "@zk-kit/eddsa-poseidon": "1.0.2",
-    "mocha": "^10.2.0",
     "tsup": "^8.2.4",
-    "tsx": "^4.19.0",
     "typescript": "^5.5",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "vitest": "^2.0.5"
   },
   "publishConfig": {
     "access": "public",

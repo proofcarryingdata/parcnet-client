@@ -1,0 +1,81 @@
+diff --git a/lib/esm/index.d.ts b/lib/esm/index.d.ts
+index feb3646d316d8cd3cd2a0ab9db8d529af15ecf08..46c94886d8dd85c291955cdbc144b2d346c9de4d 100644
+--- a/lib/esm/index.d.ts
++++ b/lib/esm/index.d.ts
+@@ -1,40 +1,40 @@
+ declare const _default: {
+     types: {
+-        default: import("./toast").ToastOptions;
+-        getType(name: string): import("./toast").ToastOptions;
+-        setType(name: string, type: Partial<import("./toast").ToastOptions>): void;
++        default: import("./toast.js").ToastOptions;
++        getType(name: string): import("./toast.js").ToastOptions;
++        setType(name: string, type: Partial<import("./toast.js").ToastOptions>): void;
+     };
+-    create: (message: string | null | undefined, options?: Partial<import("./toast").ToastOptions>) => Promise<{
++    create: (message: string | null | undefined, options?: Partial<import("./toast.js").ToastOptions>) => Promise<{
+         text: string;
+         value: any;
+         color?: string | undefined;
+         bgColor?: string | undefined;
+     }>;
+-    info: (message: string | null | undefined, options?: Partial<import("./toast").ToastOptions>) => Promise<{
++    info: (message: string | null | undefined, options?: Partial<import("./toast.js").ToastOptions>) => Promise<{
+         text: string;
+         value: any;
+         color?: string | undefined;
+         bgColor?: string | undefined;
+     }>;
+-    warning: (message: string | null | undefined, options?: Partial<import("./toast").ToastOptions>) => Promise<{
++    warning: (message: string | null | undefined, options?: Partial<import("./toast.js").ToastOptions>) => Promise<{
+         text: string;
+         value: any;
+         color?: string | undefined;
+         bgColor?: string | undefined;
+     }>;
+-    success: (message: string | null | undefined, options?: Partial<import("./toast").ToastOptions>) => Promise<{
++    success: (message: string | null | undefined, options?: Partial<import("./toast.js").ToastOptions>) => Promise<{
+         text: string;
+         value: any;
+         color?: string | undefined;
+         bgColor?: string | undefined;
+     }>;
+-    error: (message: string | null | undefined, options?: Partial<import("./toast").ToastOptions>) => Promise<{
++    error: (message: string | null | undefined, options?: Partial<import("./toast.js").ToastOptions>) => Promise<{
+         text: string;
+         value: any;
+         color?: string | undefined;
+         bgColor?: string | undefined;
+     }>;
+-    system: (message: string | null | undefined, options?: Partial<import("./toast").ToastOptions>) => Promise<{
++    system: (message: string | null | undefined, options?: Partial<import("./toast.js").ToastOptions>) => Promise<{
+         text: string;
+         value: any;
+         color?: string | undefined;
+diff --git a/lib/esm/index.js b/lib/esm/index.js
+index b695aac7f99377ed26a1a37b9caf18dc63bbec83..b0360a51a6426070371f6760392550712a22528a 100644
+--- a/lib/esm/index.js
++++ b/lib/esm/index.js
+@@ -1,4 +1,4 @@
+-import { ToastTypes as types, create, info, warning, success, error, system } from "./toast";
++import { ToastTypes as types, create, info, warning, success, error, system } from "./toast.js";
+ export default {
+     types,
+     create,
+diff --git a/package.json b/package.json
+index 7a770e6421b650e4b6907e8c185cb9cbbf1236de..36ae33af08bee3c5dd5ac5877d174bb7a3feebbb 100644
+--- a/package.json
++++ b/package.json
+@@ -1,8 +1,10 @@
+ {
+   "name": "@brenoroosevelt/toast",
+   "version": "2.0.3",
+-  "main": "./lib/cjs/index.js",
+-  "module": "./lib/esm/index.js",
++  "exports": {
++    "import": "./lib/esm/index.js",
++    "require": "./lib/cjs/index.js"
++  },
+   "type": "module",
+   "keywords": ["snack bar", "notification", "toast", "notify", "popup", "alert"],
+   "files": [

@@ -1,5 +1,5 @@
 import { RPCMessageType } from "@parcnet/client-rpc";
-import { expect } from "chai";
+import { expect } from "vitest";
 import { DialogController, postRPCMessage } from "../src/index.js";
 import { ParcnetRPCConnector } from "../src/rpc_client.js";
 

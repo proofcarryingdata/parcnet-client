@@ -84,7 +84,7 @@ export class ParcnetRPCConnector implements ParcnetRPC, ParcnetEvents {
    * @param args - The arguments to pass to the method.
    * @returns A promise that resolves to the method's return value.
    */
-  #typedInvoke<
+  async #typedInvoke<
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     A extends ZodTuple<any, any>,
     R extends ZodTypeAny,
@@ -96,12 +96,12 @@ export class ParcnetRPCConnector implements ParcnetRPC, ParcnetEvents {
   ): Promise<z.infer<ReturnType<F["returnType"]>>> {
     const result = this.#invoke(fn, args);
     // Ensure that the result is of the expected type
-    // Note that we are passing the promise here, and it will be awaited on
-    // by safeParse.
     const parsedResult = functionSchema.returnType().safeParse(result);
     if (parsedResult.success) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const result = await parsedResult.data;
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-      return parsedResult.data;
+      return result;
     } else {
       throw new Error(
         `Failed to parse result for ${fn}: ${parsedResult.error.message}`

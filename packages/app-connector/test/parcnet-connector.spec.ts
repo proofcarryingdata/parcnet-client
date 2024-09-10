@@ -6,10 +6,8 @@ import {
 } from "@parcnet/client-rpc";
 import * as p from "@parcnet/podspec";
 import { POD } from "@pcd/pod";
-import { assert, expect, use } from "chai";
-import chaiAsPromised from "chai-as-promised";
 import crypto from "crypto";
-import "mocha";
+import { assert, describe, expect, it } from "vitest";
 import { ZodError } from "zod";
 import { postRPCMessage } from "../src/index.js";
 import { ParcnetRPCConnector } from "../src/rpc_client.js";
@@ -20,18 +18,15 @@ function generateRandomHex(byteLength: number): string {
   return randomBytes.toString("hex");
 }
 
-// eslint-disable-next-line react-hooks/rules-of-hooks
-use(chaiAsPromised);
-
 describe("parcnet-client should work", function () {
-  it("parcnet-client should throw when not connected", function () {
+  it("parcnet-client should throw when not connected", async function () {
     const chan = new MessageChannel();
 
     const client = new ParcnetRPCConnector(chan.port2, mockDialog);
 
-    expect(
-      client.identity.getSemaphoreV3Commitment()
-    ).to.eventually.be.rejectedWith("Client is not connected");
+    await expect(async () => {
+      await client.identity.getSemaphoreV3Commitment();
+    }).rejects.toThrow("Client is not connected");
   });
 
   it("parcnet-client should connect", async function () {
@@ -74,7 +69,7 @@ describe("parcnet-client should work", function () {
       result: BigInt("1")
     });
 
-    expect(promise).to.eventually.equal(BigInt("1"));
+    await expect(promise).resolves.toBe(BigInt("1"));
   });
 
   it("zupass-client should throw an exception if an incorrect response is received", async function () {
@@ -96,7 +91,7 @@ describe("parcnet-client should work", function () {
       result: "INCORRECT" // Not a BigInt
     });
 
-    await expect(promise).to.be.rejectedWith(ZodError);
+    await expect(promise).rejects.toThrow(ZodError);
   });
 
   it("should notify when a subscription is updated", async function () {
@@ -116,7 +111,7 @@ describe("parcnet-client should work", function () {
       }
     });
 
-    const subscriptionId = client.pod.subscribe(query.schema);
+    const subscriptionPromise = client.pod.subscribe(query.schema);
 
     postRPCMessage(chan.port1, {
       type: RPCMessageType.PARCNET_CLIENT_INVOKE_RESULT,
@@ -125,7 +120,7 @@ describe("parcnet-client should work", function () {
     } satisfies RPCMessage);
 
     // Wait for the RPC call creating the subscription to complete
-    await expect(subscriptionId).to.eventually.equal("test");
+    await expect(subscriptionPromise).resolves.toBe("test");
 
     const waitForUpdatePromise = new Promise((resolve) => {
       client.on("subscription-update", (result: SubscriptionUpdateResult) => {
@@ -141,7 +136,7 @@ describe("parcnet-client should work", function () {
     } satisfies RPCMessage);
 
     // Wait for the subscription update to be received
-    await expect(waitForUpdatePromise).to.eventually.eql({
+    await expect(waitForUpdatePromise).resolves.toMatchObject({
       subscriptionId: "test",
       update: [serializedPod]
     });

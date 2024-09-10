@@ -15,7 +15,8 @@
     "knip": "^5.29.2",
     "prettier": "^3.2.5",
     "turbo": "^2.0.14",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "vitest": "^2.0.5"
   },
   "packageManager": "pnpm@8.15.6",
   "engines": {
@@ -26,7 +27,8 @@
   },
   "pnpm": {
     "patchedDependencies": {
-      "@zk-kit/eddsa-poseidon@1.0.2": "patches/@zk-kit__eddsa-poseidon@1.0.2.patch"
+      "@zk-kit/eddsa-poseidon@1.0.2": "patches/@zk-kit__eddsa-poseidon@1.0.2.patch",
+      "@brenoroosevelt/toast": "patches/@brenoroosevelt__toast.patch"
     }
   }
 }
