@@ -5,7 +5,7 @@ import { EntriesSchema } from "./entries.js";
  * Schema for a tuple of entries.
  */
 export type PODTupleSchema<E extends EntriesSchema> = {
-  entries: (keyof (E & { $signerPublicKey: never }))[];
+  entries: (keyof (E & { $signerPublicKey: never }) & string)[];
   isMemberOf?: PODValue[][];
   isNotMemberOf?: PODValue[][];
 };

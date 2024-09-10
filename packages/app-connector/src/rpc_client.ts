@@ -13,7 +13,7 @@ import {
   RPCMessageType,
   SubscriptionUpdateResult
 } from "@parcnet/client-rpc";
-import { PodspecProofRequest } from "@parcnet/podspec";
+import { EntriesSchema, PodspecProofRequest } from "@parcnet/podspec";
 import { GPCProof, GPCRevealedClaims } from "@pcd/gpc";
 import { EventEmitter } from "eventemitter3";
 import { z, ZodFunction, ZodTuple, ZodTypeAny } from "zod";
@@ -115,7 +115,9 @@ export class ParcnetRPCConnector implements ParcnetRPC, ParcnetEvents {
     this.#emitter = new EventEmitter();
 
     this.pod = {
-      query: async (query: PODQuery): Promise<string[]> => {
+      query: async <E extends EntriesSchema>(
+        query: PODQuery<E>
+      ): Promise<string[]> => {
         return this.#typedInvoke(
           "pod.query",
           [query],
@@ -136,7 +138,9 @@ export class ParcnetRPCConnector implements ParcnetRPC, ParcnetEvents {
           ParcnetRPCSchema.shape.pod.shape.delete
         );
       },
-      subscribe: async (query: PODQuery): Promise<string> => {
+      subscribe: async <E extends EntriesSchema>(
+        query: PODQuery<E>
+      ): Promise<string> => {
         return this.#typedInvoke(
           "pod.subscribe",
           [query],

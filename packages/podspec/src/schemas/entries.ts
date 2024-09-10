@@ -10,7 +10,7 @@ export type EntriesSchema = Record<string, EntrySchema>;
  * Schema for a tuple of entries.
  */
 export type EntriesTupleSchema<E extends EntriesSchema> = {
-  entries: (keyof E)[];
+  entries: (keyof E & string)[];
   isMemberOf?: PODValue[][];
   isNotMemberOf?: PODValue[][];
 };
