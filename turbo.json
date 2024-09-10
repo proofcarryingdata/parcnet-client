@@ -6,15 +6,18 @@
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": ["dist/**"],
-      "cache": true
+      "cache": true,
+      "outputLogs": "new-only"
     },
     "lint": {
-      "dependsOn": [],
-      "cache": true
+      "dependsOn": ["^build"],
+      "cache": true,
+      "outputLogs": "new-only"
     },
     "test": {
-      "dependsOn": [],
-      "cache": false
+      "dependsOn": ["^build"],
+      "cache": true,
+      "outputLogs": "new-only"
     },
     "dev": {
       "cache": false,
