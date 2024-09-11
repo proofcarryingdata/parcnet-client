@@ -38,4 +38,4 @@ yarn-error.log*
 *.pem
 mprocs.log
 
-docs
+./docs
