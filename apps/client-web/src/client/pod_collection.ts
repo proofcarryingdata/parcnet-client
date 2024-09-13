@@ -2,8 +2,6 @@ import * as p from "@parcnet/podspec";
 import { POD } from "@pcd/pod";
 import { EventEmitter } from "eventemitter3";
 
-type PODQuery = ReturnType<typeof p.pod>;
-
 export interface PODCollectionUpdate {
   type: "insert" | "delete";
   affectedPOD: POD;
@@ -38,9 +36,9 @@ export class PODCollection {
     }
   }
 
-  public query(query: PODQuery): POD[] {
+  public query<E extends p.EntriesSchema>(query: p.PODSchema<E>): POD[] {
     console.log(query);
-    return query.query(this.pods).matches;
+    return p.pod(query).query(this.pods).matches;
   }
 
   public onUpdate(listener: (update: PODCollectionUpdate) => void): void {

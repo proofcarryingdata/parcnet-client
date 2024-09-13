@@ -28,7 +28,9 @@ export type ProofRequest = {
  * A PodspecProofRequest allows us to generate a {@link ProofRequest} from a
  * set of Podspecs defining the allowable PODs.
  */
-export interface PodspecProofRequest<P extends Record<string, object>> {
+export interface PodspecProofRequest<
+  P extends Record<string, object> = Record<string, PODSchema<EntriesSchema>>
+> {
   pods: Readonly<{
     [K in keyof P]: P[K] extends PODSchema<infer T>
       ? P[K] & PODSchema<T>

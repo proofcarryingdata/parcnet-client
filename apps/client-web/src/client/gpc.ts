@@ -1,14 +1,9 @@
 import { ConnectorAdvice } from "@parcnet/client-helpers";
-import {
-  ParcnetGPCRPC,
-  ParcnetRPCSchema,
-  ProveResult
-} from "@parcnet/client-rpc";
+import { ParcnetGPCRPC, ProveResult } from "@parcnet/client-rpc";
 import { PodspecProofRequest, proofRequest } from "@parcnet/podspec";
 import { Dispatch } from "react";
 import { ClientAction } from "../state";
 import { PODCollection } from "./pod_collection";
-import { validateInput } from "./utils";
 
 export class ParcnetGPCProcessor implements ParcnetGPCRPC {
   public constructor(
@@ -17,7 +12,6 @@ export class ParcnetGPCProcessor implements ParcnetGPCRPC {
     private readonly advice: ConnectorAdvice
   ) {}
 
-  @validateInput(ParcnetRPCSchema.shape.gpc.shape.canProve)
   public async canProve(request: PodspecProofRequest): Promise<boolean> {
     const prs = proofRequest(request);
 
@@ -31,7 +25,6 @@ export class ParcnetGPCProcessor implements ParcnetGPCRPC {
     return true;
   }
 
-  @validateInput(ParcnetRPCSchema.shape.gpc.shape.prove)
   public async prove(request: PodspecProofRequest): Promise<ProveResult> {
     const prs = proofRequest(request);
 

@@ -1,4 +1,5 @@
 import { PodspecProofRequest } from "@parcnet/podspec";
+import JSONBig from "json-bigint";
 import { ReactNode, useState } from "react";
 import { ProveResult } from "../../../../packages/client-rpc/src";
 import { TryIt } from "../components/TryIt";
@@ -8,7 +9,11 @@ const request: PodspecProofRequest = {
   pods: {
     pod1: {
       entries: {
-        wis: { type: "int", inRange: { min: BigInt(5), max: BigInt(1000) } },
+        wis: {
+          type: "int",
+          inRange: { min: BigInt(5), max: BigInt(1000) },
+          isRevealed: true
+        },
         str: { type: "int", inRange: { min: BigInt(5), max: BigInt(1000) } }
       }
     },
@@ -16,7 +21,8 @@ const request: PodspecProofRequest = {
       entries: {
         test: {
           type: "string",
-          isMemberOf: [{ type: "string", value: "secret" }]
+          isMemberOf: [{ type: "string", value: "secret" }],
+          isRevealed: true
         }
       }
     }
@@ -41,7 +47,11 @@ const request: PodspecProofRequest = {
   pods: {
     pod1: {
       entries: {
-        wis: { type: "int", inRange: { min: BigInt(5), max: BigInt(1000) } },
+        wis: {
+          type: "int",
+          inRange: { min: BigInt(5), max: BigInt(1000) },
+          isRevealed: true
+        },
         str: { type: "int", inRange: { min: BigInt(5), max: BigInt(1000) } }
       }
     },
@@ -49,15 +59,17 @@ const request: PodspecProofRequest = {
       entries: {
         test: {
           type: "string",
-          isMemberOf: [{ type: "string", value: "secret" }]
+          isMemberOf: [{ type: "string", value: "secret" }],
+          isRevealed: true
         }
       }
     }
   }
 };
-  
+
+const gpcProof = await z.gpc.prove(request);
+
 `}
-              const gpcProof = await z.gpc.prove(request);
             </code>
           </p>
           <TryIt
@@ -72,7 +84,7 @@ const request: PodspecProofRequest = {
           />
           {proof && (
             <pre className="whitespace-pre-wrap">
-              {JSON.stringify(proof, null, 2)}
+              {JSONBig.stringify(proof, null, 2)}
             </pre>
           )}
         </div>

@@ -54,7 +54,7 @@ export class PodSpec<E extends EntriesSchema> {
    *
    * @param schema The schema for the POD.
    */
-  private constructor(schema: PODSchema<EntriesSchemaLiteral<E>>) {
+  private constructor(schema: PODSchema<E>) {
     this.schema = Object.freeze(schema);
   }
 
@@ -108,9 +108,14 @@ export class PodSpec<E extends EntriesSchema> {
   public query(input: POD[]): { matches: POD[]; matchingIndexes: number[] } {
     const matchingIndexes: number[] = [];
     const matches: POD[] = [];
+    const signatures = new Set<string>();
     for (const [index, pod] of input.entries()) {
       const result = this.safeParse(pod, { exitEarly: true });
       if (result.isValid) {
+        if (signatures.has(pod.signature)) {
+          continue;
+        }
+        signatures.add(pod.signature);
         matchingIndexes.push(index);
         matches.push(pod);
       }
@@ -142,7 +147,7 @@ export class PodSpec<E extends EntriesSchema> {
    * @returns A new PodSpec instance.
    */
   public static create<E extends EntriesSchema>(
-    schema: PODSchema<EntriesSchemaLiteral<E>>
+    schema: PODSchema<E>
   ): PodSpec<E> {
     return new PodSpec(schema);
   }
@@ -151,9 +156,8 @@ export class PodSpec<E extends EntriesSchema> {
 /**
  * Exported version of static create method, for convenience.
  */
-export const pod = <E extends EntriesSchema>(
-  schema: PODSchema<EntriesSchemaLiteral<E>>
-) => PodSpec.create(schema);
+export const pod = <E extends EntriesSchema>(schema: PODSchema<E>) =>
+  PodSpec.create(schema);
 
 /**
  * Parses the POD and its entries, returning a {@link ParseResult}.

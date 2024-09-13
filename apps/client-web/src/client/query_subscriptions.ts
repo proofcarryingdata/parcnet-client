@@ -1,5 +1,6 @@
 import { SubscriptionUpdateResult } from "@parcnet/client-rpc";
-import { EntriesSchema, PodSpec } from "@parcnet/podspec";
+import * as p from "@parcnet/podspec";
+import { EntriesSchema, PODSchema, PodSpec } from "@parcnet/podspec";
 import { EventEmitter } from "eventemitter3";
 import { PODCollection } from "./pod_collection.js";
 
@@ -57,9 +58,14 @@ export class QuerySubscriptions {
     });
   }
 
-  public async subscribe(query: PodSpec<EntriesSchema>): Promise<string> {
+  public async subscribe<E extends EntriesSchema>(
+    query: PODSchema<E>
+  ): Promise<string> {
     const subscriptionId = (this.nextSubscriptionId++).toString();
-    this.subscriptions.set(subscriptionId, { query, serial: 0 });
+    this.subscriptions.set(subscriptionId, {
+      query: p.pod(query) as PodSpec<EntriesSchema>,
+      serial: 0
+    });
 
     return subscriptionId;
   }

@@ -9,5 +9,8 @@ export default defineConfig({
     nodePolyfills({
       include: ["assert", "buffer"]
     })
-  ]
+  ],
+  esbuild: {
+    target: "es2020"
+  }
 });
