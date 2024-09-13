@@ -11,6 +11,8 @@ import { PodSpec } from "../parse/pod.js";
 import { EntriesSchema } from "../schemas/entries.js";
 import { PODSchema } from "../schemas/pod.js";
 
+type Pods = Record<string, object>;
+
 /**
  * A ProofRequest contains the data necessary to verify that a given GPC proof
  * matches our expectations of it.
@@ -26,8 +28,17 @@ export type ProofRequest = {
  * A PodspecProofRequest allows us to generate a {@link ProofRequest} from a
  * set of Podspecs defining the allowable PODs.
  */
-export interface PodspecProofRequest {
-  pods: Record<string, PODSchema<EntriesSchema>>;
+export interface PodspecProofRequest<P extends Record<string, object>> {
+  pods: Readonly<{
+    [K in keyof P]: P[K] extends PODSchema<infer T>
+      ? P[K] & PODSchema<T>
+      : never;
+  }>;
+  inputPods?: Readonly<{
+    [K in keyof P]: P[K] extends PODSchema<infer T>
+      ? P[K] & PODSchema<T>
+      : never;
+  }>;
   externalNullifier?: PODValue;
   watermark?: PODValue;
 }
@@ -36,21 +47,24 @@ export interface PodspecProofRequest {
  * A ProofRequestSpec allows us to generate a {@link ProofRequest} from a
  * set of Podspecs defining the allowable PODs.
  */
-export class ProofRequestSpec<P extends PodspecProofRequest> {
+export class ProofRequestSpec<
+  P extends PodspecProofRequest<T>,
+  T extends Pods
+> {
   /**
    * Private constructor, see {@link create}.
    * @param schema The schema of the PODs that are allowed in this proof.
    */
-  private constructor(public readonly schema: P) {}
+  private constructor(public readonly schema: PodspecProofRequest<T>) {}
 
   /**
    * Create a new ProofRequestSpec.
    * @param schema The schema of the PODs that are allowed in this proof.
    * @returns A new ProofRequestSpec.
    */
-  public static create<P extends PodspecProofRequest>(
-    schema: P
-  ): ProofRequestSpec<P> {
+  public static create<P extends PodspecProofRequest<T>, T extends Pods>(
+    schema: PodspecProofRequest<T>
+  ): ProofRequestSpec<P, T> {
     return new ProofRequestSpec(schema);
   }
 
@@ -76,7 +90,12 @@ export class ProofRequestSpec<P extends PodspecProofRequest> {
    */
   public queryForInputs(pods: POD[]): Record<keyof P["pods"], POD[]> {
     const result: Record<string, POD[]> = {};
-    for (const [podName, podSchema] of Object.entries(this.schema.pods)) {
+    for (const [podName, podSchema] of Object.entries(
+      (this.schema.inputPods ?? this.schema.pods) as Record<
+        string,
+        PODSchema<EntriesSchema>
+      >
+    )) {
       result[podName] = PodSpec.create(podSchema).query(pods).matches;
     }
     return result as Record<keyof P["pods"], POD[]>;
@@ -86,7 +105,7 @@ export class ProofRequestSpec<P extends PodspecProofRequest> {
 /**
  * Export for convenience.
  */
-export const proofRequest = <P extends PodspecProofRequest>(schema: P) =>
+export const proofRequest = <P extends Pods>(schema: PodspecProofRequest<P>) =>
   ProofRequestSpec.create(schema);
 
 /**
@@ -95,12 +114,16 @@ export const proofRequest = <P extends PodspecProofRequest>(schema: P) =>
  * @param request The PodspecProofRequest to derive the ProofRequest from.
  * @returns A ProofRequest.
  */
-function makeProofRequest(request: PodspecProofRequest): ProofRequest {
+function makeProofRequest<P extends Pods>(
+  request: PodspecProofRequest<P>
+): ProofRequest {
   const pods: Record<PODName, GPCProofObjectConfig> = {};
   const membershipLists: PODMembershipLists = {};
   const tuples: Record<PODName, GPCProofTupleConfig> = {};
 
-  for (const [podName, podSchema] of Object.entries(request.pods)) {
+  for (const [podName, podSchema] of Object.entries(
+    request.pods as Record<string, PODSchema<EntriesSchema>>
+  )) {
     const podConfig: GPCProofObjectConfig = { entries: {} };
 
     for (const [entryName, schema] of Object.entries(podSchema.entries)) {

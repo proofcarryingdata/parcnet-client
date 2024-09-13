@@ -1,5 +1,5 @@
 import { PODValue } from "@pcd/pod";
-import { EntriesSchema } from "./entries.js";
+import { EntriesSchema, EntriesSchemaLiteral } from "./entries.js";
 
 /**
  * Schema for a tuple of entries.
@@ -14,8 +14,8 @@ export type PODTupleSchema<E extends EntriesSchema> = {
  * Schema for validating a POD.
  */
 export type PODSchema<E extends EntriesSchema> = {
-  entries: E;
-  tuples?: PODTupleSchema<E>[];
+  entries: EntriesSchemaLiteral<E>;
+  tuples?: PODTupleSchema<EntriesSchemaLiteral<E>>[];
   signerPublicKey?: {
     isMemberOf?: string[];
     isNotMemberOf?: string[];

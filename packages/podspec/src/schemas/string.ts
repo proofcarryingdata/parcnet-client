@@ -1,6 +1,6 @@
 import { PODName, PODStringValue } from "@pcd/pod";
 import { IssueCode, PodspecInvalidTypeIssue } from "../error.js";
-import { FAILURE, ParseResult, SUCCESS } from "../parse/parseUtils.js";
+import { FAILURE, ParseResult, SUCCESS } from "../parse/parse_utils.js";
 
 /**
  * Schema for a PODStringValue.

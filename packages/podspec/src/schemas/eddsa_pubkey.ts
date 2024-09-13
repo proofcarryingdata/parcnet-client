@@ -4,7 +4,7 @@ import {
   FAILURE,
   ParseResult,
   safeCheckPublicKeyFormat
-} from "../parse/parseUtils.js";
+} from "../parse/parse_utils.js";
 
 /**
  * Schema for an EdDSA public key.

@@ -4,7 +4,7 @@ import {
   FAILURE,
   ParseResult,
   safeCheckBigintBounds
-} from "../parse/parseUtils.js";
+} from "../parse/parse_utils.js";
 
 /**
  * Schema for a PODIntValue.

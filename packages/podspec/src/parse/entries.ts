@@ -16,7 +16,11 @@ import {
   checkPODEdDSAPublicKeyValue,
   eddsaPublicKeyCoercer
 } from "../schemas/eddsa_pubkey.js";
-import { EntriesSchema, EntriesTupleSchema } from "../schemas/entries.js";
+import {
+  EntriesSchema,
+  EntriesSchemaLiteral,
+  EntriesTupleSchema
+} from "../schemas/entries.js";
 import {
   DefinedEntrySchema,
   EntrySchema,
@@ -24,6 +28,7 @@ import {
 } from "../schemas/entry.js";
 import { checkPODIntValue, intCoercer } from "../schemas/int.js";
 import { checkPODStringValue, stringCoercer } from "../schemas/string.js";
+import { deepFreeze } from "../utils.js";
 import { parseEntry } from "./entry.js";
 import {
   FAILURE,
@@ -31,7 +36,7 @@ import {
   PODValueNativeTypes,
   safeCheckTuple,
   SUCCESS
-} from "./parseUtils.js";
+} from "./parse_utils.js";
 
 const COERCERS: Record<PODValue["type"], (data: unknown) => unknown> = {
   string: stringCoercer,
@@ -92,12 +97,13 @@ function isValidEntryType(type: string): type is EntrySchema["type"] {
  * A specification for a set of entries.
  */
 export class EntriesSpec<E extends EntriesSchema> {
+  public readonly schema: EntriesSchemaLiteral<E>;
   /**
    * The constructor is private - see {@link create} for public construction.
    *
    * @param schema The schema to use for this set of entries.
    */
-  private constructor(public readonly schema: E) {
+  private constructor(schema: E) {
     for (const [name, entry] of Object.entries(schema)) {
       const entryType =
         entry.type === "optional" ? entry.innerType.type : entry.type;
@@ -107,6 +113,7 @@ export class EntriesSpec<E extends EntriesSchema> {
         );
       }
     }
+    this.schema = deepFreeze(schema);
   }
 
   /**
@@ -121,7 +128,7 @@ export class EntriesSpec<E extends EntriesSchema> {
     input: Record<string, PODValue | string | bigint | number>,
     options: EntriesParseOptions<E> = DEFAULT_ENTRIES_PARSE_OPTIONS,
     path: string[] = []
-  ): ParseResult<EntriesOutputType<E>> {
+  ): ParseResult<EntriesOutputType<EntriesSchemaLiteral<E>>> {
     return safeParseEntries(this.schema, input, options, path);
   }
 
@@ -132,7 +139,7 @@ export class EntriesSpec<E extends EntriesSchema> {
     input: Record<string, PODValue | string | bigint | number>,
     options: EntriesParseOptions<E> = DEFAULT_ENTRIES_PARSE_OPTIONS,
     path: string[] = []
-  ): EntriesOutputType<E> {
+  ): EntriesOutputType<EntriesSchemaLiteral<E>> {
     const result = this.safeParse(input, options, path);
     if (result.isValid) {
       return result.value;
