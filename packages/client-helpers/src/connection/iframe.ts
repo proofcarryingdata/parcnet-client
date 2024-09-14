@@ -3,6 +3,8 @@ import {
   InitializationMessageSchema,
   InitializationMessageType,
   ParcnetRPC,
+  ParcnetRPCMethodName,
+  ParcnetRPCSchema,
   RPCMessage,
   RPCMessageSchema,
   RPCMessageType,
@@ -58,6 +60,32 @@ export class AdviceChannel implements ConnectorAdvice {
   }
 }
 
+function getSchema(method: ParcnetRPCMethodName) {
+  switch (method) {
+    case "gpc.canProve":
+      return ParcnetRPCSchema.shape.gpc.shape.canProve;
+    case "gpc.prove":
+      return ParcnetRPCSchema.shape.gpc.shape.prove;
+    case "gpc.verify":
+      return ParcnetRPCSchema.shape.gpc.shape.verify;
+    case "identity.getSemaphoreV3Commitment":
+      return ParcnetRPCSchema.shape.identity.shape.getSemaphoreV3Commitment;
+    case "pod.query":
+      return ParcnetRPCSchema.shape.pod.shape.query;
+    case "pod.insert":
+      return ParcnetRPCSchema.shape.pod.shape.insert;
+    case "pod.delete":
+      return ParcnetRPCSchema.shape.pod.shape.delete;
+    case "pod.subscribe":
+      return ParcnetRPCSchema.shape.pod.shape.subscribe;
+    case "pod.unsubscribe":
+      return ParcnetRPCSchema.shape.pod.shape.unsubscribe;
+    default:
+      const unknownMethod: never = method;
+      throw new Error(`Unknown method: ${unknownMethod as string}`);
+  }
+}
+
 async function handleMessage(
   rpc: ParcnetRPC,
   port: MessagePort,
@@ -71,11 +99,16 @@ async function handleMessage(
     }
     const object = deepGet(rpc, path);
     const functionToInvoke = (object as Record<string, unknown>)[functionName];
+
     try {
       if (functionToInvoke && typeof functionToInvoke === "function") {
+        const schema = getSchema(message.fn);
+        const parsedArgs = schema.parameters().parse(message.args);
         try {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          const result = await functionToInvoke.apply(object, message.args);
+          const result = await schema
+            .returnType()
+            .parse(functionToInvoke.apply(object, parsedArgs));
+
           port.postMessage({
             type: RPCMessageType.PARCNET_CLIENT_INVOKE_RESULT,
             result,

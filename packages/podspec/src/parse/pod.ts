@@ -7,7 +7,7 @@ import {
   PodspecSignerExcludedByListIssue,
   PodspecSignerNotInListIssue
 } from "../error.js";
-import { EntriesSchema } from "../schemas/entries.js";
+import { EntriesSchema, EntriesSchemaLiteral } from "../schemas/entries.js";
 import { PODSchema } from "../schemas/pod.js";
 import {
   DEFAULT_ENTRIES_PARSE_OPTIONS,
@@ -15,7 +15,12 @@ import {
   EntriesParseOptions,
   safeParseEntries
 } from "./entries.js";
-import { FAILURE, ParseResult, safeCheckTuple, SUCCESS } from "./parseUtils.js";
+import {
+  FAILURE,
+  ParseResult,
+  safeCheckTuple,
+  SUCCESS
+} from "./parse_utils.js";
 
 /**
  * "Strong" PODContent is an extension of PODContent which extends the
@@ -37,13 +42,21 @@ export interface StrongPOD<T extends PODEntries> extends POD {
  * additional constraints.
  */
 export class PodSpec<E extends EntriesSchema> {
+  public readonly schema: PODSchema<EntriesSchemaLiteral<E>>;
+
+  public entries(): EntriesSchemaLiteral<E> {
+    return this.schema.entries;
+  }
+
   /**
    * Create a new PodSpec. The constructor is private, see {@link create} for
    * public creation.
    *
    * @param schema The schema for the POD.
    */
-  private constructor(public readonly schema: PODSchema<E>) {}
+  private constructor(schema: PODSchema<E>) {
+    this.schema = Object.freeze(schema);
+  }
 
   /**
    * Parse a POD according to this PodSpec.
@@ -58,7 +71,7 @@ export class PodSpec<E extends EntriesSchema> {
     input: POD,
     options: EntriesParseOptions<E> = DEFAULT_ENTRIES_PARSE_OPTIONS,
     path: string[] = []
-  ): ParseResult<StrongPOD<EntriesOutputType<E>>> {
+  ): ParseResult<StrongPOD<EntriesOutputType<EntriesSchemaLiteral<E>>>> {
     return safeParsePod(this.schema, input, options, path);
   }
 
@@ -75,7 +88,7 @@ export class PodSpec<E extends EntriesSchema> {
     input: POD,
     options: EntriesParseOptions<E> = DEFAULT_ENTRIES_PARSE_OPTIONS,
     path: string[] = []
-  ): StrongPOD<EntriesOutputType<E>> {
+  ): StrongPOD<EntriesOutputType<EntriesSchemaLiteral<E>>> {
     const result = this.safeParse(input, options, path);
     if (result.isValid) {
       return result.value;
@@ -95,9 +108,14 @@ export class PodSpec<E extends EntriesSchema> {
   public query(input: POD[]): { matches: POD[]; matchingIndexes: number[] } {
     const matchingIndexes: number[] = [];
     const matches: POD[] = [];
+    const signatures = new Set<string>();
     for (const [index, pod] of input.entries()) {
       const result = this.safeParse(pod, { exitEarly: true });
       if (result.isValid) {
+        if (signatures.has(pod.signature)) {
+          continue;
+        }
+        signatures.add(pod.signature);
         matchingIndexes.push(index);
         matches.push(pod);
       }
@@ -106,6 +124,20 @@ export class PodSpec<E extends EntriesSchema> {
       matches,
       matchingIndexes
     };
+  }
+
+  public extend<R extends PODSchema<EntriesSchemaLiteral<E>>>(
+    updater: (
+      schema: PODSchema<EntriesSchemaLiteral<E>>
+    ) => R extends PODSchema<EntriesSchemaLiteral<E>> ? R : never
+  ) {
+    const clone = structuredClone(this.schema);
+    const newSchema: R = updater(clone);
+    return PodSpec.create(newSchema) as PodSpec<R["entries"]>;
+  }
+
+  public cloneSchema(): PODSchema<E> {
+    return structuredClone(this.schema);
   }
 
   /**

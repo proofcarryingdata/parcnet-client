@@ -18,8 +18,8 @@ import {
   PodspecNotInTupleListIssue
 } from "../src/error.js";
 import * as p from "../src/index.js";
+import { $i, $s } from "../src/pod_value_utils.js";
 import { EntriesTupleSchema } from "../src/schemas/entries.js";
-import { $i, $s } from "../src/utils.js";
 
 export const GPC_NPM_ARTIFACTS_PATH = path.join(
   __dirname,

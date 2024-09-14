@@ -17,7 +17,7 @@ import {
   safeCheckPODValue,
   safeMembershipChecks,
   SUCCESS
-} from "./parseUtils.js";
+} from "./parse_utils.js";
 
 /**
  * Options controlling how parsing of a single entry is performed.

@@ -6,6 +6,13 @@ import { EntrySchema } from "./entry.js";
  */
 export type EntriesSchema = Record<string, EntrySchema>;
 
+type EntriesSchemaLiteralEntries<T extends EntriesSchema> = {
+  [K in keyof T]: T[K] & EntrySchema;
+};
+
+export type EntriesSchemaLiteral<E extends EntriesSchema> =
+  EntriesSchemaLiteralEntries<E> & EntriesSchema;
+
 /**
  * Schema for a tuple of entries.
  */

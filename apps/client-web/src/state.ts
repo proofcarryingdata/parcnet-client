@@ -43,6 +43,9 @@ export type ClientAction =
       proofRequest: PodspecProofRequest;
       proving: boolean;
       resolve?: (result: ProveResult) => void;
+    }
+  | {
+      type: "clear-proof-in-progress";
     };
 
 export function clientReducer(state: ClientState, action: ClientAction) {
@@ -65,6 +68,11 @@ export function clientReducer(state: ClientState, action: ClientAction) {
           proving: action.proving,
           resolve: action.resolve
         }
+      };
+    case "clear-proof-in-progress":
+      return {
+        ...state,
+        proofInProgress: undefined
       };
   }
 }
