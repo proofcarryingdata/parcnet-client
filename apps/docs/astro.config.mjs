@@ -7,19 +7,19 @@ import tailwind from "@astrojs/tailwind";
 export default defineConfig({
   integrations: [
     starlight({
-      title: "PARCNET Client",
-      components: {
-        Header: "./src/components/Header.astro",
-        PageFrame: "./src/components/PageFrame.astro"
-      },
+      title: "Zapp SDK",
       social: {
         github: "https://github.com/withastro/starlight"
+      },
+      components: {
+        SiteTitle: "./src/components/starlight/SiteTitle.astro"
       },
       sidebar: [
         {
           label: "Guides",
           items: [
             // Each item here is one entry in the navigation menu.
+            { label: "Getting Started", slug: "guides/getting-started" },
             { label: "Example Guide", slug: "guides/example" }
           ]
         },
