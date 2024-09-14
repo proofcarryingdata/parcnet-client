@@ -41,7 +41,7 @@ export interface StrongPOD<T extends PODEntries> extends POD {
  * A PodSpec is a specification for a POD, including its schema and any
  * additional constraints.
  */
-export class PodSpec<E extends EntriesSchema> {
+export class PodSpec<E extends EntriesSchema = EntriesSchema> {
   public readonly schema: PODSchema<EntriesSchemaLiteral<E>>;
 
   public entries(): EntriesSchemaLiteral<E> {

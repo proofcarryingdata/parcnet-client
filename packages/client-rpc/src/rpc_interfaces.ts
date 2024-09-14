@@ -11,7 +11,7 @@ import { GPCBoundConfig, GPCProof, GPCRevealedClaims } from "@pcd/gpc";
  * These interfaces are implemented in rpc_client.ts.
  */
 
-export type PODQuery<E extends EntriesSchema> = PODSchema<E>;
+export type PODQuery = PODSchema<EntriesSchema>;
 
 export interface SubscriptionUpdateResult {
   subscriptionId: string;
@@ -35,6 +35,7 @@ export interface ParcnetGPCRPC {
   canProve: (request: PodspecProofRequest) => Promise<boolean>;
   verify: (
     proof: GPCProof,
+    boundConfig: GPCBoundConfig,
     revealedClaims: GPCRevealedClaims,
     proofRequest: PodspecProofRequest
   ) => Promise<boolean>;
@@ -46,10 +47,10 @@ export interface ParcnetIdentityRPC {
 
 export interface ParcnetPODRPC {
   // Returns array of serialized PODs
-  query: <E extends EntriesSchema>(query: PODQuery<E>) => Promise<string[]>;
+  query: (query: PODQuery) => Promise<string[]>;
   insert: (serializedPod: string) => Promise<void>;
   delete: (signature: string) => Promise<void>;
-  subscribe: <E extends EntriesSchema>(query: PODQuery<E>) => Promise<string>;
+  subscribe: (query: PODQuery) => Promise<string>;
   unsubscribe: (subscriptionId: string) => Promise<void>;
 }
 

@@ -13,8 +13,8 @@ import {
   RPCMessageType,
   SubscriptionUpdateResult
 } from "@parcnet/client-rpc";
-import { EntriesSchema, PodspecProofRequest } from "@parcnet/podspec";
-import { GPCProof, GPCRevealedClaims } from "@pcd/gpc";
+import { PodspecProofRequest } from "@parcnet/podspec";
+import { GPCBoundConfig, GPCProof, GPCRevealedClaims } from "@pcd/gpc";
 import { EventEmitter } from "eventemitter3";
 import { z, ZodFunction, ZodTuple, ZodTypeAny } from "zod";
 import { DialogController } from "./adapters/iframe.js";
@@ -115,9 +115,7 @@ export class ParcnetRPCConnector implements ParcnetRPC, ParcnetEvents {
     this.#emitter = new EventEmitter();
 
     this.pod = {
-      query: async <E extends EntriesSchema>(
-        query: PODQuery<E>
-      ): Promise<string[]> => {
+      query: async (query: PODQuery): Promise<string[]> => {
         return this.#typedInvoke(
           "pod.query",
           [query],
@@ -138,9 +136,7 @@ export class ParcnetRPCConnector implements ParcnetRPC, ParcnetEvents {
           ParcnetRPCSchema.shape.pod.shape.delete
         );
       },
-      subscribe: async <E extends EntriesSchema>(
-        query: PODQuery<E>
-      ): Promise<string> => {
+      subscribe: async (query: PODQuery): Promise<string> => {
         return this.#typedInvoke(
           "pod.subscribe",
           [query],
@@ -172,12 +168,13 @@ export class ParcnetRPCConnector implements ParcnetRPC, ParcnetEvents {
       },
       verify: async (
         proof: GPCProof,
+        boundConfig: GPCBoundConfig,
         revealedClaims: GPCRevealedClaims,
         proofRequest: PodspecProofRequest
       ): Promise<boolean> => {
         return this.#typedInvoke(
           "gpc.verify",
-          [proof, revealedClaims, proofRequest],
+          [proof, boundConfig, revealedClaims, proofRequest],
           ParcnetRPCSchema.shape.gpc.shape.verify
         );
       }

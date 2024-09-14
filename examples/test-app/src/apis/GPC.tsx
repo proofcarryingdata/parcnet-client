@@ -31,8 +31,8 @@ const request: PodspecProofRequest = {
 
 export function GPC(): ReactNode {
   const { z, connected } = useParcnetClient();
-  const [proof, setProof] = useState<ProveResult>();
-  const [verified, _setVerified] = useState<boolean | undefined>();
+  const [proveResult, setProveResult] = useState<ProveResult>();
+  const [verified, setVerified] = useState<boolean | undefined>();
 
   return !connected ? null : (
     <div>
@@ -75,16 +75,16 @@ const gpcProof = await z.gpc.prove(request);
           <TryIt
             onClick={async () => {
               try {
-                setProof(await z.gpc.prove(request));
+                setProveResult(await z.gpc.prove(request));
               } catch (e) {
                 console.log(e);
               }
             }}
             label="Get GPC Proof"
           />
-          {proof && (
+          {proveResult && (
             <pre className="whitespace-pre-wrap">
-              {JSONBig.stringify(proof, null, 2)}
+              {JSONBig.stringify(proveResult, null, 2)}
             </pre>
           )}
         </div>
@@ -93,18 +93,27 @@ const gpcProof = await z.gpc.prove(request);
             Verify a GPC proof like this:
             <code className="block text-xs font-base rounded-md p-2 whitespace-pre-wrap">
               {`
-const verified = await z.gpc.verify(proof);
+const verified = await z.gpc.verify(proof, config, revealedClaims, request);
             `}
             </code>
           </p>
-          {!proof && (
+          {!proveResult && (
             <span>Generate a proof above, then we can verify it.</span>
           )}
-          {proof && (
+          {proveResult && (
             <TryIt
-              onClick={() => {
+              onClick={async () => {
                 try {
-                  // setVerified(await z.gpc.verify(proof));
+                  if (proveResult.success) {
+                    setVerified(
+                      await z.gpc.verify(
+                        proveResult.proof,
+                        proveResult.boundConfig,
+                        proveResult.revealedClaims,
+                        request
+                      )
+                    );
+                  }
                 } catch (e) {
                   console.log(e);
                 }

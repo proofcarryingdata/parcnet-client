@@ -1,6 +1,12 @@
 import { ConnectorAdvice } from "@parcnet/client-helpers";
 import { ParcnetGPCRPC, ProveResult } from "@parcnet/client-rpc";
 import { PodspecProofRequest, proofRequest } from "@parcnet/podspec";
+import {
+  GPCBoundConfig,
+  GPCProof,
+  GPCRevealedClaims,
+  gpcVerify
+} from "@pcd/gpc";
 import { Dispatch } from "react";
 import { ClientAction } from "../state";
 import { PODCollection } from "./pod_collection";
@@ -41,7 +47,6 @@ export class ParcnetGPCProcessor implements ParcnetGPCRPC {
     const advice = this.advice;
 
     return new Promise((resolve) => {
-      console.log("proving");
       this.advice.showClient();
       this.dispatch({
         type: "set-proof-in-progress",
@@ -57,9 +62,20 @@ export class ParcnetGPCProcessor implements ParcnetGPCRPC {
     });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public async verify(pcd: any): Promise<boolean> {
-    console.log(pcd);
-    return true;
+  public async verify(
+    proof: GPCProof,
+    boundConfig: GPCBoundConfig,
+    revealedClaims: GPCRevealedClaims,
+    pr: PodspecProofRequest
+  ): Promise<boolean> {
+    const config = proofRequest(pr).getProofRequest().proofConfig;
+    config.circuitIdentifier = boundConfig.circuitIdentifier;
+
+    return gpcVerify(
+      proof,
+      config as GPCBoundConfig,
+      revealedClaims,
+      new URL("/artifacts", window.location.origin).toString()
+    );
   }
 }

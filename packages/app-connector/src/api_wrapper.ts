@@ -4,7 +4,7 @@ import {
   ProveResult
 } from "@parcnet/client-rpc";
 import * as p from "@parcnet/podspec";
-import { GPCProof, GPCRevealedClaims } from "@pcd/gpc";
+import { GPCBoundConfig, GPCProof, GPCRevealedClaims } from "@pcd/gpc";
 import { POD } from "@pcd/pod";
 import { EventEmitter } from "eventemitter3";
 import { PodspecProofRequest } from "../../podspec/src/index.js";
@@ -18,16 +18,12 @@ import { ParcnetRPCConnector } from "./rpc_client.js";
  * It also allows the caller to run the query immediately, which is useful on
  * first creating the subscription, before any updates are available.
  */
-export class Subscription<E extends p.EntriesSchema> {
+export class Subscription {
   #emitter: EventEmitter;
-  #query: p.PodSpec<E>;
+  #query: p.PodSpec;
   #api: ParcnetPODWrapper;
 
-  constructor(
-    query: p.PodSpec<E>,
-    emitter: EventEmitter,
-    api: ParcnetPODWrapper
-  ) {
+  constructor(query: p.PodSpec, emitter: EventEmitter, api: ParcnetPODWrapper) {
     this.#emitter = emitter;
     this.#query = query;
     this.#api = api;
@@ -64,14 +60,12 @@ class ParcnetPODWrapper {
     });
   }
 
-  async query<E extends p.EntriesSchema>(query: p.PodSpec<E>): Promise<POD[]> {
+  async query(query: p.PodSpec): Promise<POD[]> {
     const pods = await this.#api.pod.query(query.schema);
     return pods.map((pod) => POD.deserialize(pod));
   }
 
-  async subscribe<E extends p.EntriesSchema>(
-    query: p.PodSpec<E>
-  ): Promise<Subscription<E>> {
+  async subscribe(query: p.PodSpec): Promise<Subscription> {
     const subscriptionId = await this.#api.pod.subscribe(query.schema);
     const emitter = new EventEmitter();
     const subscription = new Subscription(query, emitter, this);
@@ -107,10 +101,11 @@ class ParcnetGPCWrapper {
 
   async verify<P extends Record<string, object>>(
     proof: GPCProof,
+    config: GPCBoundConfig,
     revealedClaims: GPCRevealedClaims,
     proofRequest: PodspecProofRequest<P>
   ): Promise<boolean> {
-    return this.#api.gpc.verify(proof, revealedClaims, proofRequest);
+    return this.#api.gpc.verify(proof, config, revealedClaims, proofRequest);
   }
 }
 
