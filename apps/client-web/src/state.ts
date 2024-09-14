@@ -2,6 +2,7 @@ import { ConnectorAdvice } from "@parcnet/client-helpers";
 import { ProveResult, Zapp } from "@parcnet/client-rpc";
 import { PodspecProofRequest } from "@parcnet/podspec";
 import { POD } from "@pcd/pod";
+import { Identity } from "@semaphore-protocol/identity";
 
 export type ClientState = {
   loggedIn: boolean;
@@ -17,6 +18,7 @@ export type ClientState = {
         resolve?: (result: ProveResult) => void;
       }
     | undefined;
+  identity: Identity;
 };
 
 export type ClientAction =

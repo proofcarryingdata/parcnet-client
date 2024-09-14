@@ -13,7 +13,11 @@ import {
 } from "react";
 import { ParcnetClientProcessor } from "./client/client";
 import { PODCollection } from "./client/pod_collection";
-import { loadPODsFromStorage, savePODsToStorage } from "./client/utils";
+import {
+  getIdentity,
+  loadPODsFromStorage,
+  savePODsToStorage
+} from "./client/utils";
 import { Rabbit } from "./rabbit";
 import { ClientAction, clientReducer, ClientState } from "./state";
 
@@ -23,7 +27,8 @@ function App() {
     advice: null,
     zapp: null,
     authorized: false,
-    proofInProgress: undefined
+    proofInProgress: undefined,
+    identity: getIdentity()
   });
 
   useEffect(() => {
@@ -48,7 +53,7 @@ function App() {
         savePODsToStorage(pods.getAll());
       });
       state.advice.ready(
-        new ParcnetClientProcessor(state.advice, pods, dispatch)
+        new ParcnetClientProcessor(state.advice, pods, dispatch, getIdentity())
       );
     }
   }, [state.authorized, state.advice]);

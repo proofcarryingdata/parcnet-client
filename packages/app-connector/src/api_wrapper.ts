@@ -5,7 +5,7 @@ import {
 } from "@parcnet/client-rpc";
 import * as p from "@parcnet/podspec";
 import { GPCBoundConfig, GPCProof, GPCRevealedClaims } from "@pcd/gpc";
-import { POD } from "@pcd/pod";
+import { POD, PODEntries } from "@pcd/pod";
 import { EventEmitter } from "eventemitter3";
 import { PodspecProofRequest } from "../../podspec/src/index.js";
 import { ParcnetRPCConnector } from "./rpc_client.js";
@@ -80,6 +80,11 @@ class ParcnetPODWrapper {
 
   async delete(signature: string): Promise<void> {
     return this.#api.pod.delete(signature);
+  }
+
+  async sign(entries: PODEntries): Promise<POD> {
+    const pod = await this.#api.pod.sign(entries);
+    return POD.deserialize(pod);
   }
 }
 

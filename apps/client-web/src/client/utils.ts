@@ -1,4 +1,5 @@
 import { POD } from "@pcd/pod";
+import { Identity } from "@semaphore-protocol/identity";
 
 export function loadPODsFromStorage(): POD[] {
   let pods: POD[] = [];
@@ -20,4 +21,18 @@ export function loadPODsFromStorage(): POD[] {
 export function savePODsToStorage(pods: POD[]): void {
   const serializedPODs = pods.map((pod) => pod.serialize());
   localStorage.setItem("pod_collection", JSON.stringify(serializedPODs));
+}
+
+export function getIdentity(): Identity {
+  const serializedIdentity = localStorage.getItem("identity");
+
+  let identity: Identity;
+  if (!serializedIdentity) {
+    identity = new Identity();
+    localStorage.setItem("identity", identity.export());
+  } else {
+    identity = Identity.import(serializedIdentity);
+  }
+
+  return identity;
 }

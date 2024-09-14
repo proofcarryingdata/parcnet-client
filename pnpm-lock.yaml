@@ -120,6 +120,9 @@ importers:
       '@pcd/proto-pod-gpc-artifacts':
         specifier: ^0.5.0
         version: 0.5.0
+      '@semaphore-protocol/identity':
+        specifier: ^4.0.3
+        version: 4.0.3
       eventemitter3:
         specifier: ^5.0.1
         version: 5.0.1
@@ -328,6 +331,9 @@ importers:
       '@pcd/gpc':
         specifier: 0.0.6
         version: 0.0.6
+      '@pcd/pod':
+        specifier: 0.1.5
+        version: 0.1.5
       zod:
         specifier: ^3.22.4
         version: 3.23.8
@@ -1098,6 +1104,9 @@ packages:
 
   '@semaphore-protocol/identity@3.15.2':
     resolution: {integrity: sha512-MJ1MO5QL+oX+OFK2rHAPjQ6+kKgGxCsVJLNdn1soRawxbrxH9A6tV9AsVHV0DN4saegQ4qaOOy1XO1PAN6PiQA==}
+
+  '@semaphore-protocol/identity@4.0.3':
+    resolution: {integrity: sha512-IfGpE00gWnuM0c41g3rY1uU0he8X8JOrerqXjGzrsW0sXRe/jkxL/jln6zufVTGleN/mGdP9CkqXh7Ca7QjAiw==}
 
   '@snyk/github-codeowners@1.1.0':
     resolution: {integrity: sha512-lGFf08pbkEac0NYgVf4hdANpAgApRjNByLXB+WBip3qj1iendOIyAwP2GKkKbQMNVy2r1xxDf0ssfWscoiC+Vw==}
@@ -2868,6 +2877,9 @@ packages:
     resolution: {integrity: sha512-NPE8TDbzl/3YQYY7CSS228s3g2ollTFnc+Qi3tqmqJp9Vg2ovUpixcJEo2HJScN2Ez+kEaal6y70c0ehqJBJeA==}
     engines: {node: '>=10'}
 
+  poseidon-lite@0.2.0:
+    resolution: {integrity: sha512-vivDZnGmz8W4G/GzVA72PXkfYStjilu83rjjUfpL4PueKcC8nfX6hCPh2XhoC5FBgC6y0TA3YuUeUo5YCcNoig==}
+
   poseidon-lite@0.2.1:
     resolution: {integrity: sha512-xIr+G6HeYfOhCuswdqcFpSX47SPhm0EpisWJ6h7fHlWwaVIvH3dLnejpatrtw6Xc6HaLrpq05y7VRfvDmDGIog==}
 
@@ -4312,6 +4324,13 @@ snapshots:
       '@ethersproject/random': 5.7.0
       '@ethersproject/strings': 5.7.0
       js-sha512: 0.8.0
+
+  '@semaphore-protocol/identity@4.0.3':
+    dependencies:
+      '@zk-kit/baby-jubjub': 1.0.1
+      '@zk-kit/eddsa-poseidon': 1.0.2(patch_hash=ulg4x5tm5aeuwpznqhsdha2vyq)
+      '@zk-kit/utils': 1.2.0
+      poseidon-lite: 0.2.0
 
   '@snyk/github-codeowners@1.1.0':
     dependencies:
@@ -6355,6 +6374,8 @@ snapshots:
   pkg-dir@5.0.0:
     dependencies:
       find-up: 5.0.0
+
+  poseidon-lite@0.2.0: {}
 
   poseidon-lite@0.2.1: {}
 

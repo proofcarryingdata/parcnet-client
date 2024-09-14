@@ -80,6 +80,8 @@ function getSchema(method: ParcnetRPCMethodName) {
       return ParcnetRPCSchema.shape.pod.shape.subscribe;
     case "pod.unsubscribe":
       return ParcnetRPCSchema.shape.pod.shape.unsubscribe;
+    case "pod.sign":
+      return ParcnetRPCSchema.shape.pod.shape.sign;
     default:
       const unknownMethod: never = method;
       throw new Error(`Unknown method: ${unknownMethod as string}`);

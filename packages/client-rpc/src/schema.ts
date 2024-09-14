@@ -8,6 +8,8 @@ const PODValueSchema = z.object({
   value: z.union([z.string(), z.bigint()])
 });
 
+const PODEntriesSchema = z.record(PODValueSchema);
+
 const DefinedEntrySchema = z.object({
   type: z.enum(["string", "int", "cryptographic", "eddsa_pubkey"]),
   isMemberOf: z.array(PODValueSchema).optional(),
@@ -102,6 +104,7 @@ export const ParcnetRPCSchema = z.object({
       .function()
       .args(PODSchemaSchema)
       .returns(z.promise(z.string())),
-    unsubscribe: z.function().args(z.string()).returns(z.promise(z.void()))
+    unsubscribe: z.function().args(z.string()).returns(z.promise(z.void())),
+    sign: z.function().args(PODEntriesSchema).returns(z.promise(z.string()))
   })
 }) satisfies z.ZodSchema<ParcnetRPC>;

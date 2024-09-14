@@ -15,6 +15,7 @@ import {
 } from "@parcnet/client-rpc";
 import { PodspecProofRequest } from "@parcnet/podspec";
 import { GPCBoundConfig, GPCProof, GPCRevealedClaims } from "@pcd/gpc";
+import { PODEntries } from "@pcd/pod";
 import { EventEmitter } from "eventemitter3";
 import { z, ZodFunction, ZodTuple, ZodTypeAny } from "zod";
 import { DialogController } from "./adapters/iframe.js";
@@ -148,6 +149,13 @@ export class ParcnetRPCConnector implements ParcnetRPC, ParcnetEvents {
           "pod.unsubscribe",
           [subscriptionId],
           ParcnetRPCSchema.shape.pod.shape.unsubscribe
+        );
+      },
+      sign: async (entries: PODEntries): Promise<string> => {
+        return this.#typedInvoke(
+          "pod.sign",
+          [entries],
+          ParcnetRPCSchema.shape.pod.shape.sign
         );
       }
     };

@@ -2,16 +2,20 @@ import { ParcnetAPI, Subscription } from "@parcnet/app-connector";
 import * as p from "@parcnet/podspec";
 import { POD, POD_INT_MAX, POD_INT_MIN, PODEntries, PODValue } from "@pcd/pod";
 import JSONBig from "json-bigint";
-import { ReactNode, useReducer, useState } from "react";
+import {
+  Dispatch,
+  ReactNode,
+  SetStateAction,
+  useReducer,
+  useState
+} from "react";
 import { Button } from "../components/Button";
 import { TryIt } from "../components/TryIt";
 import { useParcnetClient } from "../hooks/useParcnetClient";
 
-const MAGIC_PRIVATE_KEY =
-  "00112233445566778899AABBCCDDEEFF00112233445566778899aabbccddeeff";
-
 export function PODSection(): ReactNode {
   const { z, connected } = useParcnetClient();
+  const [pod, setPOD] = useState<POD | null>(null);
 
   return !connected ? null : (
     <div>
@@ -19,8 +23,10 @@ export function PODSection(): ReactNode {
       <div className="prose">
         <h2 className="text-lg font-bold mt-4">Query PODs</h2>
         <QueryPODs z={z} />
+        <h2 className="text-lg font-bold mt-4">Sign POD</h2>
+        <SignPOD z={z} setSignedPOD={setPOD} />
         <h2 className="text-lg font-bold mt-4">Insert POD</h2>
-        <InsertPOD z={z} />
+        <InsertPOD z={z} pod={pod} />
         <h2 className="text-lg font-bold mt-4">Delete POD</h2>
         <DeletePOD z={z} />
         <h2 className="text-lg font-bold mt-4">Subscribe to PODs</h2>
@@ -122,7 +128,7 @@ type Action =
 const stringish = ["string", "eddsa_pubkey"];
 const bigintish = ["int", "cryptographic"];
 
-const insertPODReducer = function (
+const editPODReducer = function (
   state: PODEntries,
   action: Action
 ): PODEntries {
@@ -186,23 +192,29 @@ enum PODCreationState {
   Failure
 }
 
-function InsertPOD({ z }: { z: ParcnetAPI }): ReactNode {
+function SignPOD({
+  z,
+  setSignedPOD
+}: {
+  z: ParcnetAPI;
+  setSignedPOD: Dispatch<SetStateAction<POD | null>>;
+}): ReactNode {
   const [creationState, setCreationState] = useState<PODCreationState>(
     PODCreationState.None
   );
-  const [signature, setSignature] = useState<string>("");
-  const [entries, dispatch] = useReducer(insertPODReducer, {
+  const [pod, setPOD] = useState<POD | null>(null);
+  const [entries, dispatch] = useReducer(editPODReducer, {
     test: { type: "string", value: "Testing" }
   } satisfies PODEntries);
   return (
     <div>
       <p>
-        To insert a POD, first we have to create one. Select the entries for the
-        POD below:
+        To sign a POD, first we have to create the entries. Select the entries
+        for the POD below:
       </p>
       <div className="flex flex-col gap-2 mb-4">
         {Object.entries(entries).map(([name, value], index) => (
-          <InsertPODEntry
+          <EditPODEntry
             key={index}
             showLabels={index === 0}
             name={name}
@@ -223,9 +235,9 @@ function InsertPOD({ z }: { z: ParcnetAPI }): ReactNode {
         </Button>
       </div>
       <p>
-        Then we can insert the POD:
+        Then we can sign the POD:
         <code className="block text-xs font-base rounded-md p-2 whitespace-pre">
-          {`const pod = POD.sign({
+          {`const pod = await z.pod.sign({
 ${Object.entries(entries)
   .map(([key, value]) => {
     return `  ${key}: { type: "${value.type}", value: ${
@@ -235,36 +247,37 @@ ${Object.entries(entries)
     } }`;
   })
   .join(",\n")}
-}, privateKey);
+});
 
-await z.pod.insert(pod);`}
+`}
         </code>
       </p>
       <TryIt
         onClick={async () => {
           try {
-            const pod = POD.sign(entries, MAGIC_PRIVATE_KEY);
-            await z.pod.insert(pod);
-            setSignature(pod.signature);
+            const pod = await z.pod.sign(entries);
+            setPOD(pod);
+            setSignedPOD(pod);
             setCreationState(PODCreationState.Success);
-          } catch (_e) {
+          } catch (e) {
+            console.error(e);
             setCreationState(PODCreationState.Failure);
           }
         }}
-        label="Insert POD"
+        label="Sign POD"
       />
       {creationState !== PODCreationState.None && (
         <div className="my-2">
           {creationState === PODCreationState.Success && (
             <div>
-              POD inserted successfully! The signature is{" "}
+              POD signed successfully! The signature is{" "}
               <code className="block text-xs font-base rounded-md p-2 whitespace-pre">
-                {signature}
+                {pod?.signature}
               </code>
             </div>
           )}
           {creationState === PODCreationState.Failure && (
-            <div>An error occurred while inserting your POD.</div>
+            <div>An error occurred while signing your POD.</div>
           )}
         </div>
       )}
@@ -272,7 +285,7 @@ await z.pod.insert(pod);`}
   );
 }
 
-function InsertPODEntry({
+function EditPODEntry({
   name,
   value,
   type,
@@ -337,6 +350,50 @@ function InsertPODEntry({
           Remove
         </Button>
       </div>
+    </div>
+  );
+}
+
+function InsertPOD({ z, pod }: { z: ParcnetAPI; pod: POD | null }): ReactNode {
+  const [insertionState, setInsertionState] = useState<PODCreationState>(
+    PODCreationState.None
+  );
+  if (pod === null) {
+    return null;
+  }
+  return (
+    <div>
+      <p>
+        To insert a POD, we must first create it. You can create a new POD by
+        using the "Sign POD" section above.
+      </p>
+      <p>
+        <code className="block text-xs font-base rounded-md p-2 whitespace-pre-wrap">
+          {`await z.pod.insert(pod);`}
+        </code>
+      </p>
+
+      <TryIt
+        onClick={async () => {
+          try {
+            await z.pod.insert(pod);
+            setInsertionState(PODCreationState.Success);
+          } catch (_e) {
+            setInsertionState(PODCreationState.Failure);
+          }
+        }}
+        label="Insert POD"
+      />
+      {insertionState !== PODCreationState.None && (
+        <div className="my-2">
+          {insertionState === PODCreationState.Success && (
+            <div>POD inserted successfully!</div>
+          )}
+          {insertionState === PODCreationState.Failure && (
+            <div>An error occurred while inserting your POD.</div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

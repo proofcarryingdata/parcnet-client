@@ -4,6 +4,7 @@ import {
   PodspecProofRequest
 } from "@parcnet/podspec";
 import { GPCBoundConfig, GPCProof, GPCRevealedClaims } from "@pcd/gpc";
+import { PODEntries } from "@pcd/pod";
 
 /**
  * @file This file contains the RPC interfaces for the Parcnet client.
@@ -52,6 +53,8 @@ export interface ParcnetPODRPC {
   delete: (signature: string) => Promise<void>;
   subscribe: (query: PODQuery) => Promise<string>;
   unsubscribe: (subscriptionId: string) => Promise<void>;
+  // Returns serialized POD
+  sign: (entries: PODEntries) => Promise<string>;
 }
 
 export interface ParcnetRPC {
