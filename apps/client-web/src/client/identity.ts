@@ -1,4 +1,4 @@
-import { ParcnetIdentityRPC } from "@parcnet/client-rpc";
+import { ParcnetIdentityRPC } from "@parcnet-js/client-rpc";
 
 export class ParcnetIdentityProcessor implements ParcnetIdentityRPC {
   async getSemaphoreV3Commitment(): Promise<bigint> {

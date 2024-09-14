@@ -1,4 +1,4 @@
-import { PodspecProofRequest } from "@parcnet/podspec";
+import { PodspecProofRequest } from "@parcnet-js/podspec";
 import JSONBig from "json-bigint";
 import { ReactNode, useState } from "react";
 import { ProveResult } from "../../../../packages/client-rpc/src";

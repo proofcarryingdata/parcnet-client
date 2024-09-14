@@ -1,4 +1,4 @@
-import { ParcnetPODRPC, PODQuery } from "@parcnet/client-rpc";
+import { ParcnetPODRPC, PODQuery } from "@parcnet-js/client-rpc";
 import { encodePrivateKey, POD, PODEntries } from "@pcd/pod";
 import { Identity } from "@semaphore-protocol/identity";
 import { PODCollection } from "./pod_collection.js";

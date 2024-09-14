@@ -2,7 +2,7 @@ import {
   EntriesSchema,
   PODSchema,
   PodspecProofRequest
-} from "@parcnet/podspec";
+} from "@parcnet-js/podspec";
 import { GPCBoundConfig, GPCProof, GPCRevealedClaims } from "@pcd/gpc";
 import { PODEntries } from "@pcd/pod";
 

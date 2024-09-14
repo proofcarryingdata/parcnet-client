@@ -3,7 +3,7 @@ import {
   InitializationMessageType,
   RPCMessage,
   Zapp
-} from "@parcnet/client-rpc";
+} from "@parcnet-js/client-rpc";
 import { ParcnetAPI } from "../api_wrapper.js";
 import { ParcnetRPCConnector } from "../rpc_client.js";
 

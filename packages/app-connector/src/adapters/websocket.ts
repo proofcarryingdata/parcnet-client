@@ -3,7 +3,7 @@ import {
   InitializationMessage,
   InitializationMessageType,
   Zapp
-} from "@parcnet/client-rpc";
+} from "@parcnet-js/client-rpc";
 import JSONBig from "json-bigint";
 import { ParcnetAPI } from "../api_wrapper.js";
 import { ParcnetRPCConnector } from "../rpc_client.js";

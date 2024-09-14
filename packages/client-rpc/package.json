@@ -1,5 +1,5 @@
 {
-  "name": "@parcnet/client-rpc",
+  "name": "@parcnet-js/client-rpc",
   "private": false,
   "type": "module",
   "version": "0.0.1",
@@ -17,14 +17,14 @@
     "LICENSE"
   ],
   "dependencies": {
-    "@parcnet/podspec": "workspace:*",
+    "@parcnet-js/podspec": "workspace:*",
     "@pcd/gpc": "0.0.6",
     "@pcd/pod": "0.1.5",
     "zod": "^3.22.4"
   },
   "devDependencies": {
-    "@parcnet/eslint-config": "workspace:*",
-    "@parcnet/typescript-config": "workspace:*",
+    "@parcnet-js/eslint-config": "workspace:*",
+    "@parcnet-js/typescript-config": "workspace:*",
     "@types/snarkjs": "^0.7.8",
     "tsup": "^8.2.4",
     "typescript": "^5.5"

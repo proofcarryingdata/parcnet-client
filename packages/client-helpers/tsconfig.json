@@ -1,5 +1,5 @@
 {
-  "extends": "@parcnet/typescript-config/base.json",
+  "extends": "@parcnet-js/typescript-config/base.json",
   "compilerOptions": {
     "outDir": "dist"
   },

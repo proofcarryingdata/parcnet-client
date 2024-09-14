@@ -13,7 +13,7 @@ import {
   RPCMessageType,
   SubscriptionUpdateResult,
   Zapp
-} from "@parcnet/client-rpc";
+} from "@parcnet-js/client-rpc";
 import JSONBig from "json-bigint";
 import type { MessageEvent, WebSocket } from "ws";
 import { ConnectorAdvice } from "./advice.js";

@@ -1,6 +1,6 @@
-import { ConnectorAdvice } from "@parcnet/client-helpers";
-import { ProveResult, Zapp } from "@parcnet/client-rpc";
-import { PodspecProofRequest } from "@parcnet/podspec";
+import { ConnectorAdvice } from "@parcnet-js/client-helpers";
+import { ProveResult, Zapp } from "@parcnet-js/client-rpc";
+import { PodspecProofRequest } from "@parcnet-js/podspec";
 import { POD } from "@pcd/pod";
 import { Identity } from "@semaphore-protocol/identity";
 

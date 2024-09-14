@@ -12,8 +12,8 @@ import {
   RPCMessageSchema,
   RPCMessageType,
   SubscriptionUpdateResult
-} from "@parcnet/client-rpc";
-import { PodspecProofRequest } from "@parcnet/podspec";
+} from "@parcnet-js/client-rpc";
+import { PodspecProofRequest } from "@parcnet-js/podspec";
 import { GPCBoundConfig, GPCProof, GPCRevealedClaims } from "@pcd/gpc";
 import { PODEntries } from "@pcd/pod";
 import { EventEmitter } from "eventemitter3";

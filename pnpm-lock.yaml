@@ -38,13 +38,13 @@ importers:
 
   apps/client-web:
     dependencies:
-      '@parcnet/client-helpers':
+      '@parcnet-js/client-helpers':
         specifier: workspace:*
         version: link:../../packages/client-helpers
-      '@parcnet/client-rpc':
+      '@parcnet-js/client-rpc':
         specifier: workspace:*
         version: link:../../packages/client-rpc
-      '@parcnet/podspec':
+      '@parcnet-js/podspec':
         specifier: workspace:*
         version: link:../../packages/podspec
       '@pcd/gpc':
@@ -72,7 +72,7 @@ importers:
         specifier: ^0.22.0
         version: 0.22.0(rollup@4.21.2)(vite@5.4.4(@types/node@22.5.4))
     devDependencies:
-      '@parcnet/eslint-config':
+      '@parcnet-js/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
       '@types/react':
@@ -108,10 +108,10 @@ importers:
 
   examples/test-app:
     dependencies:
-      '@parcnet/app-connector':
+      '@parcnet-js/app-connector':
         specifier: workspace:*
         version: link:../../packages/app-connector
-      '@parcnet/podspec':
+      '@parcnet-js/podspec':
         specifier: workspace:*
         version: link:../../packages/podspec
       '@pcd/pod':
@@ -136,7 +136,7 @@ importers:
         specifier: ^0.22.0
         version: 0.22.0(rollup@4.21.2)(vite@5.4.4(@types/node@20.16.3))
     devDependencies:
-      '@parcnet/eslint-config':
+      '@parcnet-js/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
       '@tailwindcss/forms':
@@ -184,10 +184,10 @@ importers:
       '@brenoroosevelt/toast':
         specifier: ^2.0.3
         version: 2.0.3(patch_hash=epzw5amkvmmm344rhqu423x3cq)
-      '@parcnet/client-rpc':
+      '@parcnet-js/client-rpc':
         specifier: workspace:*
         version: link:../client-rpc
-      '@parcnet/podspec':
+      '@parcnet-js/podspec':
         specifier: workspace:*
         version: link:../podspec
       '@pcd/gpc':
@@ -206,10 +206,10 @@ importers:
         specifier: ^3.22.4
         version: 3.23.8
     devDependencies:
-      '@parcnet/eslint-config':
+      '@parcnet-js/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
-      '@parcnet/typescript-config':
+      '@parcnet-js/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
       '@types/json-bigint':
@@ -230,7 +230,7 @@ importers:
 
   packages/client-helpers:
     dependencies:
-      '@parcnet/client-rpc':
+      '@parcnet-js/client-rpc':
         specifier: workspace:*
         version: link:../client-rpc
       json-bigint:
@@ -240,10 +240,10 @@ importers:
         specifier: ^8.18.0
         version: 8.18.0
     devDependencies:
-      '@parcnet/eslint-config':
+      '@parcnet-js/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
-      '@parcnet/typescript-config':
+      '@parcnet-js/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
       '@types/json-bigint':
@@ -264,7 +264,7 @@ importers:
 
   packages/client-rpc:
     dependencies:
-      '@parcnet/podspec':
+      '@parcnet-js/podspec':
         specifier: workspace:*
         version: link:../podspec
       '@pcd/gpc':
@@ -277,10 +277,10 @@ importers:
         specifier: ^3.22.4
         version: 3.23.8
     devDependencies:
-      '@parcnet/eslint-config':
+      '@parcnet-js/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
-      '@parcnet/typescript-config':
+      '@parcnet-js/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
       '@types/snarkjs':
@@ -347,10 +347,10 @@ importers:
         specifier: 0.1.5
         version: 0.1.5
     devDependencies:
-      '@parcnet/eslint-config':
+      '@parcnet-js/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
-      '@parcnet/typescript-config':
+      '@parcnet-js/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
       '@pcd/proto-pod-gpc-artifacts':

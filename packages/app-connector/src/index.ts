@@ -4,4 +4,4 @@ export * from "./api_wrapper.js";
 export * from "./rpc_client.js";
 export * from "./utils.js";
 export { Zapp };
-import { type Zapp } from "@parcnet/client-rpc";
+import { type Zapp } from "@parcnet-js/client-rpc";

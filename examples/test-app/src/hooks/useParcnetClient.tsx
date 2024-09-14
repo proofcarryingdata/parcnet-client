@@ -3,7 +3,7 @@ import {
   connectWebsocket,
   ParcnetAPI,
   Zapp
-} from "@parcnet/app-connector";
+} from "@parcnet-js/app-connector";
 import {
   createContext,
   ReactNode,

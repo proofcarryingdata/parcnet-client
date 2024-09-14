@@ -1,6 +1,6 @@
-import { listen } from "@parcnet/client-helpers/connection/iframe";
-import { Zapp } from "@parcnet/client-rpc";
-import { EntriesSchema, PODSchema, proofRequest } from "@parcnet/podspec";
+import { listen } from "@parcnet-js/client-helpers/connection/iframe";
+import { Zapp } from "@parcnet-js/client-rpc";
+import { EntriesSchema, PODSchema, proofRequest } from "@parcnet-js/podspec";
 import { gpcProve } from "@pcd/gpc";
 import { POD, POD_INT_MAX, POD_INT_MIN } from "@pcd/pod";
 import {

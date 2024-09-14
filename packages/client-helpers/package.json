@@ -1,5 +1,5 @@
 {
-  "name": "@parcnet/client-helpers",
+  "name": "@parcnet-js/client-helpers",
   "version": "0.0.1",
   "private": false,
   "type": "module",
@@ -33,13 +33,13 @@
     "LICENSE"
   ],
   "dependencies": {
-    "@parcnet/client-rpc": "workspace:*",
+    "@parcnet-js/client-rpc": "workspace:*",
     "json-bigint": "^1.0.0",
     "ws": "^8.18.0"
   },
   "devDependencies": {
-    "@parcnet/eslint-config": "workspace:*",
-    "@parcnet/typescript-config": "workspace:*",
+    "@parcnet-js/eslint-config": "workspace:*",
+    "@parcnet-js/typescript-config": "workspace:*",
     "@types/json-bigint": "^1.0.1",
     "@types/node": "^20.11.24",
     "@types/ws": "^8.5.12",

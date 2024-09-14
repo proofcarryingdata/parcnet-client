@@ -3,8 +3,8 @@ import {
   RPCMessageSchema,
   RPCMessageType,
   SubscriptionUpdateResult
-} from "@parcnet/client-rpc";
-import * as p from "@parcnet/podspec";
+} from "@parcnet-js/client-rpc";
+import * as p from "@parcnet-js/podspec";
 import { POD } from "@pcd/pod";
 import crypto from "crypto";
 import { assert, describe, expect, it } from "vitest";

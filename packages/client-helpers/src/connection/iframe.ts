@@ -10,7 +10,7 @@ import {
   RPCMessageType,
   SubscriptionUpdateResult,
   Zapp
-} from "@parcnet/client-rpc";
+} from "@parcnet-js/client-rpc";
 import { ConnectorAdvice } from "./advice.js";
 
 export class AdviceChannel implements ConnectorAdvice {

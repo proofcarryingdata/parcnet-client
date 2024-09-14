@@ -1,10 +1,10 @@
-import { ConnectorAdvice } from "@parcnet/client-helpers";
+import { ConnectorAdvice } from "@parcnet-js/client-helpers";
 import {
   ParcnetGPCRPC,
   ParcnetIdentityRPC,
   ParcnetPODRPC,
   ParcnetRPC
-} from "@parcnet/client-rpc";
+} from "@parcnet-js/client-rpc";
 import { Identity } from "@semaphore-protocol/identity";
 import { Dispatch } from "react";
 import { ClientAction } from "../state.js";

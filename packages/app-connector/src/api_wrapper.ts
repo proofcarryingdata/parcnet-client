@@ -2,8 +2,8 @@ import {
   ParcnetIdentityRPC,
   ParcnetRPC,
   ProveResult
-} from "@parcnet/client-rpc";
-import * as p from "@parcnet/podspec";
+} from "@parcnet-js/client-rpc";
+import * as p from "@parcnet-js/podspec";
 import { GPCBoundConfig, GPCProof, GPCRevealedClaims } from "@pcd/gpc";
 import { POD, PODEntries } from "@pcd/pod";
 import { EventEmitter } from "eventemitter3";

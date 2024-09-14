@@ -1,4 +1,4 @@
-import * as p from "@parcnet/podspec";
+import * as p from "@parcnet-js/podspec";
 import { POD } from "@pcd/pod";
 import { EventEmitter } from "eventemitter3";
 

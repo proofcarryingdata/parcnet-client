@@ -1,6 +1,6 @@
-import { ConnectorAdvice } from "@parcnet/client-helpers";
-import { ParcnetGPCRPC, ProveResult } from "@parcnet/client-rpc";
-import { PodspecProofRequest, proofRequest } from "@parcnet/podspec";
+import { ConnectorAdvice } from "@parcnet-js/client-helpers";
+import { ParcnetGPCRPC, ProveResult } from "@parcnet-js/client-rpc";
+import { PodspecProofRequest, proofRequest } from "@parcnet-js/podspec";
 import {
   GPCBoundConfig,
   GPCProof,

@@ -1,5 +1,5 @@
-import { ParcnetAPI, Subscription } from "@parcnet/app-connector";
-import * as p from "@parcnet/podspec";
+import { ParcnetAPI, Subscription } from "@parcnet-js/app-connector";
+import * as p from "@parcnet-js/podspec";
 import { POD, POD_INT_MAX, POD_INT_MIN, PODEntries, PODValue } from "@pcd/pod";
 import JSONBig from "json-bigint";
 import {
