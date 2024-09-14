@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [
     react(),
     nodePolyfills({
-      include: ["assert", "buffer"]
+      include: ["assert", "buffer", "constants"]
     })
   ],
   esbuild: {

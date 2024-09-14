@@ -21,3 +21,7 @@ export type PODSchema<E extends EntriesSchema> = {
     isNotMemberOf?: string[];
   };
 };
+
+export type PODTupleSchema<E extends EntriesSchema> = Required<
+  PODSchema<E>
+>["tuples"][number];

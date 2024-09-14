@@ -21,6 +21,7 @@
     "vite-plugin-node-polyfills": "^0.22.0"
   },
   "devDependencies": {
+    "@parcnet/eslint-config": "workspace:*",
     "@tailwindcss/forms": "^0.5.7",
     "@tailwindcss/typography": "^0.5.14",
     "@types/json-bigint": "^1.0.1",
