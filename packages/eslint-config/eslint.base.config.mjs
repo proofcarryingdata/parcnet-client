@@ -12,7 +12,13 @@ export default tseslint.config(
   ...tseslint.configs.stylisticTypeChecked,
 
   {
-    ignores: ["**/node_modules/*", "**/dist/", "**/vitest.config.ts"] // global ignore with single ignore key
+    ignores: [
+      "**/node_modules/*",
+      "**/dist/",
+      "**/vitest.config.ts",
+      "**/vite.config.ts",
+      "**/tailwind.config.ts"
+    ] // global ignore with single ignore key
   },
   {
     languageOptions: {

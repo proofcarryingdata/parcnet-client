@@ -2,38 +2,37 @@
   "name": "test-app",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "tsx build.ts dev",
-    "build": "tsx build.ts build",
-    "lint": "eslint \"**/*.ts{,x}\""
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
   },
   "dependencies": {
     "@parcnet/app-connector": "workspace:*",
     "@parcnet/podspec": "workspace:*",
     "@pcd/pod": "0.1.5",
-    "dotenv": "^16.0.3",
     "json-bigint": "^1.0.0",
     "lodash": "^4.17.21",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-icons": "^5.0.1"
+    "react-icons": "^5.0.1",
+    "vite-plugin-node-polyfills": "^0.22.0"
   },
   "devDependencies": {
-    "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
-    "@esbuild-plugins/node-modules-polyfill": "^0.2.2",
     "@tailwindcss/forms": "^0.5.7",
     "@tailwindcss/typography": "^0.5.14",
     "@types/json-bigint": "^1.0.1",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@vitejs/plugin-react": "^4.3.1",
     "autoprefixer": "^10.0.1",
     "daisyui": "^4.12.10",
-    "esbuild": "^0.23.1",
-    "esbuild-plugin-tailwindcss": "^1.2.1",
-    "postcss": "^8.4.38",
-    "tailwindcss": "^3.4.3",
-    "tsx": "^4.19.0",
-    "typescript": "^5.5"
+    "postcss": "^8.4.41",
+    "tailwindcss": "^3.4.10",
+    "typescript": "^5.5",
+    "vite": "^5.4.4"
   }
 }

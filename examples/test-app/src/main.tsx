@@ -1,6 +1,5 @@
-import { ReactNode } from "react";
+import { ReactNode, StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import "../styles/index.css";
 import { GPC } from "./apis/GPC";
 import { Identity } from "./apis/Identity";
 import { PODSection } from "./apis/PODSection";
@@ -9,6 +8,7 @@ import {
   ParcnetClientProvider,
   useParcnetClient
 } from "./hooks/useParcnetClient";
+import "./index.css";
 import { getConnectionInfo } from "./utils";
 
 const zapp = {
@@ -36,9 +36,11 @@ export default function Main(): ReactNode {
 
 function App(): ReactNode {
   return (
-    <ParcnetClientProvider zapp={zapp} connectionInfo={getConnectionInfo()}>
-      <Main />
-    </ParcnetClientProvider>
+    <StrictMode>
+      <ParcnetClientProvider zapp={zapp} connectionInfo={getConnectionInfo()}>
+        <Main />
+      </ParcnetClientProvider>
+    </StrictMode>
   );
 }
 const root = createRoot(
