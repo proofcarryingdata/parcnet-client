@@ -32,9 +32,6 @@ importers:
       turbo:
         specifier: ^2.0.14
         version: 2.1.1
-      typedoc:
-        specifier: ^0.26.7
-        version: 0.26.7(typescript@5.5.4)
       typescript:
         specifier: ^5.4.5
         version: 5.5.4
@@ -132,9 +129,21 @@ importers:
       sharp:
         specifier: ^0.32.5
         version: 0.32.6
+      starlight-package-managers:
+        specifier: ^0.7.0
+        version: 0.7.0(@astrojs/starlight@0.27.1(astro@4.15.6(@types/node@22.5.4)(rollup@4.21.2)(typescript@5.6.2)))(astro@4.15.6(@types/node@22.5.4)(rollup@4.21.2)(typescript@5.6.2))
+      starlight-typedoc:
+        specifier: ^0.16.0
+        version: 0.16.0(@astrojs/starlight@0.27.1(astro@4.15.6(@types/node@22.5.4)(rollup@4.21.2)(typescript@5.6.2)))(astro@4.15.6(@types/node@22.5.4)(rollup@4.21.2)(typescript@5.6.2))(typedoc-plugin-markdown@4.2.7(typedoc@0.26.7(typescript@5.6.2)))(typedoc@0.26.7(typescript@5.6.2))
       tailwindcss:
         specifier: ^3.4.4
         version: 3.4.10(ts-node@10.9.2(@types/node@22.5.4)(typescript@5.6.2))
+      typedoc:
+        specifier: ^0.26.7
+        version: 0.26.7(typescript@5.6.2)
+      typedoc-plugin-markdown:
+        specifier: ^4.2.7
+        version: 4.2.7(typedoc@0.26.7(typescript@5.6.2))
       typescript:
         specifier: ^5.6.2
         version: 5.6.2
@@ -4442,6 +4451,22 @@ packages:
   stackback@0.0.2:
     resolution: {integrity: sha512-1XMJE5fQo1jGH6Y/7ebnwPOBEkIEnT4QF32d5R1+VXdXveM0IBMJt8zfaxX1P3QhVwrYe+576+jkANtSS2mBbw==}
 
+  starlight-package-managers@0.7.0:
+    resolution: {integrity: sha512-7T0Wd4OhtyTxr7yxplO1gt1B0Ped4dxRQ0T3uOp7qM+5UmQiyQE6PMxwmN+4hVuaVQ1zpDdZR6nQrptewS+m9g==}
+    engines: {node: '>=18.14.1'}
+    peerDependencies:
+      '@astrojs/starlight': '>=0.22.0'
+      astro: '>=4.2.7'
+
+  starlight-typedoc@0.16.0:
+    resolution: {integrity: sha512-9B2kmX8S2J3cHenlf+TqVV+ogIrOolf8UxMu0f/lWDX/XVQDAjr44j0/y8k7Nfc+V6TmndsJbRIOpAmPAIvxAg==}
+    engines: {node: '>=18.14.1'}
+    peerDependencies:
+      '@astrojs/starlight': '>=0.15.0'
+      astro: '>=4.0.0'
+      typedoc: '>=0.26.5'
+      typedoc-plugin-markdown: '>=4.1.1'
+
   static-eval@2.0.2:
     resolution: {integrity: sha512-N/D219Hcr2bPjLxPiV+TQE++Tsmrady7TqAJugLy7Xk1EumfDWS/f5dtBbkRCGE7wKKXuYockQoj8Rm2/pVKyg==}
 
@@ -4788,6 +4813,12 @@ packages:
   typed-array-length@1.0.6:
     resolution: {integrity: sha512-/OxDN6OtAk5KBpGb28T+HZc2M+ADtvRxXrKKbUwtsLgdoxgX13hyy7ek6bFRl5+aBs2yZzB0c4CnQfAtVypW/g==}
     engines: {node: '>= 0.4'}
+
+  typedoc-plugin-markdown@4.2.7:
+    resolution: {integrity: sha512-bLsQdweSm48P9j6kGqQ3/4GCH5zu2EnURSkkxqirNc+uVFE9YK825ogDw+WbNkRHIV6eZK/1U43gT7YfglyYOg==}
+    engines: {node: '>= 18'}
+    peerDependencies:
+      typedoc: 0.26.x
 
   typedoc@0.26.7:
     resolution: {integrity: sha512-gUeI/Wk99vjXXMi8kanwzyhmeFEGv1LTdTQsiyIsmSYsBebvFxhbcyAx7Zjo4cMbpLGxM4Uz3jVIjksu/I2v6Q==}
@@ -10374,6 +10405,19 @@ snapshots:
 
   stackback@0.0.2: {}
 
+  starlight-package-managers@0.7.0(@astrojs/starlight@0.27.1(astro@4.15.6(@types/node@22.5.4)(rollup@4.21.2)(typescript@5.6.2)))(astro@4.15.6(@types/node@22.5.4)(rollup@4.21.2)(typescript@5.6.2)):
+    dependencies:
+      '@astrojs/starlight': 0.27.1(astro@4.15.6(@types/node@22.5.4)(rollup@4.21.2)(typescript@5.6.2))
+      astro: 4.15.6(@types/node@22.5.4)(rollup@4.21.2)(typescript@5.6.2)
+
+  starlight-typedoc@0.16.0(@astrojs/starlight@0.27.1(astro@4.15.6(@types/node@22.5.4)(rollup@4.21.2)(typescript@5.6.2)))(astro@4.15.6(@types/node@22.5.4)(rollup@4.21.2)(typescript@5.6.2))(typedoc-plugin-markdown@4.2.7(typedoc@0.26.7(typescript@5.6.2)))(typedoc@0.26.7(typescript@5.6.2)):
+    dependencies:
+      '@astrojs/starlight': 0.27.1(astro@4.15.6(@types/node@22.5.4)(rollup@4.21.2)(typescript@5.6.2))
+      astro: 4.15.6(@types/node@22.5.4)(rollup@4.21.2)(typescript@5.6.2)
+      github-slugger: 2.0.0
+      typedoc: 0.26.7(typescript@5.6.2)
+      typedoc-plugin-markdown: 4.2.7(typedoc@0.26.7(typescript@5.6.2))
+
   static-eval@2.0.2:
     dependencies:
       escodegen: 1.14.3
@@ -10868,13 +10912,17 @@ snapshots:
       is-typed-array: 1.1.13
       possible-typed-array-names: 1.0.0
 
-  typedoc@0.26.7(typescript@5.5.4):
+  typedoc-plugin-markdown@4.2.7(typedoc@0.26.7(typescript@5.6.2)):
+    dependencies:
+      typedoc: 0.26.7(typescript@5.6.2)
+
+  typedoc@0.26.7(typescript@5.6.2):
     dependencies:
       lunr: 2.3.9
       markdown-it: 14.1.0
       minimatch: 9.0.5
       shiki: 1.16.3
-      typescript: 5.5.4
+      typescript: 5.6.2
       yaml: 2.5.1
 
   typesafe-path@0.2.2: {}

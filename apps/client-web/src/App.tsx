@@ -370,7 +370,7 @@ function Authorize({
               Permissions
             </th>
             <td className="border-2 border-white w-full px-2 py-1">
-              {zapp.permissions.join(", ")}
+              {zapp.permissions?.join(", ") ?? "-"}
             </td>
           </tr>
         </tbody>

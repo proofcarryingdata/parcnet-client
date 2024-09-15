@@ -47,7 +47,7 @@ export class Subscription<E extends p.EntriesSchema> {
   }
 }
 
-class ParcnetPODWrapper {
+export class ParcnetPODWrapper {
   #api: ParcnetRPCConnector;
   #subscriptionEmitters: Map<string, EventEmitter>;
 
@@ -95,7 +95,10 @@ class ParcnetPODWrapper {
   }
 }
 
-class ParcnetGPCWrapper {
+/**
+ * Wraps the Parcnet RPC API to provide a more user-friendly interface.
+ */
+export class ParcnetGPCWrapper {
   #api: ParcnetRPC;
 
   constructor(api: ParcnetRPC) {

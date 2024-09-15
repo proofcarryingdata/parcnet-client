@@ -1,9 +1,0 @@
-{
-  "entryPoints": ["packages/*"],
-  "name": "Parcnet SDK",
-  "entryPointStrategy": "packages",
-  "exclude": [
-    "**/eslint-config-custom",
-    "**/tsconfig"
-  ]
-}

@@ -1,0 +1,238 @@
+---
+title: Getting Started
+description: First steps with the Zapp SDK
+---
+
+import { PackageManagers } from "starlight-package-managers";
+
+The Zapp SDK lets you build JavaScript apps which connect to PARCNET clients, giving you access to programmable cryptography tools which enable secure and private interaction with the user's personal data.
+
+In this guide we'll look at how to get started as an app developer, connect to a PARCNET client, and interact with the user's data store.
+
+## Installation
+
+To get started with the Zapp SDK, you will need to install the `@parcnet-js/app-connector` package, using your preferred package manager:
+
+<PackageManagers
+  pkgManagers={["npm", "yarn", "pnpm", "bun"]}
+  pkg="@parcnet-js/app-connector"
+/>
+
+## Import the connector
+
+Next, import the connector package in your application code:
+
+```ts wrap=true
+import { connect } from "@parcnet-js/connector";
+```
+
+## Connect to PARCNET
+
+To connect, you will need to define some data about your Zapp, select a host HTML element, and choose a PARCNET client to connect to.
+
+### Defining your Zapp
+
+To define your Zapp:
+```ts wrap=true
+import { connect, Zapp } from "@parcnet-js/app-connector";
+
+const myZapp: Zapp = {
+  name: "My Zapp Name"
+}
+```
+
+Try to give your Zapp a simple, memorable name that is clearly tied to its branding or domain name.
+
+### Select an HTML element
+
+The app connector works by inserting an `<iframe>` element into the web page, and uses this to exchange messages with the PARCNET client. To avoid interfering with other elements on your page, you should add an element that the app connector can use. For example, your HTML might look something like this:
+```html wrap=true
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My First Zapp</title>
+  </head>
+  <body>
+    <div id="parcnet-app-connector">
+      <!-- This element will be used by the app connector -->
+    </div>
+    <div id="app">
+      <!-- Your HTML or mounted components go here -->
+    </div>
+    <script type="module" src="/src/app.ts"></script>
+  </body>
+</html>
+```
+
+Here we're using an element with the ID `parcnet-app-connector` to host the `iframe`. It's important that your application does not change this element once the app connector has started.
+
+### Choose a PARCNET client URL
+
+Finally, you must choose the PARCNET client you want to connect to. The client is identified by the URL it's hosted on. For Zupass production, the URL is `https://zupass.org`, but you might be running a local development version on something like `http://localhost:3000`. Or you might be running another client altogether, in which case use the URL that it's hosted at.
+
+### Putting it all together
+
+Now we're ready to connect:
+
+```ts wrap=true
+import { connect, Zapp } from "@parcnet-js/app-connector";
+
+// The details of our Zapp
+const myZapp: Zapp = {
+  name: "My Zapp Name"
+}
+
+// The HTML element to host the <iframe>
+const element = document.getElementById("parcnet-app-connector") as HTMLElement;
+
+// The URL to the PARCNET client
+const clientUrl = "http://localhost:3000";
+
+// Connect!
+const z = await connect(myZapp, element, clientUrl);
+```
+
+The resulting `z` variable will contain an API wrapper. The API reference for this is [here](/api/classes/parcnetapi/).
+
+## Creating and reading data
+
+User data is stored in [POD](https://pod.org/) format. This is a cryptography-friendly data format which enables the creation of proofs about the structure, content, and provenance of individual data objects, or groups of data objects.
+
+### Signing PODs
+
+New PODs are created by signing a data object. This is straightforward:
+
+```ts wrap=true
+const data: PODEntries = {
+  greeting: { type: "string", value: "Hello, world" },
+  magic_number: { type: "int", value: 1337n },
+  email_address: { type: "string", value: "test@example.com" }
+}
+
+const signedPOD = await z.pod.sign(data);
+
+// Will print the entries we defined above:
+console.log(signedPOD.content.asEntries());
+
+// Will print the unique signature of the POD:
+console.log(signedPOD.signature);
+```
+
+The result of the `sign` method is a `POD` data object. Internally, this stores the data entries as a Merkle tree, but it's not necessary to understand how this works.
+
+The POD's unique signature is the signed hash of the Merkle root, but you can treat it as an opaque identifier. The signature is created using a private key belonging to the user, which is managed by the PARCNET client - your app does not have direct access to the private key.
+
+### Inserting PODs to the data store
+
+Once you have a POD, you can insert it to the data store:
+
+```ts wrap=true
+await z.pod.insert(signedPOD);
+```
+
+PARCNET clients are responsible for saving the data and synchronizing it between devices, so your app doesn't need to worry about how this data is persisted.
+
+In this example, we're inserting the POD that we created by requesting a signature from the client, but your app could also have a back-end service which signs PODs using your own private key. Those PODs can be inserted using the `insert` API. For example:
+
+```ts wrap=true
+// Fetch the serialized POD from the server
+const response = await fetch('https://your-api.com/get-pod');
+const serializedPOD = await response.text();
+
+// Deserialize the POD
+const pod = POD.deserialize(serializedPOD);
+
+// Now you can insert the POD into the data store
+await z.pod.insert(pod);
+```
+
+The details of your backend may be different, but this approach works for PODs produced by any external source.
+
+### Deleting PODs
+
+Your app can also delete PODs for which it knows the signature:
+
+```ts wrap=true
+await z.pod.delete(signature);
+```
+
+This tells the client to drop the POD from the user's data store.
+
+### Querying for PODs
+
+To read PODs from the data store, you can define queries which describe certain criteria for PODs:
+
+```ts wrap=true
+const queryResult = await z.pod.query({
+  entries: {
+    greeting: { type: "string" },
+    magic_number: { type: "int" }
+  }
+});
+```
+
+This will return any PODs which have entries matching the description. The result is an array of `POD` objects, which will be empty if no matching results are found.
+
+Queries can contain more advanced constraints:
+
+```ts wrap=true
+const validGreetings = [
+  { type: "string", value: "Hello, world" },
+  { type: "string", value: "Ahoy there!" },
+  { type: "string", value: "Hello. My name is Inigo Montoya. You killed my father. Prepare to die!" }
+];
+
+const validNumberRange = { min: 1000n, max: 1500n };
+
+const queryResult = await z.pod.query({
+  entries: {
+    greeting: { type: "string", isMemberOf: validGreetings },
+    magic_number: { type: "int", inRange: validNumberRange }
+  }
+});
+```
+
+This query provides a list of valid strings for the `greeting` entry, and a range of valid numbers for the `magic_number` entry. You can use these features to construct very specific queries for specific PODs.
+
+### Subscribing to queries
+
+TODO
+
+## Making and verifying proofs about data
+
+PODs are designed to make it easy to create cryptographic proofs about their structure, content, and provenance. These proofs are created using **G**eneral **P**urpose **C**ircuits, or **GPC**s.
+
+GPCs allow you to describe aspects of a POD, and make proofs about that POD without revealing all of the underlying data. For example, you could prove that you have a POD signed by a particular public key without revealing the POD's content, or prove that you have a POD with a particular entry whose value lies in a certain range or belongs to a list, without revealing the exact value.
+
+To create a proof, you must create a **proof request**. The proof request contains information about what you would like to prove, and the user can decide whether to allow the proof. Here's an example:
+
+```ts wrap=true
+const validGreetings = [
+  { type: "string", value: "Hello, world" },
+  { type: "string", value: "Ahoy there!" },
+  { type: "string", value: "Hello. My name is Inigo Montoya. You killed my father. Prepare to die!" }
+];
+
+const validNumberRange = { min: 1000n, max: 1500n };
+
+const result = await z.gpc.prove({
+  pods: {
+    pod1: {
+      pod: {
+        entries: {
+          greeting: { type: "string", isMemberOf: validGreetings },
+          magic_number: { type: "int", inRange: validNumberRange },
+          email_address: { type: "string" }
+        }
+      }
+    },
+    {
+      revealed: { email_address: true }
+    }
+  }
+});
+```
+
+This proof will require a POD with a valid `greeting` and `magic_number`, and will also reveal the value of the `email_address` entry.

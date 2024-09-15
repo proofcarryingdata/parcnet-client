@@ -9,30 +9,36 @@ https://tailwindcss.com/docs/adding-custom-styles#using-css-and-layer
 
 /* Dark mode colors. */
 :root {
-  --sl-color-accent-low: #002c1f;
-  --sl-color-accent: #007d5f;
-  --sl-color-accent-high: #8bdcbe;
+  --sl-color-accent-low: #0f3f2f;
+  --sl-color-accent: #34ff9f;
+  --sl-color-accent-high: #60faa0;
   --sl-color-white: #ffffff;
-  --sl-color-gray-1: #eeeeee;
-  --sl-color-gray-2: #c8c8c8;
-  --sl-color-gray-3: #a4a4a4;
-  --sl-color-gray-4: #585858;
-  --sl-color-gray-5: #383838;
-  --sl-color-gray-6: #272727;
-  --sl-color-black: #181818;
+  --sl-color-gray-1: #ecf2ef;
+  --sl-color-gray-2: #c0c7c4;
+  --sl-color-gray-3: #88968f;
+  --sl-color-gray-4: #54615a;
+  --sl-color-gray-5: #35413b;
+  --sl-color-gray-6: #242f2a;
+  --sl-color-black: #131a17;
 }
 /* Light mode colors. */
 :root[data-theme="light"] {
-  --sl-color-accent-low: #abe6cf;
-  --sl-color-accent: #00533f;
-  --sl-color-accent-high: #003c2d;
-  --sl-color-white: #181818;
-  --sl-color-gray-1: #272727;
-  --sl-color-gray-2: #383838;
-  --sl-color-gray-3: #585858;
-  --sl-color-gray-4: #8b8b8b;
-  --sl-color-gray-5: #c2c2c2;
-  --sl-color-gray-6: #eeeeee;
-  --sl-color-gray-7: #f6f6f6;
+  --sl-color-accent-low: #a0e8c0;
+  --sl-color-accent: #00b050;
+  --sl-color-accent-high: #075228;
+  --sl-color-white: #141a16;
+  --sl-color-gray-1: #1f2922;
+  --sl-color-gray-2: #2e3a32;
+  --sl-color-gray-3: #4a574e;
+  --sl-color-gray-4: #778078;
+  --sl-color-gray-5: #aab3ac;
+  --sl-color-gray-6: #e0e6e2;
+  --sl-color-gray-7: #f0f4f1;
   --sl-color-black: #ffffff;
+}
+
+@layer components {
+  [data-has-sidebar] main {
+    @apply dark:bg-[rgba(0,0,0,0.25)];
+  }
 }
