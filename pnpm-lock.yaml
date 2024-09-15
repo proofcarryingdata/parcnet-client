@@ -205,6 +205,9 @@ importers:
       json-bigint:
         specifier: ^1.0.0
         version: 1.0.0
+      valibot:
+        specifier: ^0.42.0
+        version: 0.42.0(typescript@5.5.4)
       zod:
         specifier: ^3.22.4
         version: 3.23.8
@@ -239,6 +242,9 @@ importers:
       json-bigint:
         specifier: ^1.0.0
         version: 1.0.0
+      valibot:
+        specifier: ^0.42.0
+        version: 0.42.0(typescript@5.5.4)
       ws:
         specifier: ^8.18.0
         version: 8.18.0
@@ -276,9 +282,9 @@ importers:
       '@pcd/pod':
         specifier: 0.1.5
         version: 0.1.5
-      zod:
-        specifier: ^3.22.4
-        version: 3.23.8
+      valibot:
+        specifier: ^0.42.0
+        version: 0.42.0(typescript@5.5.4)
     devDependencies:
       '@parcnet-js/eslint-config':
         specifier: workspace:*
@@ -3390,6 +3396,14 @@ packages:
 
   v8-compile-cache-lib@3.0.1:
     resolution: {integrity: sha512-wa7YjyUGfNZngI/vtK0UHAN+lgDCxBPCylVXGp0zu59Fz5aiGtNXaq3DhIov063MorB+VfufLh3JlF2KdTK3xg==}
+
+  valibot@0.42.0:
+    resolution: {integrity: sha512-igMdmHXxDiQY714ssh9bGisMqJ2yg7sko1KOmv/omnrIacGtP6mGrbvVT1IuV1bDrHyG9ybgpHwG1UElDiDCLg==}
+    peerDependencies:
+      typescript: '>=5'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
 
   vite-node@2.0.5:
     resolution: {integrity: sha512-LdsW4pxj0Ot69FAoXZ1yTnA9bjGohr2yNBU7QKRxpz8ITSkhuDl6h3zS/tvgz4qrNjeRnvrWeXQ8ZF7Um4W00Q==}
@@ -6931,6 +6945,10 @@ snapshots:
 
   v8-compile-cache-lib@3.0.1:
     optional: true
+
+  valibot@0.42.0(typescript@5.5.4):
+    optionalDependencies:
+      typescript: 5.5.4
 
   vite-node@2.0.5(@types/node@22.5.4):
     dependencies:

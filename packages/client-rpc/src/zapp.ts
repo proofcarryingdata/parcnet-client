@@ -1,8 +1,8 @@
-import { z } from "zod";
+import * as v from "valibot";
 
-export const ZappSchema = z.object({
-  name: z.string(),
-  permissions: z.array(z.string())
+export const ZappSchema = v.object({
+  name: v.string(),
+  permissions: v.array(v.string())
 });
 
-export type Zapp = z.infer<typeof ZappSchema>;
+export type Zapp = v.InferOutput<typeof ZappSchema>;

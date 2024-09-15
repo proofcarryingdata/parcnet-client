@@ -11,6 +11,7 @@ import {
   SubscriptionUpdateResult,
   Zapp
 } from "@parcnet-js/client-rpc";
+import * as v from "valibot";
 import { ConnectorAdvice } from "./advice.js";
 
 export class AdviceChannel implements ConnectorAdvice {
@@ -63,25 +64,25 @@ export class AdviceChannel implements ConnectorAdvice {
 function getSchema(method: ParcnetRPCMethodName) {
   switch (method) {
     case "gpc.canProve":
-      return ParcnetRPCSchema.shape.gpc.shape.canProve;
+      return ParcnetRPCSchema.gpc.canProve;
     case "gpc.prove":
-      return ParcnetRPCSchema.shape.gpc.shape.prove;
+      return ParcnetRPCSchema.gpc.prove;
     case "gpc.verify":
-      return ParcnetRPCSchema.shape.gpc.shape.verify;
+      return ParcnetRPCSchema.gpc.verify;
     case "identity.getSemaphoreV3Commitment":
-      return ParcnetRPCSchema.shape.identity.shape.getSemaphoreV3Commitment;
+      return ParcnetRPCSchema.identity.getSemaphoreV3Commitment;
     case "pod.query":
-      return ParcnetRPCSchema.shape.pod.shape.query;
+      return ParcnetRPCSchema.pod.query;
     case "pod.insert":
-      return ParcnetRPCSchema.shape.pod.shape.insert;
+      return ParcnetRPCSchema.pod.insert;
     case "pod.delete":
-      return ParcnetRPCSchema.shape.pod.shape.delete;
+      return ParcnetRPCSchema.pod.delete;
     case "pod.subscribe":
-      return ParcnetRPCSchema.shape.pod.shape.subscribe;
+      return ParcnetRPCSchema.pod.subscribe;
     case "pod.unsubscribe":
-      return ParcnetRPCSchema.shape.pod.shape.unsubscribe;
+      return ParcnetRPCSchema.pod.unsubscribe;
     case "pod.sign":
-      return ParcnetRPCSchema.shape.pod.shape.sign;
+      return ParcnetRPCSchema.pod.sign;
     default:
       const unknownMethod: never = method;
       throw new Error(`Unknown method: ${unknownMethod as string}`);
@@ -100,16 +101,19 @@ async function handleMessage(
       throw new Error("Path does not contain a function name");
     }
     const object = deepGet(rpc, path);
-    const functionToInvoke = (object as Record<string, unknown>)[functionName];
+    const functionToInvoke = (
+      object as Record<string, (...args: unknown[]) => Promise<unknown>>
+    )[functionName];
 
     try {
       if (functionToInvoke && typeof functionToInvoke === "function") {
         const schema = getSchema(message.fn);
-        const parsedArgs = schema.parameters().parse(message.args);
+        const parsedArgs = v.parse(schema.input, message.args);
         try {
-          const result = await schema
-            .returnType()
-            .parse(functionToInvoke.apply(object, parsedArgs));
+          const result = v.parse(
+            schema.output,
+            await functionToInvoke.apply(object, parsedArgs)
+          );
 
           port.postMessage({
             type: RPCMessageType.PARCNET_CLIENT_INVOKE_RESULT,
@@ -146,12 +150,12 @@ export async function listen(): Promise<ListenResult> {
 
   return new Promise((resolve) => {
     const windowEventHandler = (event: MessageEvent) => {
-      const data = InitializationMessageSchema.safeParse(event.data);
+      const data = v.safeParse(InitializationMessageSchema, event.data);
       if (!data.success) {
         return;
       }
 
-      const msg = data.data;
+      const msg = data.output;
 
       if (msg.type === InitializationMessageType.PARCNET_CLIENT_CONNECT) {
         if (!event.ports[0] || event.ports.length !== 1) {
@@ -165,7 +169,7 @@ export async function listen(): Promise<ListenResult> {
             port,
             onReady: (rpc) => {
               portMessageHandler = (ev) => {
-                const message = RPCMessageSchema.parse(ev.data);
+                const message = v.parse(RPCMessageSchema, ev.data);
                 void handleMessage(rpc, port, message);
               };
 

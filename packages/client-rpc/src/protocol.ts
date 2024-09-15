@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as v from "valibot";
 import { ParcnetRPCSchema } from "./schema.js";
 import { ZappSchema } from "./zapp.js";
 
@@ -18,67 +18,69 @@ export enum RPCMessageType {
   PARCNET_CLIENT_SUBSCRIPTION_UPDATE = "zupass-client-subscription-update"
 }
 
-const ParcnetRPCMethodNameSchema = z
-  .string()
-  .refine(
-    (
-      s
-    ): s is
-      | `gpc.${keyof typeof ParcnetRPCSchema.shape.gpc.shape}`
-      | `pod.${keyof typeof ParcnetRPCSchema.shape.pod.shape}`
-      | `identity.${keyof typeof ParcnetRPCSchema.shape.identity.shape}` =>
-      (s.startsWith("gpc.") &&
-        s.slice(4) in ParcnetRPCSchema.shape.gpc.shape) ||
-      (s.startsWith("pod.") &&
-        s.slice(4) in ParcnetRPCSchema.shape.pod.shape) ||
-      (s.startsWith("identity.") &&
-        s.slice(9) in ParcnetRPCSchema.shape.identity.shape)
-  );
+const ParcnetRPCMethodNameSchema = v.pipe(
+  v.string(),
+  v.check((s): s is ParcnetRPCMethodName => {
+    return (
+      typeof s === "string" &&
+      ((s.startsWith("gpc.") && s.slice(4) in ParcnetRPCSchema.gpc) ||
+        (s.startsWith("pod.") && s.slice(4) in ParcnetRPCSchema.pod) ||
+        (s.startsWith("identity.") && s.slice(9) in ParcnetRPCSchema.identity))
+    );
+  }, "Invalid RPC method name"),
+  v.transform<string, ParcnetRPCMethodName>((s) => s as ParcnetRPCMethodName)
+);
 
-export const RPCMessageSchema = z.discriminatedUnion("type", [
+export type ParcnetRPCMethodName =
+  | `gpc.${keyof typeof ParcnetRPCSchema.gpc}`
+  | `pod.${keyof typeof ParcnetRPCSchema.pod}`
+  | `identity.${keyof typeof ParcnetRPCSchema.identity}`;
+
+export const RPCMessageSchema = v.union([
   /**
    * Schema which matches the type of {@link }
    */
-  z.object({
-    type: z.literal(RPCMessageType.PARCNET_CLIENT_INVOKE),
-    serial: z.number(),
+  v.object({
+    type: v.literal(RPCMessageType.PARCNET_CLIENT_INVOKE),
+    serial: v.number(),
     fn: ParcnetRPCMethodNameSchema,
-    args: z.array(z.unknown())
+    args: v.array(v.unknown())
   }),
-  z.object({
-    type: z.literal(RPCMessageType.PARCNET_CLIENT_INVOKE_RESULT),
-    result: z.unknown(),
-    serial: z.number()
+  v.object({
+    type: v.literal(RPCMessageType.PARCNET_CLIENT_INVOKE_RESULT),
+    result: v.unknown(),
+    serial: v.number()
   }),
-  z.object({
-    type: z.literal(RPCMessageType.PARCNET_CLIENT_INVOKE_ERROR),
-    error: z.string(),
-    serial: z.number()
+  v.object({
+    type: v.literal(RPCMessageType.PARCNET_CLIENT_INVOKE_ERROR),
+    error: v.string(),
+    serial: v.number()
   }),
-  z.object({
-    type: z.literal(RPCMessageType.PARCNET_CLIENT_READY)
+  v.object({
+    type: v.literal(RPCMessageType.PARCNET_CLIENT_READY)
   }),
-  z.object({
-    type: z.literal(RPCMessageType.PARCNET_CLIENT_SHOW)
+  v.object({
+    type: v.literal(RPCMessageType.PARCNET_CLIENT_SHOW)
   }),
-  z.object({
-    type: z.literal(RPCMessageType.PARCNET_CLIENT_HIDE)
+  v.object({
+    type: v.literal(RPCMessageType.PARCNET_CLIENT_HIDE)
   }),
-  z.object({
-    type: z.literal(RPCMessageType.PARCNET_CLIENT_SUBSCRIPTION_UPDATE),
-    update: z.array(z.string()),
-    subscriptionId: z.string(),
-    subscriptionSerial: z.number()
+  v.object({
+    type: v.literal(RPCMessageType.PARCNET_CLIENT_SUBSCRIPTION_UPDATE),
+    update: v.array(v.string()),
+    subscriptionId: v.string(),
+    subscriptionSerial: v.number()
   })
 ]);
 
-export const InitializationMessageSchema = z.discriminatedUnion("type", [
-  z.object({
-    type: z.literal(InitializationMessageType.PARCNET_CLIENT_CONNECT),
+export const InitializationMessageSchema = v.union([
+  v.object({
+    type: v.literal(InitializationMessageType.PARCNET_CLIENT_CONNECT),
     zapp: ZappSchema
   })
 ]);
 
-export type InitializationMessage = z.infer<typeof InitializationMessageSchema>;
-export type RPCMessage = z.infer<typeof RPCMessageSchema>;
-export type ParcnetRPCMethodName = z.infer<typeof ParcnetRPCMethodNameSchema>;
+export type InitializationMessage = v.InferOutput<
+  typeof InitializationMessageSchema
+>;
+export type RPCMessage = v.InferOutput<typeof RPCMessageSchema>;

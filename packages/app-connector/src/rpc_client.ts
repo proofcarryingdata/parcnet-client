@@ -8,6 +8,7 @@ import {
   ParcnetRPCSchema,
   PODQuery,
   ProveResult,
+  RPCFunction,
   RPCMessage,
   RPCMessageSchema,
   RPCMessageType,
@@ -17,7 +18,7 @@ import { PodspecProofRequest } from "@parcnet-js/podspec";
 import { GPCBoundConfig, GPCProof, GPCRevealedClaims } from "@pcd/gpc";
 import { PODEntries } from "@pcd/pod";
 import { EventEmitter } from "eventemitter3";
-import { z, ZodFunction, ZodTuple, ZodTypeAny } from "zod";
+import * as v from "valibot";
 import { DialogController } from "./adapters/iframe.js";
 
 /**
@@ -85,27 +86,22 @@ export class ParcnetRPCConnector implements ParcnetRPC, ParcnetEvents {
    * @param args - The arguments to pass to the method.
    * @returns A promise that resolves to the method's return value.
    */
-  async #typedInvoke<
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    A extends ZodTuple<any, any>,
-    R extends ZodTypeAny,
-    F extends ZodFunction<A, R>
-  >(
+  async #typedInvoke<F extends RPCFunction>(
     fn: ParcnetRPCMethodName,
-    args: z.infer<ReturnType<F["parameters"]>>,
+    args: v.InferInput<F["input"]>,
     functionSchema: F
-  ): Promise<z.infer<ReturnType<F["returnType"]>>> {
-    const result = this.#invoke(fn, args);
+  ): Promise<v.InferOutput<F["output"]>> {
+    const result = this.#invoke(fn, v.parse(functionSchema.input, args));
     // Ensure that the result is of the expected type
-    const parsedResult = functionSchema.returnType().safeParse(result);
+    const parsedResult = v.safeParse(functionSchema.output, result);
     if (parsedResult.success) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const result = await parsedResult.data;
+      const result = await parsedResult.output;
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return result;
     } else {
       throw new Error(
-        `Failed to parse result for ${fn}: ${parsedResult.error.message}`
+        `Failed to parse result for ${fn}: ${parsedResult.issues.map((issue) => issue.message).join(", ")}`
       );
     }
   }
@@ -114,48 +110,47 @@ export class ParcnetRPCConnector implements ParcnetRPC, ParcnetEvents {
     this.#port = port;
     this.#dialogController = dialogController;
     this.#emitter = new EventEmitter();
-
     this.pod = {
       query: async (query: PODQuery): Promise<string[]> => {
         return this.#typedInvoke(
           "pod.query",
           [query],
-          ParcnetRPCSchema.shape.pod.shape.query
+          ParcnetRPCSchema.pod.query
         );
       },
       insert: async (serializedPod: string): Promise<void> => {
         return this.#typedInvoke(
           "pod.insert",
           [serializedPod],
-          ParcnetRPCSchema.shape.pod.shape.insert
+          ParcnetRPCSchema.pod.insert
         );
       },
       delete: async (serializedPod: string): Promise<void> => {
         return this.#typedInvoke(
           "pod.delete",
           [serializedPod],
-          ParcnetRPCSchema.shape.pod.shape.delete
+          ParcnetRPCSchema.pod.delete
         );
       },
       subscribe: async (query: PODQuery): Promise<string> => {
         return this.#typedInvoke(
           "pod.subscribe",
           [query],
-          ParcnetRPCSchema.shape.pod.shape.subscribe
+          ParcnetRPCSchema.pod.subscribe
         );
       },
       unsubscribe: async (subscriptionId: string): Promise<void> => {
         return this.#typedInvoke(
           "pod.unsubscribe",
           [subscriptionId],
-          ParcnetRPCSchema.shape.pod.shape.unsubscribe
+          ParcnetRPCSchema.pod.unsubscribe
         );
       },
       sign: async (entries: PODEntries): Promise<string> => {
         return this.#typedInvoke(
           "pod.sign",
           [entries],
-          ParcnetRPCSchema.shape.pod.shape.sign
+          ParcnetRPCSchema.pod.sign
         );
       }
     };
@@ -164,14 +159,14 @@ export class ParcnetRPCConnector implements ParcnetRPC, ParcnetEvents {
         return this.#typedInvoke(
           "gpc.prove",
           [request],
-          ParcnetRPCSchema.shape.gpc.shape.prove
+          ParcnetRPCSchema.gpc.prove
         );
       },
       canProve: async (request: PodspecProofRequest): Promise<boolean> => {
         return this.#typedInvoke(
           "gpc.canProve",
           [request],
-          ParcnetRPCSchema.shape.gpc.shape.canProve
+          ParcnetRPCSchema.gpc.canProve
         );
       },
       verify: async (
@@ -183,7 +178,7 @@ export class ParcnetRPCConnector implements ParcnetRPC, ParcnetEvents {
         return this.#typedInvoke(
           "gpc.verify",
           [proof, boundConfig, revealedClaims, proofRequest],
-          ParcnetRPCSchema.shape.gpc.shape.verify
+          ParcnetRPCSchema.gpc.verify
         );
       }
     };
@@ -192,7 +187,7 @@ export class ParcnetRPCConnector implements ParcnetRPC, ParcnetEvents {
         return this.#typedInvoke(
           "identity.getSemaphoreV3Commitment",
           [],
-          ParcnetRPCSchema.shape.identity.shape.getSemaphoreV3Commitment
+          ParcnetRPCSchema.identity.getSemaphoreV3Commitment
         );
       }
     };
@@ -213,9 +208,9 @@ export class ParcnetRPCConnector implements ParcnetRPC, ParcnetEvents {
     // Set up a listener for messages from the client
     // Messages are sent to the event loop for processing
     this.#port.addEventListener("message", (ev: MessageEvent) => {
-      const msg = RPCMessageSchema.safeParse(ev.data);
+      const msg = v.safeParse(RPCMessageSchema, ev.data);
       if (msg.success) {
-        eventLoop.next(msg.data);
+        eventLoop.next(msg.output);
       } else {
         console.error("Invalid message received: ", ev);
       }
