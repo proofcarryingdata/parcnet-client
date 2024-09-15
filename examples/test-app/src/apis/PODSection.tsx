@@ -133,30 +133,36 @@ const editPODReducer = function (
   action: Action
 ): PODEntries {
   switch (action.type) {
-    case "ADD_ENTRY":
+    case "ADD_ENTRY": {
+      const newState = { ...state };
       let key = "entry";
       let n = 1;
-      while (key in state) {
+      while (key in newState) {
         key = `entry${n}`;
         n++;
       }
-      state[key] = action.value;
-      break;
-    case "REMOVE_ENTRY":
-      delete state[action.key];
-      break;
-    case "SET_KEY":
-      state[action.newKey] = state[action.key];
-      delete state[action.key];
-      break;
-    case "SET_TYPE":
-      const existingType = state[action.key].type;
+      return { ...newState, [key]: action.value };
+    }
+    case "REMOVE_ENTRY": {
+      const newState = { ...state };
+      delete newState[action.key];
+      return newState;
+    }
+    case "SET_KEY": {
+      const newState = { ...state };
+      newState[action.newKey] = newState[action.key];
+      delete newState[action.key];
+      return newState;
+    }
+    case "SET_TYPE": {
+      const newState = { ...state };
+      const existingType = newState[action.key].type;
 
       if (
         stringish.includes(existingType) &&
         bigintish.includes(action.podValueType)
       ) {
-        state[action.key] = {
+        newState[action.key] = {
           type: action.podValueType as "int" | "cryptographic",
           value: BigInt(0)
         };
@@ -164,26 +170,28 @@ const editPODReducer = function (
         bigintish.includes(existingType) &&
         stringish.includes(action.podValueType)
       ) {
-        state[action.key] = {
+        newState[action.key] = {
           type: action.podValueType as "string" | "eddsa_pubkey",
-          value: state[action.key].value.toString()
+          value: newState[action.key].value.toString()
         };
       } else {
         state[action.key].type = action.podValueType;
       }
-      break;
-    case "SET_VALUE":
-      if (bigintish.includes(state[action.key].type)) {
+      return newState;
+    }
+    case "SET_VALUE": {
+      const newState = { ...state };
+      if (bigintish.includes(newState[action.key].type)) {
         const value = BigInt(action.value);
         if (value >= POD_INT_MIN && value <= POD_INT_MAX) {
-          state[action.key].value = value;
+          newState[action.key].value = value;
         }
       } else {
         state[action.key].value = action.value;
       }
-      break;
+      return newState;
+    }
   }
-  return { ...state };
 };
 
 enum PODCreationState {
