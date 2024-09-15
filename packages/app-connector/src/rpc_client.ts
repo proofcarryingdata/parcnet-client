@@ -91,14 +91,11 @@ export class ParcnetRPCConnector implements ParcnetRPC, ParcnetEvents {
     args: v.InferInput<F["input"]>,
     functionSchema: F
   ): Promise<v.InferOutput<F["output"]>> {
-    const result = this.#invoke(fn, v.parse(functionSchema.input, args));
+    const result = await this.#invoke(fn, v.parse(functionSchema.input, args));
     // Ensure that the result is of the expected type
     const parsedResult = v.safeParse(functionSchema.output, result);
     if (parsedResult.success) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const result = await parsedResult.output;
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-      return result;
+      return parsedResult.output;
     } else {
       throw new Error(
         `Failed to parse result for ${fn}: ${parsedResult.issues.map((issue) => issue.message).join(", ")}`

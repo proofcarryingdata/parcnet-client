@@ -6,19 +6,18 @@ export function Navbar({ connecting }: { connecting: boolean }): ReactNode {
   const connectionInfo = useMemo(() => getConnectionInfo(), []);
 
   const [inputClientUrl, setInputClientUrl] = useState(connectionInfo.url);
-  const [inputClientType, setInputClientType] = useState(connectionInfo.type);
 
   const onSave = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {
       e.preventDefault();
-      const newConnectionInfo = { url: inputClientUrl, type: inputClientType };
+      const newConnectionInfo = { url: inputClientUrl, type: "iframe" };
       localStorage.setItem(
         "clientConnectionInfo",
         JSON.stringify(newConnectionInfo)
       );
       window.location.reload();
     },
-    [inputClientUrl, inputClientType]
+    [inputClientUrl]
   );
 
   return (
@@ -72,28 +71,6 @@ export function Navbar({ connecting }: { connecting: boolean }): ReactNode {
                   value={inputClientUrl}
                   onChange={(e) => setInputClientUrl(e.target.value)}
                 />
-                <div className="flex items-center gap-2">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      value="iframe"
-                      checked={inputClientType === "iframe"}
-                      onChange={() => setInputClientType("iframe")}
-                      className="radio radio-primary radio-xs mr-2"
-                    />
-                    <span className="label-text">IFrame</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      value="websocket"
-                      checked={inputClientType === "websocket"}
-                      onChange={() => setInputClientType("websocket")}
-                      className="radio radio-primary radio-xs mr-2"
-                    />
-                    <span className="label-text">WebSocket</span>
-                  </label>
-                </div>
                 <button className="btn btn-sm btn-primary" onClick={onSave}>
                   Save
                 </button>

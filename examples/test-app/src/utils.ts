@@ -6,9 +6,7 @@ export function cn(...classes: string[]): string {
 
 export const DEFAULT_CONNECTION_INFO: ClientConnectionInfo = {
   url: process.env.CLIENT_URL ?? "https://staging-rob.zupass.org",
-  type: (["iframe", "websocket"].includes(`${process.env.CLIENT_TYPE}`)
-    ? process.env.CLIENT_TYPE
-    : "iframe") as "iframe" | "websocket"
+  type: "iframe"
 };
 
 export function getConnectionInfo(): ClientConnectionInfo {
@@ -20,8 +18,8 @@ export function getConnectionInfo(): ClientConnectionInfo {
         storedConnectionInfo
       ) as ClientConnectionInfo;
       if (
-        ["iframe", "websocket"].includes(connectionInfo.type) &&
-        typeof connectionInfo.url === "string"
+        parsedConnectionInfo.type === "iframe" &&
+        typeof parsedConnectionInfo.url === "string"
       ) {
         connectionInfo = parsedConnectionInfo;
       }

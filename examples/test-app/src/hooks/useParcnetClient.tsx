@@ -1,9 +1,4 @@
-import {
-  connect,
-  connectWebsocket,
-  ParcnetAPI,
-  Zapp
-} from "@parcnet-js/app-connector";
+import { connect, ParcnetAPI, Zapp } from "@parcnet-js/app-connector";
 import {
   createContext,
   ReactNode,
@@ -15,7 +10,7 @@ import {
 
 export type ClientConnectionInfo = {
   url: string;
-  type: "iframe" | "websocket";
+  type: "iframe";
 };
 
 export enum ClientConnectionState {
@@ -31,7 +26,7 @@ export const ParcnetClientContext = createContext<ClientState>({
 type ClientIframeState =
   | {
       state: ClientConnectionState.CONNECTING;
-      ref: React.RefObject<HTMLDivElement>;
+      ref: React.RefObject<HTMLDivElement> | null;
     }
   | {
       state: ClientConnectionState.CONNECTED;
@@ -39,16 +34,7 @@ type ClientIframeState =
       ref: React.RefObject<HTMLDivElement>;
     };
 
-type ClientWebsocketState =
-  | {
-      state: ClientConnectionState.CONNECTING;
-    }
-  | {
-      state: ClientConnectionState.CONNECTED;
-      z: ParcnetAPI;
-    };
-
-type ClientState = ClientIframeState | ClientWebsocketState;
+type ClientState = ClientIframeState;
 
 export function ParcnetClientProvider({
   zapp,
@@ -64,12 +50,6 @@ export function ParcnetClientProvider({
       <ParcnetIframeProvider zapp={zapp} url={connectionInfo.url}>
         {children}
       </ParcnetIframeProvider>
-    );
-  } else {
-    return (
-      <ParcnetWebsocketProvider zapp={zapp} url={connectionInfo.url}>
-        {children}
-      </ParcnetWebsocketProvider>
     );
   }
 }
@@ -106,36 +86,6 @@ export function ParcnetIframeProvider({
   return (
     <ParcnetClientContext.Provider value={value}>
       <div ref={ref}></div>
-      {children}
-    </ParcnetClientContext.Provider>
-  );
-}
-
-function ParcnetWebsocketProvider({
-  zapp,
-  url,
-  children
-}: {
-  zapp: Zapp;
-  url: string;
-  children: React.ReactNode;
-}): ReactNode {
-  const [value, setValue] = useState<ClientWebsocketState>({
-    state: ClientConnectionState.CONNECTING
-  });
-
-  useEffect(() => {
-    void connectWebsocket(zapp, url).then((api) => {
-      setValue({
-        state: ClientConnectionState.CONNECTED,
-        z: api
-      });
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  return (
-    <ParcnetClientContext.Provider value={value}>
       {children}
     </ParcnetClientContext.Provider>
   );

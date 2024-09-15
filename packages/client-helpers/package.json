@@ -16,11 +16,6 @@
       "types": "./src/connection/iframe.ts",
       "import": "./dist/connection/iframe.js",
       "require": "./dist/connection/iframe.cjs"
-    },
-    "./connection/websocket": {
-      "types": "./src/connection/websocket.ts",
-      "import": "./dist/connection/websocket.js",
-      "require": "./dist/connection/websocket.cjs"
     }
   },
   "scripts": {
@@ -59,11 +54,6 @@
         "types": "./dist/connection/iframe.d.ts",
         "import": "./dist/connection/iframe.js",
         "require": "./dist/connection/iframe.cjs"
-      },
-      "./connection/websocket": {
-        "types": "./dist/connection/websocket.d.ts",
-        "import": "./dist/connection/websocket.js",
-        "require": "./dist/connection/websocket.cjs"
       }
     }
   }

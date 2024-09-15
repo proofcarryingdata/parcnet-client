@@ -7,8 +7,8 @@ import {
 import * as p from "@parcnet-js/podspec";
 import { POD } from "@pcd/pod";
 import crypto from "crypto";
+import * as v from "valibot";
 import { assert, describe, expect, it } from "vitest";
-import { ZodError } from "zod";
 import { postRPCMessage } from "../src/index.js";
 import { ParcnetRPCConnector } from "../src/rpc_client.js";
 import { connectedClient, mockDialog } from "./utils.js";
@@ -54,7 +54,7 @@ describe("parcnet-client should work", function () {
     const { chan, client } = await connectedClient();
 
     chan.port1.onmessage = (event): void => {
-      const message = RPCMessageSchema.parse(event.data);
+      const message = v.parse(RPCMessageSchema, event.data);
       assert(message.type === RPCMessageType.PARCNET_CLIENT_INVOKE);
       assert(message.fn === "identity.getSemaphoreV3Commitment");
       assert(message.args.length === 0);
@@ -76,7 +76,7 @@ describe("parcnet-client should work", function () {
     const { chan, client } = await connectedClient();
 
     chan.port1.onmessage = (event): void => {
-      const message = RPCMessageSchema.parse(event.data);
+      const message = v.parse(RPCMessageSchema, event.data);
       assert(message.type === RPCMessageType.PARCNET_CLIENT_INVOKE);
       assert(message.fn === "identity.getSemaphoreV3Commitment");
       assert(message.args.length === 0);
@@ -91,7 +91,9 @@ describe("parcnet-client should work", function () {
       result: "INCORRECT" // Not a BigInt
     });
 
-    await expect(promise).rejects.toThrow(ZodError);
+    await expect(promise).rejects.toThrow(
+      `Failed to parse result for identity.getSemaphoreV3Commitment: Invalid type: Expected bigint but received "INCORRECT"`
+    );
   });
 
   it("should notify when a subscription is updated", async function () {
