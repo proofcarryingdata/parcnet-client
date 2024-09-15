@@ -12,6 +12,7 @@
     "watch": "turbo watch build --filter='./packages/**'"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.27.8",
     "knip": "^5.29.2",
     "prettier": "^3.2.5",
     "turbo": "^2.0.14",

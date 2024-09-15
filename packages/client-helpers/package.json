@@ -1,7 +1,7 @@
 {
   "name": "@parcnet-js/client-helpers",
-  "version": "0.0.1",
-  "private": false,
+  "version": "0.0.0",
+  "license": "GPL-3.0-or-later",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
