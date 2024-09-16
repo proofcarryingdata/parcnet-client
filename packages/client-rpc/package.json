@@ -14,8 +14,8 @@
   "files": ["dist", "LICENSE"],
   "dependencies": {
     "@parcnet-js/podspec": "workspace:*",
-    "@pcd/gpc": "0.0.6",
-    "@pcd/pod": "0.1.5",
+    "@pcd/gpc": "^0.0.8",
+    "@pcd/pod": "^0.1.7",
     "valibot": "^0.42.0"
   },
   "devDependencies": {

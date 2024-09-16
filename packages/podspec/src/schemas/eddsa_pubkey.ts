@@ -11,7 +11,6 @@ export interface EdDSAPublicKeySchema {
   type: "eddsa_pubkey";
   isMemberOf?: PODEdDSAPublicKeyValue[];
   isNotMemberOf?: PODEdDSAPublicKeyValue[];
-  isRevealed?: boolean;
   equalsEntry?: PODName;
 }
 

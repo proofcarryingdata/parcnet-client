@@ -4,14 +4,7 @@ import type { EntrySchema } from "./entry.js";
 /**
  * Schema for validating a PODEntries object.
  */
-export type EntriesSchema = Record<string, EntrySchema>;
-
-type EntriesSchemaLiteralEntries<T extends EntriesSchema> = {
-  [K in keyof T]: T[K] & EntrySchema;
-};
-
-export type EntriesSchemaLiteral<E extends EntriesSchema> =
-  EntriesSchemaLiteralEntries<E> & EntriesSchema;
+export type EntriesSchema = Readonly<Record<string, EntrySchema>>;
 
 /**
  * Schema for a tuple of entries.

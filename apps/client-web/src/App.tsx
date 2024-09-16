@@ -1,6 +1,6 @@
 import { listen } from "@parcnet-js/client-helpers/connection/iframe";
 import type { Zapp } from "@parcnet-js/client-rpc";
-import type { EntriesSchema, PODSchema } from "@parcnet-js/podspec";
+import type { EntriesSchema, ProofConfigPODSchema } from "@parcnet-js/podspec";
 import { proofRequest } from "@parcnet-js/podspec";
 import { gpcProve } from "@pcd/gpc";
 import type { POD } from "@pcd/pod";
@@ -106,23 +106,23 @@ function ProvePODInfo({
   onChange
 }: {
   name: string;
-  schema: PODSchema<EntriesSchema>;
+  schema: ProofConfigPODSchema<EntriesSchema>;
   pods: POD[];
   selectedPOD: POD | undefined;
   onChange: (pod: POD | undefined) => void;
 }): ReactNode {
-  const revealedEntries = Object.entries(schema.entries)
+  const revealedEntries = Object.entries(schema.pod.entries)
     .map(([name, entry]) => {
       if (entry.type === "optional") {
         entry = entry.innerType;
       }
       return [name, entry] as const;
     })
-    .filter(([_, entry]) => entry.isRevealed);
+    .filter(([name, _entry]) => schema.revealed?.[name] ?? false);
 
   const selectedPODEntries = selectedPOD?.content.asEntries();
 
-  const entriesWithConstraints = Object.entries(schema.entries)
+  const entriesWithConstraints = Object.entries(schema.pod.entries)
     .map(([name, entry]) => {
       if (entry.type === "optional") {
         entry = entry.innerType;

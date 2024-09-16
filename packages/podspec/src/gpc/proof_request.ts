@@ -3,6 +3,7 @@ import type {
   GPCProofEntryConfig,
   GPCProofObjectConfig,
   GPCProofTupleConfig,
+  IdentityProtocol,
   PODEntryIdentifier,
   PODMembershipLists
 } from "@pcd/gpc";
@@ -11,7 +12,21 @@ import { PodSpec } from "../parse/pod.js";
 import type { EntriesSchema } from "../schemas/entries.js";
 import type { PODSchema } from "../schemas/pod.js";
 
-type Pods = Record<string, object>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type NamedPODs = Record<string, ProofConfigPODSchema<any>>;
+
+export interface ProofConfigOwner<E extends EntriesSchema> {
+  entry: Extract<keyof E, string>;
+  protocol: IdentityProtocol;
+}
+
+export interface ProofConfigPODSchema<E extends EntriesSchema> {
+  pod: PODSchema<E>;
+  revealed?: Partial<{
+    [K in Extract<keyof (E & { $signerPublicKey: never }), string>]: boolean;
+  }>;
+  owner?: ProofConfigOwner<E>;
+}
 
 /**
  * A ProofRequest contains the data necessary to verify that a given GPC proof
@@ -28,19 +43,8 @@ export type ProofRequest = {
  * A PodspecProofRequest allows us to generate a {@link ProofRequest} from a
  * set of Podspecs defining the allowable PODs.
  */
-export interface PodspecProofRequest<
-  P extends Record<string, object> = Record<string, PODSchema<EntriesSchema>>
-> {
-  pods: Readonly<{
-    [K in keyof P]: P[K] extends PODSchema<infer T>
-      ? P[K] & PODSchema<T>
-      : never;
-  }>;
-  inputPods?: Readonly<{
-    [K in keyof P]: P[K] extends PODSchema<infer T>
-      ? P[K] & PODSchema<T>
-      : never;
-  }>;
+export interface PodspecProofRequestSchema<P extends NamedPODs = NamedPODs> {
+  pods: P;
   externalNullifier?: PODValue;
   watermark?: PODValue;
 }
@@ -50,23 +54,24 @@ export interface PodspecProofRequest<
  * set of Podspecs defining the allowable PODs.
  */
 export class ProofRequestSpec<
-  P extends PodspecProofRequest<T>,
-  T extends Pods
+  P extends PodspecProofRequestSchema<T>,
+  T extends NamedPODs
 > {
   /**
    * Private constructor, see {@link create}.
    * @param schema The schema of the PODs that are allowed in this proof.
    */
-  private constructor(public readonly schema: PodspecProofRequest<T>) {}
+  private constructor(public readonly schema: PodspecProofRequestSchema<T>) {}
 
   /**
    * Create a new ProofRequestSpec.
    * @param schema The schema of the PODs that are allowed in this proof.
    * @returns A new ProofRequestSpec.
    */
-  public static create<P extends PodspecProofRequest<T>, T extends Pods>(
-    schema: PodspecProofRequest<T>
-  ): ProofRequestSpec<P, T> {
+  public static create<
+    P extends PodspecProofRequestSchema<T>,
+    T extends NamedPODs
+  >(schema: PodspecProofRequestSchema<T>): ProofRequestSpec<P, T> {
     return new ProofRequestSpec(schema);
   }
 
@@ -92,12 +97,10 @@ export class ProofRequestSpec<
    */
   public queryForInputs(pods: POD[]): Record<keyof P["pods"], POD[]> {
     const result: Record<string, POD[]> = {};
-    for (const [podName, podSchema] of Object.entries(
-      (this.schema.inputPods ?? this.schema.pods) as Record<
-        string,
-        PODSchema<EntriesSchema>
-      >
+    for (const [podName, proofConfigPODSchema] of Object.entries(
+      this.schema.pods as Record<string, ProofConfigPODSchema<EntriesSchema>>
     )) {
+      const podSchema = proofConfigPODSchema.pod;
       result[podName] = PodSpec.create(podSchema).query(pods).matches;
     }
     return result as Record<keyof P["pods"], POD[]>;
@@ -107,8 +110,9 @@ export class ProofRequestSpec<
 /**
  * Export for convenience.
  */
-export const proofRequest = <P extends Pods>(schema: PodspecProofRequest<P>) =>
-  ProofRequestSpec.create(schema);
+export const proofRequest = <P extends NamedPODs>(
+  schema: PodspecProofRequestSchema<P>
+) => ProofRequestSpec.create(schema);
 
 /**
  * Generates a {@link ProofRequest}.
@@ -116,35 +120,53 @@ export const proofRequest = <P extends Pods>(schema: PodspecProofRequest<P>) =>
  * @param request The PodspecProofRequest to derive the ProofRequest from.
  * @returns A ProofRequest.
  */
-function makeProofRequest<P extends Pods>(
-  request: PodspecProofRequest<P>
+function makeProofRequest<P extends NamedPODs>(
+  request: PodspecProofRequestSchema<P>
 ): ProofRequest {
   const pods: Record<PODName, GPCProofObjectConfig> = {};
   const membershipLists: PODMembershipLists = {};
   const tuples: Record<PODName, GPCProofTupleConfig> = {};
 
-  for (const [podName, podSchema] of Object.entries(
-    request.pods as Record<string, PODSchema<EntriesSchema>>
+  for (const [podName, proofConfigPODSchema] of Object.entries(
+    request.pods as Record<string, ProofConfigPODSchema<EntriesSchema>>
   )) {
     const podConfig: GPCProofObjectConfig = { entries: {} };
+    const podSchema = proofConfigPODSchema.pod;
+    const owner = proofConfigPODSchema.owner;
 
     for (const [entryName, schema] of Object.entries(podSchema.entries)) {
       const entrySchema =
         schema.type === "optional" ? schema.innerType : schema;
+
+      const isRevealed = proofConfigPODSchema.revealed?.[entryName] ?? false;
+      const isMemberOf = entrySchema.isMemberOf;
+      const isNotMemberOf = entrySchema.isNotMemberOf;
+      const inRange =
+        (entrySchema.type === "cryptographic" || entrySchema.type === "int") &&
+        entrySchema.inRange;
+      const isOwnerID =
+        entrySchema.type === "cryptographic" && owner?.entry === entryName;
+
+      if (
+        !isRevealed &&
+        !isMemberOf &&
+        !isNotMemberOf &&
+        !inRange &&
+        !isOwnerID
+      ) {
+        continue;
+      }
+
       const entryConfig: GPCProofEntryConfig = {
-        isRevealed: entrySchema.isRevealed ?? false,
-        isMemberOf: entrySchema.isMemberOf
+        isRevealed,
+        isMemberOf: isMemberOf
           ? `allowlist_${podName}_${entryName}`
           : undefined,
-        isNotMemberOf: entrySchema.isNotMemberOf
+        isNotMemberOf: isNotMemberOf
           ? `blocklist_${podName}_${entryName}`
           : undefined,
-        ...(entrySchema.type === "cryptographic" || entrySchema.type === "int"
-          ? { inRange: entrySchema.inRange }
-          : {}),
-        ...(entrySchema.type === "cryptographic" && entrySchema.isOwnerID
-          ? { isOwnerID: true }
-          : {})
+        ...(inRange ? { inRange: entrySchema.inRange } : {}),
+        ...(isOwnerID ? { isOwnerID: owner.protocol } : {})
       };
       podConfig.entries[entryName] = entryConfig;
 

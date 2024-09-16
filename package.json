@@ -30,7 +30,6 @@
   },
   "pnpm": {
     "patchedDependencies": {
-      "@zk-kit/eddsa-poseidon@1.0.2": "patches/@zk-kit__eddsa-poseidon@1.0.2.patch",
       "@brenoroosevelt/toast": "patches/@brenoroosevelt__toast.patch"
     }
   }

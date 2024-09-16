@@ -17,8 +17,8 @@
     "@brenoroosevelt/toast": "^2.0.3",
     "@parcnet-js/client-rpc": "workspace:*",
     "@parcnet-js/podspec": "workspace:*",
-    "@pcd/gpc": "0.0.6",
-    "@pcd/pod": "0.1.5",
+    "@pcd/gpc": "^0.0.8",
+    "@pcd/pod": "^0.1.7",
     "eventemitter3": "^5.0.1",
     "json-bigint": "^1.0.0",
     "valibot": "^0.42.0"

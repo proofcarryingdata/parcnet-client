@@ -1,15 +1,7 @@
-import crypto from "crypto";
 import path from "path";
 import type { GPCBoundConfig } from "@pcd/gpc";
 import { gpcProve, gpcVerify } from "@pcd/gpc";
-import {
-  POD,
-  POD_INT_MAX,
-  POD_INT_MIN,
-  decodePrivateKey,
-  encodePublicKey
-} from "@pcd/pod";
-import { derivePublicKey } from "@zk-kit/eddsa-poseidon";
+import { POD, POD_INT_MAX, POD_INT_MIN } from "@pcd/pod";
 import { v4 as uuidv4 } from "uuid";
 import { assert, describe, expect, it } from "vitest";
 import type {
@@ -19,28 +11,16 @@ import type {
 } from "../src/error.js";
 import { IssueCode } from "../src/error.js";
 import * as p from "../src/index.js";
-import { $i, $s } from "../src/pod_value_utils.js";
+import { $c, $i, $s } from "../src/pod_value_utils.js";
 import type { EntriesTupleSchema } from "../src/schemas/entries.js";
+import { generateKeyPair, generateRandomHex } from "./utils.js";
 
 export const GPC_NPM_ARTIFACTS_PATH = path.join(
   __dirname,
   "../node_modules/@pcd/proto-pod-gpc-artifacts"
 );
 
-function generateRandomHex(byteLength: number): string {
-  const randomBytes = crypto.randomBytes(byteLength);
-  return randomBytes.toString("hex");
-}
-
-function generateKeyPair(): { privateKey: string; publicKey: string } {
-  const privateKey = generateRandomHex(32);
-  const publicKey = encodePublicKey(
-    derivePublicKey(decodePrivateKey(privateKey))
-  );
-  return { privateKey, publicKey };
-}
-
-describe.concurrent("podspec should work", function () {
+describe("podspec should work", function () {
   it("should validate POD entries", () => {
     const entriesSpec = p.entries({
       firstName: {
@@ -54,7 +34,7 @@ describe.concurrent("podspec should work", function () {
       },
       semaphoreId: {
         type: "cryptographic",
-        isMemberOf: p.$c([1000])
+        isMemberOf: $c([1000])
       },
       publicKey: {
         type: "eddsa_pubkey"
@@ -114,7 +94,7 @@ describe.concurrent("podspec should work", function () {
       },
       semaphoreId: {
         type: "cryptographic",
-        isMemberOf: p.$c([1000])
+        isMemberOf: $c([1000])
       },
       publicKey: {
         type: "eddsa_pubkey"
@@ -273,7 +253,7 @@ describe.concurrent("podspec should work", function () {
       bar: { type: "int" }
     });
 
-    const tuples: EntriesTupleSchema<typeof myPodSpec.schema>[] = [
+    const tuples: EntriesTupleSchema<p.InferEntriesType<typeof myPodSpec>>[] = [
       {
         entries: ["foo", "bar"],
         isMemberOf: [
@@ -592,29 +572,29 @@ describe.concurrent("podspec should work", function () {
   });
 
   it("should generate proof requests", async function () {
-    const prs = p.proofRequest({
-      pods: {
-        pod1: {
-          entries: {
-            foo: { type: "string", isRevealed: true },
-            bar: {
-              type: "int",
-              inRange: { min: 0n, max: 10n },
-              isRevealed: true
-            }
-          },
-          tuples: [
-            {
-              entries: ["foo", "bar"],
-              isMemberOf: [
-                [
-                  { type: "string", value: "test" },
-                  { type: "int", value: 5n }
-                ]
-              ]
-            }
+    const pod1 = p.pod({
+      entries: {
+        foo: { type: "string" },
+        bar: {
+          type: "int",
+          inRange: { min: 0n, max: 10n }
+        }
+      },
+      tuples: [
+        {
+          entries: ["foo", "bar"],
+          isMemberOf: [
+            [
+              { type: "string", value: "test" },
+              { type: "int", value: 5n }
+            ]
           ]
         }
+      ]
+    });
+    const prs = p.proofRequest({
+      pods: {
+        pod1: pod1.proofConfig({ revealed: { foo: true, bar: true } })
       },
       watermark: { type: "string", value: "1" },
       externalNullifier: { type: "string", value: "1" }
@@ -653,30 +633,33 @@ describe.concurrent("podspec should work", function () {
   });
 
   it("should generate candidate inputs from a POD collection", async function () {
+    const firstPodSpec = p.pod({
+      entries: {
+        foo: { type: "string" },
+        bar: {
+          type: "int",
+          inRange: { min: 0n, max: 10n }
+        }
+      }
+    });
+
+    const secondPodSpec = p.pod({
+      entries: {
+        baz: { type: "cryptographic" },
+        quux: {
+          type: "string",
+          isMemberOf: [{ type: "string", value: "magic" }]
+        }
+      }
+    });
+
     const prs = p.proofRequest({
       pods: {
-        pod1: {
-          entries: {
-            foo: { type: "string", isRevealed: true },
-            bar: {
-              type: "int",
-              inRange: { min: 0n, max: 10n },
-              isRevealed: true
-            }
-          }
-        },
-        pod2: {
-          entries: {
-            baz: { type: "cryptographic", isRevealed: true },
-            quux: {
-              type: "string",
-              isMemberOf: [{ type: "string", value: "magic" }]
-            }
-          }
-        }
-      },
-      watermark: { type: "string", value: "1" },
-      externalNullifier: { type: "string", value: "1" }
+        pod1: firstPodSpec.proofConfig({ revealed: { foo: true, bar: true } }),
+        pod2: secondPodSpec.proofConfig({
+          revealed: { baz: true, quux: false }
+        })
+      }
     });
 
     const { privateKey } = generateKeyPair();

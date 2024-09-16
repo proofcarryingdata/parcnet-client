@@ -12,7 +12,6 @@ export interface IntSchema {
   type: "int";
   isMemberOf?: PODIntValue[];
   isNotMemberOf?: PODIntValue[];
-  isRevealed?: boolean;
   equalsEntry?: PODName;
   inRange?: { min: bigint; max: bigint };
 }

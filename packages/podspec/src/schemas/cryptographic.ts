@@ -12,7 +12,6 @@ export interface CryptographicSchema {
   type: "cryptographic";
   isMemberOf?: PODCryptographicValue[];
   isNotMemberOf?: PODCryptographicValue[];
-  isRevealed?: boolean;
   equalsEntry?: PODName;
   inRange?: { min: bigint; max: bigint };
   // isOwnerID is supported for cryptographic values, e.g. a Semaphore commitment

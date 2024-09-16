@@ -16,11 +16,7 @@ import {
   checkPODEdDSAPublicKeyValue,
   eddsaPublicKeyCoercer
 } from "../schemas/eddsa_pubkey.js";
-import type {
-  EntriesSchema,
-  EntriesSchemaLiteral,
-  EntriesTupleSchema
-} from "../schemas/entries.js";
+import type { EntriesSchema, EntriesTupleSchema } from "../schemas/entries.js";
 import type {
   DefinedEntrySchema,
   EntrySchema,
@@ -91,8 +87,13 @@ function isValidEntryType(type: string): type is EntrySchema["type"] {
 /**
  * A specification for a set of entries.
  */
-export class EntriesSpec<E extends EntriesSchema> {
-  public readonly schema: EntriesSchemaLiteral<E>;
+export class EntriesSpec<const E extends EntriesSchema> {
+  /**
+   * The schema for this set of entries.
+   * This is public so that it can be used to create new schemas, but the
+   * object is frozen and so cannot be mutated.
+   */
+  public readonly schema: E;
   /**
    * The constructor is private - see {@link create} for public construction.
    *
@@ -108,7 +109,7 @@ export class EntriesSpec<E extends EntriesSchema> {
         );
       }
     }
-    this.schema = deepFreeze(schema);
+    this.schema = deepFreeze(structuredClone(schema));
   }
 
   /**
@@ -123,7 +124,7 @@ export class EntriesSpec<E extends EntriesSchema> {
     input: Record<string, PODValue | string | bigint | number>,
     options: EntriesParseOptions<E> = DEFAULT_ENTRIES_PARSE_OPTIONS,
     path: string[] = []
-  ): ParseResult<EntriesOutputType<EntriesSchemaLiteral<E>>> {
+  ): ParseResult<EntriesOutputType<E>> {
     return safeParseEntries(this.schema, input, options, path);
   }
 
@@ -134,7 +135,7 @@ export class EntriesSpec<E extends EntriesSchema> {
     input: Record<string, PODValue | string | bigint | number>,
     options: EntriesParseOptions<E> = DEFAULT_ENTRIES_PARSE_OPTIONS,
     path: string[] = []
-  ): EntriesOutputType<EntriesSchemaLiteral<E>> {
+  ): EntriesOutputType<E> {
     const result = this.safeParse(input, options, path);
     if (result.isValid) {
       return result.value;
@@ -143,13 +144,25 @@ export class EntriesSpec<E extends EntriesSchema> {
     }
   }
 
+  // public cloneSchema(): E;
+  // public cloneSchema<R extends E>(modify: (schema: E) => R): R;
+  // public cloneSchema<R extends E>(modify?: (schema: E) => R): E | R {
+  //   const clonedSchema = structuredClone(this.schema);
+  //   if (modify) {
+  //     return modify(clonedSchema);
+  //   }
+  //   return clonedSchema;
+  // }
+
   /**
    * Creates an EntriesSpec object from a given schema.
    *
    * @param schema The schema to use for this set of entries.
    * @returns A new EntriesSpec object
    */
-  public static create<E extends EntriesSchema>(schema: E): EntriesSpec<E> {
+  public static create<const E extends EntriesSchema>(
+    schema: E
+  ): EntriesSpec<E> {
     return new EntriesSpec(schema);
   }
 }
@@ -157,7 +170,7 @@ export class EntriesSpec<E extends EntriesSchema> {
 /**
  * Exported creation function, for convenience.
  */
-export const entries = <E extends EntriesSchema>(schema: E) =>
+export const entries = <const E extends EntriesSchema>(schema: E) =>
   EntriesSpec.create(schema);
 
 /**

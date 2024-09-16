@@ -91,8 +91,19 @@ const PODSchemaSchema = v.object({
   signature: v.optional(SignatureSchema)
 });
 
+const ProofConfigPODSchemaSchema = v.object({
+  pod: PODSchemaSchema,
+  revealed: v.optional(v.record(v.string(), v.optional(v.boolean()))),
+  owner: v.optional(
+    v.object({
+      entry: v.string(),
+      protocol: v.union([v.literal("SemaphoreV3"), v.literal("SemaphoreV4")])
+    })
+  )
+});
+
 const PodspecProofRequestSchema = v.object({
-  pods: v.record(v.string(), PODSchemaSchema),
+  pods: v.record(v.string(), ProofConfigPODSchemaSchema),
   externalNullifier: v.optional(PODValueSchema),
   watermark: v.optional(PODValueSchema)
 });

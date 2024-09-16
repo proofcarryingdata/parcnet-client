@@ -11,7 +11,6 @@ export interface StringSchema {
   type: "string";
   isMemberOf?: PODStringValue[];
   isNotMemberOf?: PODStringValue[];
-  isRevealed?: boolean;
   equalsEntry?: PODName;
 }
 

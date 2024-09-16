@@ -98,18 +98,16 @@ class ParcnetGPCWrapper {
 
   // In a world with POD2, we would use new POD2 types rather than GPCPCD.
   // The existing args system and GPC wrapper works well, so we can use that.
-  async prove<P extends Record<string, object>>(
-    args: PodspecProofRequest<P>
-  ): Promise<ProveResult> {
+  async prove(args: PodspecProofRequest): Promise<ProveResult> {
     const result = await this.#api.gpc.prove(args);
     return result;
   }
 
-  async verify<P extends Record<string, object>>(
+  async verify(
     proof: GPCProof,
     config: GPCBoundConfig,
     revealedClaims: GPCRevealedClaims,
-    proofRequest: PodspecProofRequest<P>
+    proofRequest: PodspecProofRequest
   ): Promise<boolean> {
     return this.#api.gpc.verify(proof, config, revealedClaims, proofRequest);
   }

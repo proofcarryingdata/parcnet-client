@@ -7,9 +7,10 @@ import type {
 } from "../error.js";
 import { IssueCode, PodspecError } from "../error.js";
 import type {
-  EntriesSchema,
-  EntriesSchemaLiteral
-} from "../schemas/entries.js";
+  ProofConfigOwner,
+  ProofConfigPODSchema
+} from "../gpc/proof_request.js";
+import type { EntriesSchema } from "../schemas/entries.js";
 import type { PODSchema } from "../schemas/pod.js";
 import type { EntriesOutputType, EntriesParseOptions } from "./entries.js";
 import { DEFAULT_ENTRIES_PARSE_OPTIONS, safeParseEntries } from "./entries.js";
@@ -31,16 +32,16 @@ export interface StrongPOD<T extends PODEntries> extends POD {
   content: StrongPODContent<T>;
 }
 
+type SchemaIdentityFn = <E extends EntriesSchema>(
+  s: PODSchema<E>
+) => PODSchema<E>;
+
 /**
  * A PodSpec is a specification for a POD, including its schema and any
  * additional constraints.
  */
-export class PodSpec<E extends EntriesSchema = EntriesSchema> {
-  public readonly schema: PODSchema<EntriesSchemaLiteral<E>>;
-
-  public entries(): EntriesSchemaLiteral<E> {
-    return this.schema.entries;
-  }
+export class PodSpec<const E extends EntriesSchema = EntriesSchema> {
+  public schema: PODSchema<E>;
 
   /**
    * Create a new PodSpec. The constructor is private, see {@link create} for
@@ -65,7 +66,7 @@ export class PodSpec<E extends EntriesSchema = EntriesSchema> {
     input: POD,
     options: EntriesParseOptions<E> = DEFAULT_ENTRIES_PARSE_OPTIONS,
     path: string[] = []
-  ): ParseResult<StrongPOD<EntriesOutputType<EntriesSchemaLiteral<E>>>> {
+  ): ParseResult<StrongPOD<EntriesOutputType<E>>> {
     return safeParsePod(this.schema, input, options, path);
   }
 
@@ -82,7 +83,7 @@ export class PodSpec<E extends EntriesSchema = EntriesSchema> {
     input: POD,
     options: EntriesParseOptions<E> = DEFAULT_ENTRIES_PARSE_OPTIONS,
     path: string[] = []
-  ): StrongPOD<EntriesOutputType<EntriesSchemaLiteral<E>>> {
+  ): StrongPOD<EntriesOutputType<E>> {
     const result = this.safeParse(input, options, path);
     if (result.isValid) {
       return result.value;
@@ -99,19 +100,22 @@ export class PodSpec<E extends EntriesSchema = EntriesSchema> {
    * @param input The PODs to test
    * @returns An array of matches and their indexes within the input array.
    */
-  public query(input: POD[]): { matches: POD[]; matchingIndexes: number[] } {
+  public query(input: POD[]): {
+    matches: StrongPOD<EntriesOutputType<E>>[];
+    matchingIndexes: number[];
+  } {
     const matchingIndexes: number[] = [];
-    const matches: POD[] = [];
+    const matches: StrongPOD<EntriesOutputType<E>>[] = [];
     const signatures = new Set<string>();
     for (const [index, pod] of input.entries()) {
       const result = this.safeParse(pod, { exitEarly: true });
       if (result.isValid) {
-        if (signatures.has(pod.signature)) {
+        if (signatures.has(result.value.signature)) {
           continue;
         }
-        signatures.add(pod.signature);
+        signatures.add(result.value.signature);
         matchingIndexes.push(index);
-        matches.push(pod);
+        matches.push(result.value);
       }
     }
     return {
@@ -120,18 +124,44 @@ export class PodSpec<E extends EntriesSchema = EntriesSchema> {
     };
   }
 
-  public extend<R extends PODSchema<EntriesSchemaLiteral<E>>>(
-    updater: (
-      schema: PODSchema<EntriesSchemaLiteral<E>>
-    ) => R extends PODSchema<EntriesSchemaLiteral<E>> ? R : never
-  ) {
+  /**
+   * Extends the current PodSpec with a new schema.
+   *
+   * The "updater" function is provided by the caller, and is responsible for
+   * creating a new schema. It is passed a clone of current schema and a
+   * function which, strictly speaking, does nothing and is used only to
+   * enforce types. In the updater function, the caller should return the
+   * result of calling `f` on the updated schema.
+   *
+   * @param updater A function which takes the current schema and returns a new schema.
+   * @returns A new PodSpec with the extended schema.
+   */
+  public extend<const R extends EntriesSchema>(
+    updater: (schema: PODSchema<E>, f: SchemaIdentityFn) => PODSchema<R>
+  ): PodSpec<R> {
     const clone = structuredClone(this.schema);
-    const newSchema: R = updater(clone);
-    return PodSpec.create(newSchema) as PodSpec<R["entries"]>;
+    const newSchema = updater(clone, (s) => s);
+    return PodSpec.create(newSchema);
   }
 
   public cloneSchema(): PODSchema<E> {
     return structuredClone(this.schema);
+  }
+
+  public proofConfig({
+    revealed,
+    owner
+  }: {
+    revealed?: Partial<
+      Record<keyof (E & { $signerPublicKey: never }), boolean>
+    >;
+    owner?: ProofConfigOwner<E>;
+  }): ProofConfigPODSchema<E> {
+    return {
+      pod: this.schema,
+      revealed,
+      owner
+    };
   }
 
   /**
@@ -140,7 +170,7 @@ export class PodSpec<E extends EntriesSchema = EntriesSchema> {
    * @param schema The schema defining the valid POD.
    * @returns A new PodSpec instance.
    */
-  public static create<E extends EntriesSchema>(
+  public static create<const E extends EntriesSchema>(
     schema: PODSchema<E>
   ): PodSpec<E> {
     return new PodSpec(schema);
@@ -150,7 +180,7 @@ export class PodSpec<E extends EntriesSchema = EntriesSchema> {
 /**
  * Exported version of static create method, for convenience.
  */
-export const pod = <E extends EntriesSchema>(schema: PODSchema<E>) =>
+export const pod = <const E extends EntriesSchema>(schema: PODSchema<E>) =>
   PodSpec.create(schema);
 
 /**

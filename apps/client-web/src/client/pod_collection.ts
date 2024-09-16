@@ -37,7 +37,6 @@ export class PODCollection {
   }
 
   public query<E extends p.EntriesSchema>(query: p.PODSchema<E>): POD[] {
-    console.log(query);
     return p.pod(query).query(this.pods).matches;
   }
 

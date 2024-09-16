@@ -1,5 +1,6 @@
 import type {
-  PodspecProofRequest,
+  PodspecProofRequestSchema,
+  ProofConfigPODSchema,
   ProofRequest,
   ProofRequestSpec
 } from "./gpc/proof_request.js";
@@ -10,8 +11,7 @@ import type { PodSpec } from "./parse/pod.js";
 import { pod } from "./parse/pod.js";
 import type { EntriesSchema } from "./schemas/entries.js";
 import type { PODSchema } from "./schemas/pod.js";
-import type { InferPodType } from "./type_inference.js";
-export * from "./pod_value_utils.js";
+import type { InferEntriesType, InferPodType } from "./type_inference.js";
 
 export {
   entries,
@@ -20,10 +20,12 @@ export {
   type EntriesOutputType,
   type EntriesSchema,
   type EntriesSpec,
+  type InferEntriesType,
   type InferPodType,
+  type ProofConfigPODSchema,
   type PODSchema,
   type PodSpec,
-  type PodspecProofRequest,
+  type PodspecProofRequestSchema as PodspecProofRequest,
   type ProofRequest,
   type ProofRequestSpec
 };
