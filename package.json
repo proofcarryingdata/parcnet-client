@@ -8,12 +8,14 @@
     "lint": "biome check --diagnostic-level=error && turbo lint",
     "test": "turbo test",
     "knip": "knip --no-gitignore",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "watch": "turbo watch build --filter='./packages/**'"
+    "format": "biome format --write",
+    "watch": "turbo watch build --filter='./packages/**'",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.1",
     "@changesets/cli": "^2.27.8",
+    "husky": "^9.1.6",
     "knip": "^5.29.2",
     "turbo": "^2.0.14",
     "typescript": "^5.4.5",
