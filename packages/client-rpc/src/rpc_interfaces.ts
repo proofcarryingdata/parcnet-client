@@ -73,5 +73,5 @@ export interface ParcnetEvents {
   on: (
     event: "subscription-update",
     callback: (result: SubscriptionUpdateResult) => void
-  ) => void;
+  ) => () => void;
 }
