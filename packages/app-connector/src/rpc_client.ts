@@ -1,4 +1,4 @@
-import {
+import type {
   PODQuery,
   ParcnetEvents,
   ParcnetGPCRPC,
@@ -6,20 +6,22 @@ import {
   ParcnetPODRPC,
   ParcnetRPC,
   ParcnetRPCMethodName,
-  ParcnetRPCSchema,
   ProveResult,
   RPCFunction,
   RPCMessage,
-  RPCMessageSchema,
-  RPCMessageType,
   SubscriptionUpdateResult
 } from "@parcnet-js/client-rpc";
-import { PodspecProofRequest } from "@parcnet-js/podspec";
-import { GPCBoundConfig, GPCProof, GPCRevealedClaims } from "@pcd/gpc";
-import { PODEntries } from "@pcd/pod";
+import {
+  ParcnetRPCSchema,
+  RPCMessageSchema,
+  RPCMessageType
+} from "@parcnet-js/client-rpc";
+import type { PodspecProofRequest } from "@parcnet-js/podspec";
+import type { GPCBoundConfig, GPCProof, GPCRevealedClaims } from "@pcd/gpc";
+import type { PODEntries } from "@pcd/pod";
 import { EventEmitter } from "eventemitter3";
 import * as v from "valibot";
-import { DialogController } from "./adapters/iframe.js";
+import type { DialogController } from "./adapters/iframe.js";
 
 /**
  * The RPC connector handles low-level communication with the client.

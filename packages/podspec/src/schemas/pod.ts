@@ -1,5 +1,5 @@
-import { PODValue } from "@pcd/pod";
-import { EntriesSchema, EntriesSchemaLiteral } from "./entries.js";
+import type { PODValue } from "@pcd/pod";
+import type { EntriesSchema, EntriesSchemaLiteral } from "./entries.js";
 
 /**
  * Schema for validating a POD.

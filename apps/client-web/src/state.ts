@@ -1,8 +1,8 @@
-import { ConnectorAdvice } from "@parcnet-js/client-helpers";
-import { ProveResult, Zapp } from "@parcnet-js/client-rpc";
-import { PodspecProofRequest } from "@parcnet-js/podspec";
-import { POD } from "@pcd/pod";
-import { Identity } from "@semaphore-protocol/identity";
+import type { ConnectorAdvice } from "@parcnet-js/client-helpers";
+import type { ProveResult, Zapp } from "@parcnet-js/client-rpc";
+import type { PodspecProofRequest } from "@parcnet-js/podspec";
+import type { POD } from "@pcd/pod";
+import type { Identity } from "@semaphore-protocol/identity";
 
 export type ClientState = {
   loggedIn: boolean;

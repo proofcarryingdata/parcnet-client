@@ -68,7 +68,9 @@ export default tseslint.config(
       "react-hooks/exhaustive-deps": "error",
       "require-await": "off",
       "@typescript-eslint/require-await": "off",
-      "import/no-extraneous-dependencies": "error"
+      "import/no-extraneous-dependencies": "error",
+      "@typescript-eslint/consistent-type-imports": "error",
+      "@typescript-eslint/no-import-type-side-effects": "error"
     }
   }
 );

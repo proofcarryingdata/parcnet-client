@@ -1,5 +1,5 @@
 import * as p from "@parcnet-js/podspec";
-import { POD } from "@pcd/pod";
+import type { POD } from "@pcd/pod";
 import { EventEmitter } from "eventemitter3";
 
 export interface PODCollectionUpdate {

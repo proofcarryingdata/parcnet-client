@@ -1,15 +1,16 @@
-import {
+import type {
   PODCryptographicValue,
   PODEdDSAPublicKeyValue,
   PODIntValue,
   PODStringValue,
-  PODValue,
+  PODValue
+} from "@pcd/pod";
+import {
   checkBigintBounds,
   checkPODValue,
   checkPublicKeyFormat
 } from "@pcd/pod";
-import {
-  IssueCode,
+import type {
   PodspecBaseIssue,
   PodspecExcludedByListIssue,
   PodspecExcludedByTupleListIssue,
@@ -18,11 +19,12 @@ import {
   PodspecNotInListIssue,
   PodspecNotInTupleListIssue
 } from "../error.js";
-import { EntriesSchema } from "../schemas/entries.js";
-import { DefinedEntrySchema } from "../schemas/entry.js";
-import { PODTupleSchema } from "../schemas/pod.js";
-import { EntriesParseOptions } from "./entries.js";
-import { EntryParseOptions } from "./entry.js";
+import { IssueCode } from "../error.js";
+import type { EntriesSchema } from "../schemas/entries.js";
+import type { DefinedEntrySchema } from "../schemas/entry.js";
+import type { PODTupleSchema } from "../schemas/pod.js";
+import type { EntriesParseOptions } from "./entries.js";
+import type { EntryParseOptions } from "./entry.js";
 
 type ParseSuccess<T> = {
   value: T;

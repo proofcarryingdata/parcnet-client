@@ -1,6 +1,7 @@
 import { RPCMessageType } from "@parcnet-js/client-rpc";
 import { expect } from "vitest";
-import { DialogController, postRPCMessage } from "../src/index.js";
+import type { DialogController } from "../src/adapters/iframe.js";
+import { postRPCMessage } from "../src/adapters/iframe.js";
 import { ParcnetRPCConnector } from "../src/rpc_client.js";
 
 export const mockDialog: DialogController = {

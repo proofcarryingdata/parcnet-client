@@ -1,4 +1,5 @@
-import { ReactNode, StrictMode } from "react";
+import type { ReactNode } from "react";
+import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { GPC } from "./apis/GPC";
 import { Identity } from "./apis/Identity";

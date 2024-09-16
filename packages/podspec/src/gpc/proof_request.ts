@@ -6,10 +6,10 @@ import type {
   PODEntryIdentifier,
   PODMembershipLists
 } from "@pcd/gpc";
-import { POD, PODName, PODValue } from "@pcd/pod";
+import type { POD, PODName, PODValue } from "@pcd/pod";
 import { PodSpec } from "../parse/pod.js";
-import { EntriesSchema } from "../schemas/entries.js";
-import { PODSchema } from "../schemas/pod.js";
+import type { EntriesSchema } from "../schemas/entries.js";
+import type { PODSchema } from "../schemas/pod.js";
 
 type Pods = Record<string, object>;
 

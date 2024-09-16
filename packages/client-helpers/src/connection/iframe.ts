@@ -1,18 +1,20 @@
+import type {
+  ParcnetRPC,
+  ParcnetRPCMethodName,
+  RPCMessage,
+  SubscriptionUpdateResult,
+  Zapp
+} from "@parcnet-js/client-rpc";
 import {
   InitializationMessageSchema,
   InitializationMessageType,
-  ParcnetRPC,
-  ParcnetRPCMethodName,
   ParcnetRPCSchema,
-  RPCMessage,
   RPCMessageSchema,
   RPCMessageType,
-  SubscriptionUpdateResult,
-  Zapp,
   deepGet
 } from "@parcnet-js/client-rpc";
 import * as v from "valibot";
-import { ConnectorAdvice } from "./advice.js";
+import type { ConnectorAdvice } from "./advice.js";
 
 export class AdviceChannel implements ConnectorAdvice {
   private port: MessagePort;

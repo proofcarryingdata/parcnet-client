@@ -1,7 +1,8 @@
-import { PodspecProofRequest } from "@parcnet-js/podspec";
+import type { PodspecProofRequest } from "@parcnet-js/podspec";
 import JSONBig from "json-bigint";
-import { ReactNode, useState } from "react";
-import { ProveResult } from "../../../../packages/client-rpc/src";
+import type { ReactNode } from "react";
+import { useState } from "react";
+import type { ProveResult } from "../../../../packages/client-rpc/src";
 import { TryIt } from "../components/TryIt";
 import { useParcnetClient } from "../hooks/useParcnetClient";
 

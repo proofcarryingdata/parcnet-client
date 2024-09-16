@@ -1,7 +1,7 @@
-import { CryptographicSchema } from "./cryptographic.js";
-import { EdDSAPublicKeySchema } from "./eddsa_pubkey.js";
-import { IntSchema } from "./int.js";
-import { StringSchema } from "./string.js";
+import type { CryptographicSchema } from "./cryptographic.js";
+import type { EdDSAPublicKeySchema } from "./eddsa_pubkey.js";
+import type { IntSchema } from "./int.js";
+import type { StringSchema } from "./string.js";
 
 /**
  * Union of schemas for non-optional entries.

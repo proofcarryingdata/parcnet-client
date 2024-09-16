@@ -1,15 +1,14 @@
 import crypto from "crypto";
-import {
+import type {
   RPCMessage,
-  RPCMessageSchema,
-  RPCMessageType,
   SubscriptionUpdateResult
 } from "@parcnet-js/client-rpc";
+import { RPCMessageSchema, RPCMessageType } from "@parcnet-js/client-rpc";
 import * as p from "@parcnet-js/podspec";
 import { POD } from "@pcd/pod";
 import * as v from "valibot";
 import { assert, describe, expect, it } from "vitest";
-import { postRPCMessage } from "../src/index.js";
+import { postRPCMessage } from "../src/adapters/iframe.js";
 import { ParcnetRPCConnector } from "../src/rpc_client.js";
 import { connectedClient, mockDialog } from "./utils.js";
 

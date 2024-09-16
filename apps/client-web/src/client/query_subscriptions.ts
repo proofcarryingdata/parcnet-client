@@ -1,8 +1,8 @@
-import { SubscriptionUpdateResult } from "@parcnet-js/client-rpc";
+import type { SubscriptionUpdateResult } from "@parcnet-js/client-rpc";
 import * as p from "@parcnet-js/podspec";
-import { EntriesSchema, PODSchema, PodSpec } from "@parcnet-js/podspec";
+import type { EntriesSchema, PODSchema, PodSpec } from "@parcnet-js/podspec";
 import { EventEmitter } from "eventemitter3";
-import { PODCollection } from "./pod_collection.js";
+import type { PODCollection } from "./pod_collection.js";
 
 interface Subscription {
   query: PodSpec<EntriesSchema>;

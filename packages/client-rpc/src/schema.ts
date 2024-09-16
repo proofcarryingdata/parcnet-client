@@ -1,7 +1,7 @@
-import { GPCBoundConfig, GPCRevealedClaims } from "@pcd/gpc";
-import { Groth16Proof } from "snarkjs";
+import type { GPCBoundConfig, GPCRevealedClaims } from "@pcd/gpc";
+import type { Groth16Proof } from "snarkjs";
 import * as v from "valibot";
-import { ParcnetRPC } from "./rpc_interfaces.js";
+import type { ParcnetRPC } from "./rpc_interfaces.js";
 
 const PODValueSchema = v.union([
   v.object({

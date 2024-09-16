@@ -1,17 +1,17 @@
-import { ConnectorAdvice } from "@parcnet-js/client-helpers";
-import {
+import type { ConnectorAdvice } from "@parcnet-js/client-helpers";
+import type {
   ParcnetGPCRPC,
   ParcnetIdentityRPC,
   ParcnetPODRPC,
   ParcnetRPC
 } from "@parcnet-js/client-rpc";
-import { Identity } from "@semaphore-protocol/identity";
-import { Dispatch } from "react";
-import { ClientAction } from "../state.js";
+import type { Identity } from "@semaphore-protocol/identity";
+import type { Dispatch } from "react";
+import type { ClientAction } from "../state.js";
 import { ParcnetGPCProcessor } from "./gpc.js";
 import { ParcnetIdentityProcessor } from "./identity.js";
 import { ParcnetPODProcessor } from "./pod.js";
-import { PODCollection } from "./pod_collection.js";
+import type { PODCollection } from "./pod_collection.js";
 import { QuerySubscriptions } from "./query_subscriptions.js";
 
 export class ParcnetClientProcessor implements ParcnetRPC {

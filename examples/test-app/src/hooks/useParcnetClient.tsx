@@ -1,12 +1,7 @@
-import { ParcnetAPI, Zapp, connect } from "@parcnet-js/app-connector";
-import {
-  ReactNode,
-  createContext,
-  useContext,
-  useEffect,
-  useRef,
-  useState
-} from "react";
+import type { ParcnetAPI, Zapp } from "@parcnet-js/app-connector";
+import { connect } from "@parcnet-js/app-connector";
+import type { ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 
 export type ClientConnectionInfo = {
   url: string;

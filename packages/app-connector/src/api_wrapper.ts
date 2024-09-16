@@ -1,14 +1,15 @@
-import {
+import type {
   ParcnetIdentityRPC,
   ParcnetRPC,
   ProveResult
 } from "@parcnet-js/client-rpc";
-import * as p from "@parcnet-js/podspec";
-import { GPCBoundConfig, GPCProof, GPCRevealedClaims } from "@pcd/gpc";
-import { POD, PODEntries } from "@pcd/pod";
+import type * as p from "@parcnet-js/podspec";
+import type { GPCBoundConfig, GPCProof, GPCRevealedClaims } from "@pcd/gpc";
+import type { PODEntries } from "@pcd/pod";
+import { POD } from "@pcd/pod";
 import { EventEmitter } from "eventemitter3";
-import { PodspecProofRequest } from "../../podspec/src/index.js";
-import { ParcnetRPCConnector } from "./rpc_client.js";
+import type { PodspecProofRequest } from "../../podspec/src/index.js";
+import type { ParcnetRPCConnector } from "./rpc_client.js";
 
 /**
  * A Subscription object is returned to the caller when a subscription is

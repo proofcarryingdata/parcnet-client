@@ -1,26 +1,20 @@
-import { POD, PODContent, PODEntries, PODValue } from "@pcd/pod";
-import {
-  IssueCode,
-  PodspecError,
+import type { POD, PODContent, PODEntries, PODValue } from "@pcd/pod";
+import type {
   PodspecSignatureExcludedByListIssue,
   PodspecSignatureNotInListIssue,
   PodspecSignerExcludedByListIssue,
   PodspecSignerNotInListIssue
 } from "../error.js";
-import { EntriesSchema, EntriesSchemaLiteral } from "../schemas/entries.js";
-import { PODSchema } from "../schemas/pod.js";
-import {
-  DEFAULT_ENTRIES_PARSE_OPTIONS,
-  EntriesOutputType,
-  EntriesParseOptions,
-  safeParseEntries
-} from "./entries.js";
-import {
-  FAILURE,
-  ParseResult,
-  SUCCESS,
-  safeCheckTuple
-} from "./parse_utils.js";
+import { IssueCode, PodspecError } from "../error.js";
+import type {
+  EntriesSchema,
+  EntriesSchemaLiteral
+} from "../schemas/entries.js";
+import type { PODSchema } from "../schemas/pod.js";
+import type { EntriesOutputType, EntriesParseOptions } from "./entries.js";
+import { DEFAULT_ENTRIES_PARSE_OPTIONS, safeParseEntries } from "./entries.js";
+import type { ParseResult } from "./parse_utils.js";
+import { FAILURE, SUCCESS, safeCheckTuple } from "./parse_utils.js";
 
 /**
  * "Strong" PODContent is an extension of PODContent which extends the

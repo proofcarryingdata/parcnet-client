@@ -1,8 +1,9 @@
-import { PODQuery, ParcnetPODRPC } from "@parcnet-js/client-rpc";
-import { POD, PODEntries, encodePrivateKey } from "@pcd/pod";
-import { Identity } from "@semaphore-protocol/identity";
-import { PODCollection } from "./pod_collection.js";
-import { QuerySubscriptions } from "./query_subscriptions.js";
+import type { PODQuery, ParcnetPODRPC } from "@parcnet-js/client-rpc";
+import type { PODEntries } from "@pcd/pod";
+import { POD, encodePrivateKey } from "@pcd/pod";
+import type { Identity } from "@semaphore-protocol/identity";
+import type { PODCollection } from "./pod_collection.js";
+import type { QuerySubscriptions } from "./query_subscriptions.js";
 
 export class ParcnetPODProcessor implements ParcnetPODRPC {
   public constructor(

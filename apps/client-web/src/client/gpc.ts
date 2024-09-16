@@ -1,15 +1,12 @@
-import { ConnectorAdvice } from "@parcnet-js/client-helpers";
-import { ParcnetGPCRPC, ProveResult } from "@parcnet-js/client-rpc";
-import { PodspecProofRequest, proofRequest } from "@parcnet-js/podspec";
-import {
-  GPCBoundConfig,
-  GPCProof,
-  GPCRevealedClaims,
-  gpcVerify
-} from "@pcd/gpc";
-import { Dispatch } from "react";
-import { ClientAction } from "../state";
-import { PODCollection } from "./pod_collection";
+import type { ConnectorAdvice } from "@parcnet-js/client-helpers";
+import type { ParcnetGPCRPC, ProveResult } from "@parcnet-js/client-rpc";
+import type { PodspecProofRequest } from "@parcnet-js/podspec";
+import { proofRequest } from "@parcnet-js/podspec";
+import type { GPCBoundConfig, GPCProof, GPCRevealedClaims } from "@pcd/gpc";
+import { gpcVerify } from "@pcd/gpc";
+import type { Dispatch } from "react";
+import type { ClientAction } from "../state";
+import type { PODCollection } from "./pod_collection";
 
 export class ParcnetGPCProcessor implements ParcnetGPCRPC {
   public constructor(

@@ -1,10 +1,10 @@
-import {
+import type {
   EntriesSchema,
   PODSchema,
   PodspecProofRequest
 } from "@parcnet-js/podspec";
-import { GPCBoundConfig, GPCProof, GPCRevealedClaims } from "@pcd/gpc";
-import { PODEntries } from "@pcd/pod";
+import type { GPCBoundConfig, GPCProof, GPCRevealedClaims } from "@pcd/gpc";
+import type { PODEntries } from "@pcd/pod";
 
 /**
  * @file This file contains the RPC interfaces for the Parcnet client.

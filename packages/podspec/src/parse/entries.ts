@@ -1,13 +1,13 @@
-import { PODEntries, PODValue, checkPODName } from "@pcd/pod";
-import {
-  IssueCode,
+import type { PODEntries, PODValue } from "@pcd/pod";
+import { checkPODName } from "@pcd/pod";
+import type {
   PodspecBaseIssue,
-  PodspecError,
   PodspecInvalidEntryNameIssue,
   PodspecInvalidTypeIssue,
   PodspecMissingEntryIssue,
   PodspecUnexpectedInputEntryIssue
 } from "../error.js";
+import { IssueCode, PodspecError } from "../error.js";
 import {
   checkPODCryptographicValue,
   cryptographicCoercer
@@ -16,12 +16,12 @@ import {
   checkPODEdDSAPublicKeyValue,
   eddsaPublicKeyCoercer
 } from "../schemas/eddsa_pubkey.js";
-import {
+import type {
   EntriesSchema,
   EntriesSchemaLiteral,
   EntriesTupleSchema
 } from "../schemas/entries.js";
-import {
+import type {
   DefinedEntrySchema,
   EntrySchema,
   OptionalSchema
@@ -30,13 +30,8 @@ import { checkPODIntValue, intCoercer } from "../schemas/int.js";
 import { checkPODStringValue, stringCoercer } from "../schemas/string.js";
 import { deepFreeze } from "../utils.js";
 import { parseEntry } from "./entry.js";
-import {
-  FAILURE,
-  PODValueNativeTypes,
-  ParseResult,
-  SUCCESS,
-  safeCheckTuple
-} from "./parse_utils.js";
+import type { PODValueNativeTypes, ParseResult } from "./parse_utils.js";
+import { FAILURE, SUCCESS, safeCheckTuple } from "./parse_utils.js";
 
 const COERCERS: Record<PODValue["type"], (data: unknown) => unknown> = {
   string: stringCoercer,

@@ -1,14 +1,10 @@
-import { ParcnetAPI, Subscription } from "@parcnet-js/app-connector";
+import type { ParcnetAPI, Subscription } from "@parcnet-js/app-connector";
 import * as p from "@parcnet-js/podspec";
-import { POD, PODEntries, PODValue, POD_INT_MAX, POD_INT_MIN } from "@pcd/pod";
+import type { POD, PODEntries, PODValue } from "@pcd/pod";
+import { POD_INT_MAX, POD_INT_MIN } from "@pcd/pod";
 import JSONBig from "json-bigint";
-import {
-  Dispatch,
-  ReactNode,
-  SetStateAction,
-  useReducer,
-  useState
-} from "react";
+import type { Dispatch, ReactNode, SetStateAction } from "react";
+import { useReducer, useState } from "react";
 import { Button } from "../components/Button";
 import { TryIt } from "../components/TryIt";
 import { useParcnetClient } from "../hooks/useParcnetClient";

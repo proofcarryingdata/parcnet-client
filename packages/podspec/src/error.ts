@@ -1,4 +1,4 @@
-import { PODValue } from "@pcd/pod";
+import type { PODValue } from "@pcd/pod";
 
 /**
  * Enum of all the possible issues that can occur when validating a POD

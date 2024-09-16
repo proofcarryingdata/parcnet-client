@@ -1,10 +1,9 @@
-import { PODIntValue, PODName, POD_INT_MAX, POD_INT_MIN } from "@pcd/pod";
-import { IssueCode, PodspecInvalidTypeIssue } from "../error.js";
-import {
-  FAILURE,
-  ParseResult,
-  safeCheckBigintBounds
-} from "../parse/parse_utils.js";
+import type { PODIntValue, PODName } from "@pcd/pod";
+import { POD_INT_MAX, POD_INT_MIN } from "@pcd/pod";
+import type { PodspecInvalidTypeIssue } from "../error.js";
+import { IssueCode } from "../error.js";
+import type { ParseResult } from "../parse/parse_utils.js";
+import { FAILURE, safeCheckBigintBounds } from "../parse/parse_utils.js";
 
 /**
  * Schema for a PODIntValue.

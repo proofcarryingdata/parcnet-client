@@ -1,6 +1,5 @@
-export * from "./adapters/iframe.js";
+import { connect } from "./adapters/iframe.js";
+export { connect };
 export * from "./api_wrapper.js";
-export * from "./rpc_client.js";
-export * from "./utils.js";
 export { Zapp };
-import { type Zapp } from "@parcnet-js/client-rpc";
+import type { Zapp } from "@parcnet-js/client-rpc";

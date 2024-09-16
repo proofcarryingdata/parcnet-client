@@ -1,15 +1,9 @@
-import {
-  PODCryptographicValue,
-  PODName,
-  POD_CRYPTOGRAPHIC_MAX,
-  POD_CRYPTOGRAPHIC_MIN
-} from "@pcd/pod";
-import { IssueCode, PodspecInvalidTypeIssue } from "../error.js";
-import {
-  FAILURE,
-  ParseResult,
-  safeCheckBigintBounds
-} from "../parse/parse_utils.js";
+import type { PODCryptographicValue, PODName } from "@pcd/pod";
+import { POD_CRYPTOGRAPHIC_MAX, POD_CRYPTOGRAPHIC_MIN } from "@pcd/pod";
+import type { PodspecInvalidTypeIssue } from "../error.js";
+import { IssueCode } from "../error.js";
+import type { ParseResult } from "../parse/parse_utils.js";
+import { FAILURE, safeCheckBigintBounds } from "../parse/parse_utils.js";
 
 /**
  * Schema for a cryptographic value.

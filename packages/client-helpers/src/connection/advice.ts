@@ -1,4 +1,7 @@
-import { ParcnetRPC, SubscriptionUpdateResult } from "@parcnet-js/client-rpc";
+import type {
+  ParcnetRPC,
+  SubscriptionUpdateResult
+} from "@parcnet-js/client-rpc";
 
 /**
  * ConnectorAdvice is a set of methods that a client can call to advise the

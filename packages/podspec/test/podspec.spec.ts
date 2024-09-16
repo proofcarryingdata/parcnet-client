@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import path from "path";
-import { GPCBoundConfig, gpcProve, gpcVerify } from "@pcd/gpc";
+import type { GPCBoundConfig } from "@pcd/gpc";
+import { gpcProve, gpcVerify } from "@pcd/gpc";
 import {
   POD,
   POD_INT_MAX,
@@ -11,15 +12,15 @@ import {
 import { derivePublicKey } from "@zk-kit/eddsa-poseidon";
 import { v4 as uuidv4 } from "uuid";
 import { assert, describe, expect, it } from "vitest";
-import {
-  IssueCode,
+import type {
   PodspecNotInListIssue,
   PodspecNotInRangeIssue,
   PodspecNotInTupleListIssue
 } from "../src/error.js";
+import { IssueCode } from "../src/error.js";
 import * as p from "../src/index.js";
 import { $i, $s } from "../src/pod_value_utils.js";
-import { EntriesTupleSchema } from "../src/schemas/entries.js";
+import type { EntriesTupleSchema } from "../src/schemas/entries.js";
 
 export const GPC_NPM_ARTIFACTS_PATH = path.join(
   __dirname,

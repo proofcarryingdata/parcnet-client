@@ -1,16 +1,12 @@
 import { listen } from "@parcnet-js/client-helpers/connection/iframe";
-import { Zapp } from "@parcnet-js/client-rpc";
-import { EntriesSchema, PODSchema, proofRequest } from "@parcnet-js/podspec";
+import type { Zapp } from "@parcnet-js/client-rpc";
+import type { EntriesSchema, PODSchema } from "@parcnet-js/podspec";
+import { proofRequest } from "@parcnet-js/podspec";
 import { gpcProve } from "@pcd/gpc";
-import { POD, POD_INT_MAX, POD_INT_MIN } from "@pcd/pod";
-import {
-  Dispatch,
-  Fragment,
-  ReactNode,
-  useEffect,
-  useReducer,
-  useState
-} from "react";
+import type { POD } from "@pcd/pod";
+import { POD_INT_MAX, POD_INT_MIN } from "@pcd/pod";
+import type { Dispatch, ReactNode } from "react";
+import { Fragment, useEffect, useReducer, useState } from "react";
 import { ParcnetClientProcessor } from "./client/client";
 import { PODCollection } from "./client/pod_collection";
 import {
@@ -19,7 +15,8 @@ import {
   savePODsToStorage
 } from "./client/utils";
 import { Rabbit } from "./rabbit";
-import { ClientAction, ClientState, clientReducer } from "./state";
+import type { ClientAction, ClientState } from "./state";
+import { clientReducer } from "./state";
 
 function App() {
   const [state, dispatch] = useReducer(clientReducer, {
