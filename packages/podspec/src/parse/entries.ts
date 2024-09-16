@@ -1,4 +1,4 @@
-import { checkPODName, PODEntries, PODValue } from "@pcd/pod";
+import { PODEntries, PODValue, checkPODName } from "@pcd/pod";
 import {
   IssueCode,
   PodspecBaseIssue,
@@ -32,10 +32,10 @@ import { deepFreeze } from "../utils.js";
 import { parseEntry } from "./entry.js";
 import {
   FAILURE,
-  ParseResult,
   PODValueNativeTypes,
-  safeCheckTuple,
-  SUCCESS
+  ParseResult,
+  SUCCESS,
+  safeCheckTuple
 } from "./parse_utils.js";
 
 const COERCERS: Record<PODValue["type"], (data: unknown) => unknown> = {

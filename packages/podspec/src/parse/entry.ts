@@ -1,7 +1,7 @@
 import {
-  checkBigintBounds,
   PODCryptographicValue,
-  PODIntValue
+  PODIntValue,
+  checkBigintBounds
 } from "@pcd/pod";
 import {
   IssueCode,
@@ -12,11 +12,11 @@ import { DefinedEntrySchema } from "../schemas/entry.js";
 import { DEFAULT_ENTRIES_PARSE_OPTIONS } from "./entries.js";
 import {
   FAILURE,
-  ParseResult,
   PODValueTypeNameToPODValue,
+  ParseResult,
+  SUCCESS,
   safeCheckPODValue,
-  safeMembershipChecks,
-  SUCCESS
+  safeMembershipChecks
 } from "./parse_utils.js";
 
 /**

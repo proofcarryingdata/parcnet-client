@@ -1,7 +1,7 @@
-import { connect, ParcnetAPI, Zapp } from "@parcnet-js/app-connector";
+import { ParcnetAPI, Zapp, connect } from "@parcnet-js/app-connector";
 import {
-  createContext,
   ReactNode,
+  createContext,
   useContext,
   useEffect,
   useRef,

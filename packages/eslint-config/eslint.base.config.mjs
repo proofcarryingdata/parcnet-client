@@ -1,10 +1,9 @@
 import eslint from "@eslint/js";
-import tseslint from "typescript-eslint";
 import pluginChaiFriendly from "eslint-plugin-chai-friendly";
-import hooksPlugin from "eslint-plugin-react-hooks";
-import eslintPluginPrettier from "eslint-plugin-prettier";
-import eslintPluginTurbo from "eslint-plugin-turbo";
 import eslintPluginImport from "eslint-plugin-import";
+import hooksPlugin from "eslint-plugin-react-hooks";
+import eslintPluginTurbo from "eslint-plugin-turbo";
+import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   eslint.configs.recommended,
@@ -35,13 +34,11 @@ export default tseslint.config(
     plugins: {
       "chai-friendly": pluginChaiFriendly,
       "react-hooks": hooksPlugin,
-      prettier: eslintPluginPrettier,
       turbo: eslintPluginTurbo,
       import: eslintPluginImport
     },
     rules: {
       ...hooksPlugin.configs.recommended.rules,
-      "prettier/prettier": "error",
       "turbo/no-undeclared-env-vars": "error"
     }
   },

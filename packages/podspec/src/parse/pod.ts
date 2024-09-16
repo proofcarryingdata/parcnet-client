@@ -18,8 +18,8 @@ import {
 import {
   FAILURE,
   ParseResult,
-  safeCheckTuple,
-  SUCCESS
+  SUCCESS,
+  safeCheckTuple
 } from "./parse_utils.js";
 
 /**

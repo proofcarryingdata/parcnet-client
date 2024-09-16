@@ -12,10 +12,7 @@
     "prepublish": "tsup 'src/**/*@(ts|tsx)' --format cjs,esm --clean --sourcemap --dts",
     "test": "vitest run"
   },
-  "files": [
-    "dist",
-    "LICENSE"
-  ],
+  "files": ["dist", "LICENSE"],
   "dependencies": {
     "@brenoroosevelt/toast": "^2.0.3",
     "@parcnet-js/client-rpc": "workspace:*",

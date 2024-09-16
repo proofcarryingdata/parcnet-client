@@ -10,7 +10,6 @@
       "outputLogs": "new-only"
     },
     "lint": {
-      "dependsOn": ["^build"],
       "cache": true,
       "outputLogs": "new-only"
     },

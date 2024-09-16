@@ -12,11 +12,7 @@
     "prepublish": "tsup 'src/**/*@(ts|tsx)' --format cjs,esm --clean --sourcemap --dts",
     "test": "vitest run"
   },
-  "files": [
-    "dist",
-    "./README.md",
-    "./LICENSE"
-  ],
+  "files": ["dist", "./README.md", "./LICENSE"],
   "dependencies": {
     "@pcd/gpc": "0.0.6",
     "@pcd/pod": "0.1.5"

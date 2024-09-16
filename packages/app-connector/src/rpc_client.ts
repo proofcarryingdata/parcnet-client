@@ -1,4 +1,5 @@
 import {
+  PODQuery,
   ParcnetEvents,
   ParcnetGPCRPC,
   ParcnetIdentityRPC,
@@ -6,7 +7,6 @@ import {
   ParcnetRPC,
   ParcnetRPCMethodName,
   ParcnetRPCSchema,
-  PODQuery,
   ProveResult,
   RPCFunction,
   RPCMessage,

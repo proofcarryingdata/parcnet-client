@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import {
   RPCMessage,
   RPCMessageSchema,
@@ -6,7 +7,6 @@ import {
 } from "@parcnet-js/client-rpc";
 import * as p from "@parcnet-js/podspec";
 import { POD } from "@pcd/pod";
-import crypto from "crypto";
 import * as v from "valibot";
 import { assert, describe, expect, it } from "vitest";
 import { postRPCMessage } from "../src/index.js";

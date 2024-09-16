@@ -1,0 +1,43 @@
+{
+  "$schema": "https://biomejs.dev/schemas/1.8.3/schema.json",
+  "files": {
+    "ignore": [
+      "**/build/**",
+      "**/dist/**",
+      "**/node_modules/**",
+      "**/.turbo/**",
+      "**/.next/**",
+      "**/.vscode/**"
+    ],
+    "include": ["./apps/**", "./packages/**", "./examples/**"]
+  },
+  /**
+   * Biome is enabled for formatting.
+   */
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space"
+  },
+  /**
+   * ESLint is probably still better than Biome for now, so the Biome linter is disabled.
+   */
+  "linter": {
+    "enabled": false
+  },
+  /**
+   * Biome is enabled for organizing imports.
+   */
+  "organizeImports": {
+    "enabled": true
+  },
+  "javascript": {
+    "formatter": {
+      "trailingCommas": "none"
+    }
+  },
+  "json": {
+    "parser": {
+      "allowComments": true
+    }
+  }
+}

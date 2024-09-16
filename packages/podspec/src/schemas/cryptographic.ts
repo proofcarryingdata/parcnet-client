@@ -1,8 +1,8 @@
 import {
-  POD_CRYPTOGRAPHIC_MAX,
-  POD_CRYPTOGRAPHIC_MIN,
   PODCryptographicValue,
-  PODName
+  PODName,
+  POD_CRYPTOGRAPHIC_MAX,
+  POD_CRYPTOGRAPHIC_MIN
 } from "@pcd/pod";
 import { IssueCode, PodspecInvalidTypeIssue } from "../error.js";
 import {

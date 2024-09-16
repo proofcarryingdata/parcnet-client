@@ -5,16 +5,16 @@
   "scripts": {
     "build": "TURBO_UI=0 turbo build",
     "dev": "turbo dev",
-    "lint": "turbo lint",
+    "lint": "biome check --diagnostic-level=error && turbo lint",
     "test": "turbo test",
     "knip": "knip --no-gitignore",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "watch": "turbo watch build --filter='./packages/**'"
   },
   "devDependencies": {
+    "@biomejs/biome": "^1.9.1",
     "@changesets/cli": "^2.27.8",
     "knip": "^5.29.2",
-    "prettier": "^3.2.5",
     "turbo": "^2.0.14",
     "typescript": "^5.4.5",
     "vitest": "^2.0.5"

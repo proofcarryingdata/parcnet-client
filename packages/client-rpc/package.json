@@ -11,10 +11,7 @@
     "build": "tsup 'src/**/*@(ts|tsx)' --format cjs,esm --clean --sourcemap",
     "prepublish": "tsup 'src/**/*@(ts|tsx)' --format cjs,esm --clean --sourcemap --dts"
   },
-  "files": [
-    "dist",
-    "LICENSE"
-  ],
+  "files": ["dist", "LICENSE"],
   "dependencies": {
     "@parcnet-js/podspec": "workspace:*",
     "@pcd/gpc": "0.0.6",

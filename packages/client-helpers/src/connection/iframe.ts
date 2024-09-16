@@ -1,5 +1,4 @@
 import {
-  deepGet,
   InitializationMessageSchema,
   InitializationMessageType,
   ParcnetRPC,
@@ -9,7 +8,8 @@ import {
   RPCMessageSchema,
   RPCMessageType,
   SubscriptionUpdateResult,
-  Zapp
+  Zapp,
+  deepGet
 } from "@parcnet-js/client-rpc";
 import * as v from "valibot";
 import { ConnectorAdvice } from "./advice.js";

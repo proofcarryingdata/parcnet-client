@@ -19,7 +19,7 @@ import {
   savePODsToStorage
 } from "./client/utils";
 import { Rabbit } from "./rabbit";
-import { ClientAction, clientReducer, ClientState } from "./state";
+import { ClientAction, ClientState, clientReducer } from "./state";
 
 function App() {
   const [state, dispatch] = useReducer(clientReducer, {
