@@ -15,7 +15,18 @@ const request: PodspecProofRequest = {
           isRevealed: true
         },
         str: { type: "int", inRange: { min: BigInt(5), max: BigInt(1000) } }
-      }
+      },
+      tuples: [
+        {
+          entries: ["wis", "str"],
+          isNotMemberOf: [
+            [
+              { type: "int", value: BigInt(100) },
+              { type: "int", value: BigInt(500) }
+            ]
+          ]
+        }
+      ]
     },
     pod2: {
       entries: {
@@ -53,7 +64,18 @@ const request: PodspecProofRequest = {
           isRevealed: true
         },
         str: { type: "int", inRange: { min: BigInt(5), max: BigInt(1000) } }
-      }
+      },
+      tuples: [
+        {
+          entries: ["wis", "str"],
+          isNotMemberOf: [
+            [
+              { type: "int", value: BigInt(100) },
+              { type: "int", value: BigInt(500) }
+            ]
+          ]
+        }
+      ]
     },
     pod2: {
       entries: {
