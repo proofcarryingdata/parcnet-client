@@ -118,8 +118,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/podspec
       '@pcd/pod':
-        specifier: 0.1.6
-        version: 0.1.6
+        specifier: 0.1.7
+        version: 0.1.7
       json-bigint:
         specifier: ^1.0.0
         version: 1.0.0
@@ -1001,9 +1001,6 @@ packages:
   '@pcd/gpcircuits@0.1.7':
     resolution: {integrity: sha512-7D7KfXHD6BlTyXzg1fJ8HQOW7Kz+AzHYGiAENQxQySelgo7idgxoC/nh5o5/ZLTvU3tLyWV4Wnixyr0WZI4Zpg==}
 
-  '@pcd/pod@0.1.6':
-    resolution: {integrity: sha512-OBj2QvXn8ew9n+Zg93RufoJNll1VFdhqh+JM19FOwUuJ+yQeMYLDzBIsX4uB1bGQ3B01obvfoN9ZSeBLWuj/rg==}
-
   '@pcd/pod@0.1.7':
     resolution: {integrity: sha512-y8wPXLw36VPsTBYR05TkURyb5v1S40kQmDwL26sEDxX90ZwAv6vTIjRpC4pmxk5gIFGtxTgxMembfrH2vZDOkA==}
 
@@ -1012,9 +1009,6 @@ packages:
 
   '@pcd/proto-pod-gpc-artifacts@0.9.0':
     resolution: {integrity: sha512-DipHMqcwpwCGy0/4hpENYjhKPcxVDEM4Koe13L1QpDYlOVVlUfsV9Y5ObpjtZELH4Q8jLWEW2tnMW9vR+c388w==}
-
-  '@pcd/util@0.5.3':
-    resolution: {integrity: sha512-mAfbpQrl2CYJJwNDHJKwkUD0JYuEAtD3Tli87hb7jZ3vvHmtT/mXlivbpnNZ5uyoowiArnhPMwng/2JmyuU3Cw==}
 
   '@pcd/util@0.5.4':
     resolution: {integrity: sha512-BkG3PxujAOE3K9odBJqMUzhvK97tzJwVrMTbqSqhGqHnKLVQNuzhURkbdjoNfVRSp8BwaxP516ocjyY1KrxpuA==}
@@ -4401,17 +4395,6 @@ snapshots:
       snarkjs: 0.7.4
       url-join: 4.0.1
 
-  '@pcd/pod@0.1.6':
-    dependencies:
-      '@pcd/util': 0.5.3
-      '@zk-kit/baby-jubjub': 1.0.1
-      '@zk-kit/eddsa-poseidon': 1.0.3
-      '@zk-kit/lean-imt': 2.0.1
-      '@zk-kit/utils': 1.2.0
-      js-sha256: 0.10.1
-      json-bigint: 1.0.0
-      poseidon-lite: 0.2.1
-
   '@pcd/pod@0.1.7':
     dependencies:
       '@pcd/util': 0.5.4
@@ -4426,14 +4409,6 @@ snapshots:
   '@pcd/proto-pod-gpc-artifacts@0.5.0': {}
 
   '@pcd/proto-pod-gpc-artifacts@0.9.0': {}
-
-  '@pcd/util@0.5.3':
-    dependencies:
-      buffer: 6.0.3
-      email-validator: 2.0.4
-      js-sha256: 0.10.1
-      secure-random: 1.1.2
-      uuid: 9.0.1
 
   '@pcd/util@0.5.4':
     dependencies:

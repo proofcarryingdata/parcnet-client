@@ -9,32 +9,36 @@ import { useParcnetClient } from "../hooks/useParcnetClient";
 const request: PodspecProofRequest = {
   pods: {
     pod1: {
-      entries: {
-        wis: {
-          type: "int",
-          inRange: { min: BigInt(5), max: BigInt(1000) },
-          isRevealed: true
+      pod: {
+        entries: {
+          wis: {
+            type: "int",
+            inRange: { min: BigInt(5), max: BigInt(1000) },
+            isRevealed: true
+          },
+          str: { type: "int", inRange: { min: BigInt(5), max: BigInt(1000) } }
         },
-        str: { type: "int", inRange: { min: BigInt(5), max: BigInt(1000) } }
-      },
-      tuples: [
-        {
-          entries: ["wis", "str"],
-          isNotMemberOf: [
-            [
-              { type: "int", value: BigInt(100) },
-              { type: "int", value: BigInt(500) }
+        tuples: [
+          {
+            entries: ["wis", "str"],
+            isNotMemberOf: [
+              [
+                { type: "int", value: BigInt(100) },
+                { type: "int", value: BigInt(500) }
+              ]
             ]
-          ]
-        }
-      ]
+          }
+        ]
+      }
     },
     pod2: {
-      entries: {
-        test: {
-          type: "string",
-          isMemberOf: [{ type: "string", value: "secret" }],
-          isRevealed: true
+      pod: {
+        entries: {
+          test: {
+            type: "string",
+            isMemberOf: [{ type: "string", value: "secret" }],
+            isRevealed: true
+          }
         }
       }
     }

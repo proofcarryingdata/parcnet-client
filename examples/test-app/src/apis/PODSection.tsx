@@ -464,7 +464,10 @@ function DeletePOD({ z }: { z: ParcnetAPI }): ReactNode {
 
 function SubscribeToPODs({ z }: { z: ParcnetAPI }): ReactNode {
   const [pods, setPODs] = useState<POD[]>([]);
-  const [subscription, setSubscription] = useState<Subscription | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [subscription, setSubscription] = useState<Subscription<any> | null>(
+    null
+  );
 
   return (
     <div>
