@@ -23,9 +23,9 @@ Create a POD spec:
 import { p } from "@pcd/podspec";
 
 const spec = p.entries({
-  name: p.string(),
-  email: p.string(),
-  high_score: p.int()
+  name: { type: "string" },
+  email: { type: "string" },
+  high_score: { type: "int" }
 });
 ```
 
@@ -60,10 +60,10 @@ For example, if we have a POD that represents a weapon in a game, we might have 
 
 ```ts
 const weaponSpec = p.entries({
-  name: p.string(),
-  damage: p.int(),
-  durability: p.int(),
-  price: p.int()
+  name: { type: "string" },
+  damage: { type: "int" },
+  durability: { type: "int" },
+  price: { type: "int" }
 });
 ```
 
@@ -90,18 +90,7 @@ if (result.isValid) {
 
 In the above example, we assumed that already had POD entries to validate. However, we might have a JavaScript object that we want to turn into POD entries. `podspec` can do some simple transformations to turn JavaScript objects into POD entries.
 
-First we specify that we want to coerce JavaScript objects into POD entries:
-
-```ts
-const coercingWeaponSpec = p.entries({
-  name: p.coerce.string(),
-  damage: p.coerce.int(),
-  durability: p.coerce.int(),
-  price: p.coerce.int()
-});
-```
-
-Then we can use the spec to parse a JavaScript object:
+To coerce JavaScript objects into POD entries, set the `coerce` option to `true`:
 
 ```ts
 const javascriptObject = {
@@ -111,7 +100,7 @@ const javascriptObject = {
   price: 100
 };
 
-const result = coercingWeaponSpec.parse(javascriptObject);
+const result = weaponSpec.parse(javascriptObject, { coerce: true });
 if (result.isValid) {
   // Ready to sign the POD
 } else {
@@ -129,12 +118,14 @@ If you have a POD that is already signed, you can use `podspec` to validate the 
 ```ts
 const pod = getPodFromSomewhere();
 const pubKey = "expected_public_key";
-const podSpec = p
-  .POD({
-    eventId: p.string(),
-    productId: p.string()
-  })
-  .signer(pubKey);
+const entriesSpec = p.entries({
+  eventId: { type: "string" },
+  productId: { type: "string" }
+});
+const podSpec = p.pod({ 
+  entries: entriesSpec.schema,
+  signerPublicKey: { isMemberOf: [pubKey] }
+});
 
 const result = podSpec.parse(pod);
 if (result.isValid) {
@@ -147,41 +138,21 @@ if (result.isValid) {
 
 This will check that the POD has the right structure and types, and that the signer is the expected signer.
 
-You can also provide a list of valid signers:
+### Querying a collection of PODs for matches
 
-```ts
-const podSpec = p
-  .POD({
-    eventId: p.string(),
-    productId: p.string()
-  })
-  .signerList([pubKey1, pubKey2]);
-```
-
-### Querying an array of PODs for matches
-
-If you have an array of PODs, you can use the spec to query the array for PODs that match the spec:
+If you have a collection of PODs, you can use the spec to query the collection for PODs that match the spec:
 
 ```ts
 const pods = [pod1, pod2, pod3];
-const podSpec = p.entries({
+const entriesSpec = p.entries({
   eventId: p.string(),
   productId: p.string()
 });
+const podSpec = p.pod({ entries: entriesSpec.schema });
 const result = podSpec.query(pods);
 result.matches; // Contains the PODs that match the spec
 result.matchingIndexes; // Contains the array indexes of the PODs that match the spec
 ```
-
-### Serializing Podspecs
-
-To serialize a podspec to a JavaScript object, you can use the `serialize` method:
-
-```ts
-const serialized = podSpec.serialize();
-```
-
-Bear in mind that this will not serialize the podspec to a string, but rather to a JavaScript object. Since the object may contain `bigint` values, you may need to serialize it using a specialized library like `json-bigint`.
 
 ## Other constraints
 
@@ -191,7 +162,7 @@ As well as ensuring the existence and type of POD entries, `podspec` also provid
 
 ```ts
 const rangeSpec = p.entries({
-  value: p.int().range(0n, 100n)
+  value: { type: "int", inRange: { min: 0n, max: 50n }}
 });
 
 const entries = {
@@ -217,7 +188,11 @@ Entries can be checked against a list of values:
 
 ```ts
 const listSpec = p.entries({
-  value: p.int().list([1n, 2n, 3n])
+  value: { type: "int", isMemberOf: [
+    { type: "int", value: 1n },
+    { type: "int", value: 2n },
+    { type: "int", value: 3n },
+  ]}
 });
 
 const entries = {
@@ -233,7 +208,11 @@ Lists can also be used to specify invalid values which should not be allowed:
 
 ```ts
 const listSpec = p.entries({
-  value: p.int().list([1n, 2n, 3n], { exclude: true })
+  value: { type: "int", isNotMemberOf: [
+    { type: "int", value: 1n },
+    { type: "int", value: 2n },
+    { type: "int", value: 3n },
+  ]}
 });
 
 const entries = {
@@ -250,34 +229,36 @@ This will not parse successfully because the value `2n` is in the list of exclud
 Multiple entries can be checked against a list of valid tuples.
 
 ```ts
-const tupleSpec = p
+const entriesSpec = p
   .entries({
-    foo: p.string(),
-    bar: p.int()
-  })
-  .tuple({
-    name: "test",
-    exclude: false,
+    foo: { type: "string" },
+    bar: { type: "int" }
+  });
+
+const podSpec = p.pod({
+  entries: entriesSpec.schema,
+  tuples: [{
     entries: ["foo", "bar"],
-    members: [
+    isMemberOf: [
       [
         { type: "string", value: "test" },
-        { type: "int", value: 1n }
+        { type: "int", value: 5n }
       ],
       [
         { type: "string", value: "test2" },
-        { type: "int", value: 2n }
+        { type: "int", value: 10n }
       ]
     ]
-  });
+  }]
+});
 ```
 
-In this example, we will accept any set of POD entries which has either `a foo entry with value "test" and a bar entry with value 1n` or `a foo entry with value "test2" and a bar entry with value 2n`.
+In this example, we will accept any set of POD entries which has either `a foo entry with value "test" and a bar entry with value 5n` or `a foo entry with value "test2" and a bar entry with value 10n`.
 
 ```ts
 const entries = {
   foo: { type: "string", value: "test" },
-  bar: { type: "int", value: 1n }
+  bar: { type: "int", value: 5n }
 };
 
 const result = tupleSpec.parse(entries);
@@ -288,7 +269,7 @@ This matches the first tuple in the list, so the result will be valid.
 ```ts
 const entries = {
   foo: { type: "string", value: "test2" },
-  bar: { type: "int", value: 2n }
+  bar: { type: "int", value: 10n }
 };
 
 const result = tupleSpec.parse(entries);
@@ -299,7 +280,7 @@ This matches the second tuple in the list, so the result will be valid.
 ```ts
 const entries = {
   foo: { type: "string", value: "test" },
-  bar: { type: "int", value: 2n }
+  bar: { type: "int", value: 10n }
 };
 
 const result = tupleSpec.parse(entries);
