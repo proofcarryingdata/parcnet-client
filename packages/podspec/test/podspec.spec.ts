@@ -22,6 +22,8 @@ export const GPC_NPM_ARTIFACTS_PATH = path.join(
 
 describe("podspec should work", function () {
   it("should validate POD entries", () => {
+    // To begin with, we can create a specification for POD entries.
+    // This is useful for validating POD entries before signing them.
     const entriesSpec = p.entries({
       firstName: {
         type: "string",
@@ -41,8 +43,10 @@ describe("podspec should work", function () {
       }
     });
 
+    // Generate a random valid public key
     const { publicKey } = generateKeyPair();
 
+    // Parse some POD entries
     const result = entriesSpec.safeParse({
       firstName: {
         type: "string",
@@ -62,6 +66,7 @@ describe("podspec should work", function () {
       }
     });
 
+    // The result should be valid
     assert(result.isValid);
     expect(result.value.firstName).to.eql({ type: "string", value: "test" });
     expect(result.value.age).to.eql({ type: "int", value: 41n });
@@ -160,11 +165,16 @@ describe("podspec should work", function () {
     expect(() =>
       p.entries({
         foo: { type: "string" },
+        // This is simply invalid data, which would normally cause a type error
+        // in TypeScript, but such errors can be overridden and would never
+        // occur in JavaScript.
         bar: { type: "invalid" } as never
       })
     ).to.throw();
   });
 
+  // Integer and Cryptographic entries can be checked to ensure that their
+  // values are within certain bounds.
   it("should apply range checks", function () {
     const myPodSpec = p.entries({
       foo: { type: "int", inRange: { min: 1n, max: 10n } }
@@ -186,6 +196,8 @@ describe("podspec should work", function () {
     ]);
   });
 
+  // All entries can be checked to ensure that their values are members of
+  // a list.
   it("should test string entries for list membership", function () {
     const myPodSpec = p.entries({
       foo: {
@@ -215,6 +227,8 @@ describe("podspec should work", function () {
     ]);
   });
 
+  // All entries can be checked to ensure that their values are members of
+  // a list.
   it("should test integer entries for list membership", function () {
     const myPodSpec = p.entries({
       foo: { type: "int", isMemberOf: $i([1n, 2n, 3n]) }
@@ -247,15 +261,19 @@ describe("podspec should work", function () {
     ]);
   });
 
+  // Tuples are used to match on multiple entries at once.
   it("should match on tuples", function () {
     const myPodSpec = p.entries({
       foo: { type: "string" },
       bar: { type: "int" }
     });
 
+    // Define a tuple of valid entries
     const tuples: EntriesTupleSchema<p.InferEntriesType<typeof myPodSpec>>[] = [
       {
+        // The entries to be checked
         entries: ["foo", "bar"],
+        // The list of valid tuples
         isMemberOf: [
           [
             { type: "string", value: "test" },
@@ -333,6 +351,8 @@ describe("podspec should work", function () {
     }
   });
 
+  // Optional entries are those which may or may not be present in a POD.
+  // If present, the entry's "innerType" is used for validation.
   it("should handle optional entries", function () {
     const optionalPodSpec = p.entries({
       foo: { type: "string" },
@@ -351,6 +371,7 @@ describe("podspec should work", function () {
     expect(resultWithoutOptional.isValid).to.eq(true);
   });
 
+  // In addition to validating sets of entries, we can validate existing PODs.
   it("should validate entire PODs", function () {
     const { privateKey } = generateKeyPair();
     const eventId = "d1390b7b-4ccb-42bf-8c8b-e397b7c26e6c";
@@ -376,6 +397,8 @@ describe("podspec should work", function () {
     assert(result.isValid);
   });
 
+  // Tuple checks on PODs include a special virtual entry representing the
+  // POD's signer.
   it("should perform tuple checks on PODs including virtual signer entry", function () {
     const { publicKey, privateKey } = generateKeyPair();
     const eventId = "d1390b7b-4ccb-42bf-8c8b-e397b7c26e6c";
@@ -431,6 +454,8 @@ describe("podspec should work", function () {
     }
   });
 
+  // Queries can be performed across multiple PODs to find those which match
+  // a given PODSpec.
   it("should query across multiple PODs", function () {
     const key = generateRandomHex(32);
 
@@ -463,6 +488,7 @@ describe("podspec should work", function () {
     expect(queryResult.matchingIndexes).to.eql([1]);
   });
 
+  // Range checks can also be applied in queries.
   it("should apply range checks in queries", function () {
     const key = generateRandomHex(32);
     const myPodSpec = p.pod({
@@ -484,6 +510,7 @@ describe("podspec should work", function () {
     expect(queryResult.matchingIndexes).to.eql([0, 3]);
   });
 
+  // Tuple checks also work in queries.
   it("should match on tuples in queries", function () {
     const { publicKey, privateKey } = generateKeyPair();
     const eventId = "d1390b7b-4ccb-42bf-8c8b-e397b7c26e6c";
@@ -531,6 +558,7 @@ describe("podspec should work", function () {
     expect(queryResult.matchingIndexes).to.eql([0]);
   });
 
+  // Queries can also be used to match on signatures.
   it("can query for PODs with matching signatures", function () {
     const { publicKey, privateKey } = generateKeyPair();
     const eventId = "d1390b7b-4ccb-42bf-8c8b-e397b7c26e6c";

@@ -8,6 +8,9 @@ import { $s } from "../src/pod_value_utils.js";
 import { GPC_NPM_ARTIFACTS_PATH } from "./podspec.spec.js";
 import { generateKeyPair } from "./utils.js";
 
+/**
+ * A specification for tickets, based on the existing example in the Zupass codebase.
+ */
 const TicketEntries = p.entries({
   ticketId: { type: "string" },
   eventId: { type: "string" },
@@ -28,13 +31,16 @@ const TicketEntries = p.entries({
   attendeeEmail: { type: "string" }
 });
 
+// An event ID for an event
 const MY_EVENT_ID = uuidv4();
+// Possible product IDs for the event
 const MY_EVENT_PRODUCT_IDS = {
   VISITOR: uuidv4(),
   RESIDENT: uuidv4(),
   ORGANIZER: uuidv4()
 };
 
+// Example data for a ticket
 const VALID_TICKET_DATA = {
   ticketId: uuidv4(),
   eventId: MY_EVENT_ID,
@@ -56,11 +62,13 @@ const VALID_TICKET_DATA = {
 };
 
 describe.concurrent("podspec ticket example", function () {
+  // Given a ticket with valid data, it should be recognized as valid
   it("should validate ticket entries", async function () {
     const result = TicketEntries.safeParse(VALID_TICKET_DATA, { coerce: true });
     expect(result.isValid).toBe(true);
   });
 
+  // Validation of a POD should work
   it("should validate ticket PODs", async function () {
     const { privateKey } = generateKeyPair();
     const entries = TicketEntries.parse(VALID_TICKET_DATA, { coerce: true });
@@ -73,15 +81,19 @@ describe.concurrent("podspec ticket example", function () {
     assert(result.isValid);
   });
 
+  // Given that we have a schema for tickets, we should be able to create
+  // narrower schemas for specific events or products, re-using our existing
+  // specification.
   it("should support narrowing of ticket criteria", async function () {
     const baseTicketSchema = TicketEntries.schema;
 
+    // Override the event ID to be specific to our event
     const EventSpecificTicketEntries = p.entries({
       ...baseTicketSchema,
-      eventId: { type: "string", isMemberOf: $s([MY_EVENT_ID]) }
+      eventId: { ...baseTicketSchema.eventId, isMemberOf: $s([MY_EVENT_ID]) }
     });
 
-    // This will be true because the ticket is for the specified event
+    // This will succeed because the ticket is for the specified event
     const result = EventSpecificTicketEntries.safeParse(VALID_TICKET_DATA, {
       coerce: true
     });
@@ -92,6 +104,8 @@ describe.concurrent("podspec ticket example", function () {
   it("should reject tickets which do not meet criteria", async function () {
     const baseTicketSchema = TicketEntries.schema;
 
+    // Now let's create a specification for a ticket which only matches tickets
+    // with two specific product IDs
     const EventAndProductSpecificTicketEntries = p.entries({
       ...baseTicketSchema,
       eventId: { ...baseTicketSchema.eventId, isMemberOf: $s([MY_EVENT_ID]) },
@@ -105,7 +119,8 @@ describe.concurrent("podspec ticket example", function () {
       }
     });
 
-    // This will be true because the ticket is for the specified event
+    // This will fail because the ticket is of type "VISITOR", which is not in
+    // the list of allowed product IDs
     const result = EventAndProductSpecificTicketEntries.safeParse(
       VALID_TICKET_DATA,
       {
@@ -119,6 +134,8 @@ describe.concurrent("podspec ticket example", function () {
     expect(result.issues[0]?.path).toEqual(["productId"]);
   });
 
+  // Given a collection of tickets, we should be able to query for tickets which
+  // match a given criteria
   it("should be able to find matching tickets from a collection", async function () {
     const { privateKey } = generateKeyPair();
     const entries = TicketEntries.parse(VALID_TICKET_DATA, { coerce: true });
@@ -230,6 +247,7 @@ describe.concurrent("podspec ticket example", function () {
 
     const identity = new Identity();
 
+    // Turn our JavaScript data into PODEntries
     const ticketEntries = TicketEntries.parse(
       {
         ...VALID_TICKET_DATA,
@@ -238,10 +256,12 @@ describe.concurrent("podspec ticket example", function () {
       { coerce: true }
     );
 
+    // Create the POD
     const ticketPod = POD.sign(ticketEntries, generateKeyPair().privateKey);
 
     const proofRequestSpec = p.proofRequest({
       pods: {
+        // Create proof config for the ticket POD, specific to our event
         ticketPod: eventTicketsPodSpec.proofConfig({
           revealed: { ticketId: true },
           owner: { entry: "attendeeSemaphoreId", protocol: "SemaphoreV3" }
@@ -249,6 +269,7 @@ describe.concurrent("podspec ticket example", function () {
       }
     });
 
+    // Get a proof request
     const req = proofRequestSpec.getProofRequest();
 
     // There's a membership list check on event ID, so the proof request should
@@ -278,7 +299,7 @@ describe.concurrent("podspec ticket example", function () {
       Object.keys(req.proofConfig.pods.ticketPod?.entries ?? {})
     ).toHaveLength(2);
 
-    await gpcProve(
+    const result = await gpcProve(
       req.proofConfig,
       {
         pods: {
@@ -292,5 +313,13 @@ describe.concurrent("podspec ticket example", function () {
       },
       GPC_NPM_ARTIFACTS_PATH
     );
+
+    expect(result).toBeDefined();
+    expect(result.proof).toBeDefined();
+    expect(result.boundConfig).toBeDefined();
+    expect(result.revealedClaims).toBeDefined();
+    expect(
+      result.revealedClaims.pods.ticketPod?.entries?.ticketId
+    ).toBeDefined();
   });
 });

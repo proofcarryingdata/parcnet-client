@@ -37,9 +37,6 @@ export type ParcnetRPCMethodName =
   | `identity.${keyof typeof ParcnetRPCSchema.identity}`;
 
 export const RPCMessageSchema = v.union([
-  /**
-   * Schema which matches the type of {@link }
-   */
   v.object({
     type: v.literal(RPCMessageType.PARCNET_CLIENT_INVOKE),
     serial: v.number(),
