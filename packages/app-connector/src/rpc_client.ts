@@ -188,6 +188,20 @@ export class ParcnetRPCConnector implements ParcnetRPC, ParcnetEvents {
           [],
           ParcnetRPCSchema.identity.getSemaphoreV3Commitment
         );
+      },
+      getSemaphoreV4Commitment: async (): Promise<bigint> => {
+        return this.#typedInvoke(
+          "identity.getSemaphoreV4Commitment",
+          [],
+          ParcnetRPCSchema.identity.getSemaphoreV4Commitment
+        );
+      },
+      getSemaphoreV4PublicKey: async (): Promise<string> => {
+        return this.#typedInvoke(
+          "identity.getSemaphoreV4PublicKey",
+          [],
+          ParcnetRPCSchema.identity.getSemaphoreV4PublicKey
+        );
       }
     };
   }

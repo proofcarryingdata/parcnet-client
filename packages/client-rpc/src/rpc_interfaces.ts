@@ -44,6 +44,8 @@ export interface ParcnetGPCRPC {
 
 export interface ParcnetIdentityRPC {
   getSemaphoreV3Commitment: () => Promise<bigint>;
+  getSemaphoreV4Commitment: () => Promise<bigint>;
+  getSemaphoreV4PublicKey: () => Promise<string>;
 }
 
 export interface ParcnetPODRPC {

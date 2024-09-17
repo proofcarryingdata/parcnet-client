@@ -5,7 +5,13 @@ import { useParcnetClient } from "../hooks/useParcnetClient";
 
 export function Identity(): ReactNode {
   const { z, connected } = useParcnetClient();
-  const [commitment, setCommitment] = useState<bigint | undefined>(undefined);
+  const [commitmentV3, setCommitmentV3] = useState<bigint | undefined>(
+    undefined
+  );
+  const [commitmentV4, setCommitmentV4] = useState<bigint | undefined>(
+    undefined
+  );
+  const [publicKey, setPublicKey] = useState<string | undefined>(undefined);
 
   return !connected ? null : (
     <div>
@@ -13,7 +19,7 @@ export function Identity(): ReactNode {
       <div className="prose">
         <div>
           <p>
-            Getting the identity commitment is done like this:
+            Getting the v3 identity commitment is done like this:
             <code className="block text-xs font-base rounded-md p-2">
               await z.identity.getSemaphoreV3Commitment();
             </code>
@@ -22,16 +28,58 @@ export function Identity(): ReactNode {
             onClick={async () => {
               try {
                 const commitment = await z.identity.getSemaphoreV3Commitment();
-                setCommitment(commitment);
+                setCommitmentV3(commitment);
               } catch (e) {
                 console.log(e);
               }
             }}
-            label="Get identity commitment"
+            label="Get v3 identity commitment"
           />
-          {commitment !== undefined && (
-            <p>Commitment: {commitment.toString()}</p>
+          {commitmentV3 !== undefined && (
+            <p>Commitment: {commitmentV3.toString()}</p>
           )}
+        </div>
+        <div>
+          <p>
+            Getting the v4 identity commitment is done like this:
+            <code className="block text-xs font-base rounded-md p-2">
+              await z.identity.getSemaphoreV4Commitment();
+            </code>
+          </p>
+          <TryIt
+            onClick={async () => {
+              try {
+                const commitment = await z.identity.getSemaphoreV4Commitment();
+                setCommitmentV4(commitment);
+              } catch (e) {
+                console.log(e);
+              }
+            }}
+            label="Get v4 identity commitment"
+          />
+          {commitmentV4 !== undefined && (
+            <p>Commitment: {commitmentV4.toString()}</p>
+          )}
+        </div>
+        <div>
+          <p>
+            Getting the v4 identity public key is done like this:
+            <code className="block text-xs font-base rounded-md p-2">
+              await z.identity.getSemaphoreV4PublicKey();
+            </code>
+          </p>
+          <TryIt
+            onClick={async () => {
+              try {
+                const publicKey = await z.identity.getSemaphoreV4PublicKey();
+                setPublicKey(publicKey);
+              } catch (e) {
+                console.log(e);
+              }
+            }}
+            label="Get v4 public key"
+          />
+          {publicKey !== undefined && <p>Public Key: {publicKey}</p>}
         </div>
       </div>
     </div>

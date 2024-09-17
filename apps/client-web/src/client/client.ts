@@ -36,7 +36,7 @@ export class ParcnetClientProcessor implements ParcnetRPC {
       this.subscriptions,
       userIdentity
     );
-    this.identity = new ParcnetIdentityProcessor();
+    this.identity = new ParcnetIdentityProcessor(userIdentity);
     this.gpc = new ParcnetGPCProcessor(this.pods, dispatch, this.clientChannel);
   }
 }

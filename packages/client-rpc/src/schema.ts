@@ -173,6 +173,14 @@ export const ParcnetRPCSchema = {
     getSemaphoreV3Commitment: {
       input: v.tuple([]),
       output: v.bigint()
+    },
+    getSemaphoreV4Commitment: {
+      input: v.tuple([]),
+      output: v.bigint()
+    },
+    getSemaphoreV4PublicKey: {
+      input: v.tuple([]),
+      output: v.string()
     }
   },
   pod: {

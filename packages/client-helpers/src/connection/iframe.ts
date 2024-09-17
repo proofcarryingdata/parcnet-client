@@ -73,6 +73,10 @@ function getSchema(method: ParcnetRPCMethodName) {
       return ParcnetRPCSchema.gpc.verify;
     case "identity.getSemaphoreV3Commitment":
       return ParcnetRPCSchema.identity.getSemaphoreV3Commitment;
+    case "identity.getSemaphoreV4Commitment":
+      return ParcnetRPCSchema.identity.getSemaphoreV4Commitment;
+    case "identity.getSemaphoreV4PublicKey":
+      return ParcnetRPCSchema.identity.getSemaphoreV4PublicKey;
     case "pod.query":
       return ParcnetRPCSchema.pod.query;
     case "pod.insert":
@@ -135,7 +139,8 @@ async function handleMessage(
     } catch (error) {
       port.postMessage({
         type: RPCMessageType.PARCNET_CLIENT_INVOKE_ERROR,
-        error: (error as Error).message
+        error: (error as Error).message,
+        serial: message.serial
       });
     }
   }
