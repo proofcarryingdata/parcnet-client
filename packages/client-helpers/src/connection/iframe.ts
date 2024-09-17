@@ -63,36 +63,43 @@ export class AdviceChannel implements ConnectorAdvice {
   }
 }
 
-function getSchema(method: ParcnetRPCMethodName) {
-  switch (method) {
-    case "gpc.canProve":
-      return ParcnetRPCSchema.gpc.canProve;
-    case "gpc.prove":
-      return ParcnetRPCSchema.gpc.prove;
-    case "gpc.verify":
-      return ParcnetRPCSchema.gpc.verify;
-    case "identity.getSemaphoreV3Commitment":
-      return ParcnetRPCSchema.identity.getSemaphoreV3Commitment;
-    case "identity.getSemaphoreV4Commitment":
-      return ParcnetRPCSchema.identity.getSemaphoreV4Commitment;
-    case "identity.getSemaphoreV4PublicKey":
-      return ParcnetRPCSchema.identity.getSemaphoreV4PublicKey;
-    case "pod.query":
-      return ParcnetRPCSchema.pod.query;
-    case "pod.insert":
-      return ParcnetRPCSchema.pod.insert;
-    case "pod.delete":
-      return ParcnetRPCSchema.pod.delete;
-    case "pod.subscribe":
-      return ParcnetRPCSchema.pod.subscribe;
-    case "pod.unsubscribe":
-      return ParcnetRPCSchema.pod.unsubscribe;
-    case "pod.sign":
-      return ParcnetRPCSchema.pod.sign;
-    default:
-      const unknownMethod: never = method;
-      throw new Error(`Unknown method: ${unknownMethod as string}`);
+type Split<S extends string> = S extends `${infer A}.${infer B}`
+  ? [A, B]
+  : never;
+
+function splitPath<T extends string>(path: T): Split<T> {
+  const [a, b] = path.split(".") as Split<T>;
+  return [a, b] as Split<T>;
+}
+
+function getSchema(methodName: ParcnetRPCMethodName) {
+  const [namespace, method] = splitPath(methodName);
+
+  if (namespace === "gpc") {
+    if (method in ParcnetRPCSchema.gpc) {
+      return ParcnetRPCSchema.gpc[method];
+    }
+    throw new Error(`Method ${methodName} not found`);
   }
+
+  if (namespace === "pod") {
+    if (method in ParcnetRPCSchema.pod) {
+      return ParcnetRPCSchema.pod[method];
+    }
+    throw new Error(`Method ${methodName} not found`);
+  }
+
+  if (namespace === "identity") {
+    if (method in ParcnetRPCSchema.identity) {
+      return ParcnetRPCSchema.identity[method];
+    }
+    throw new Error(`Method ${methodName} not found`);
+  }
+
+  // This is a type guard to ensure that all namespaces are covered.
+  const _unknownNamespace: never = namespace;
+
+  throw new Error(`Method ${methodName} not found`);
 }
 
 async function handleMessage(
