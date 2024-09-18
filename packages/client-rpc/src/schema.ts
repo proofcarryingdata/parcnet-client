@@ -108,6 +108,22 @@ const PodspecProofRequestSchema = v.object({
   watermark: v.optional(PODValueSchema)
 });
 
+// const ProofRequestSchema = v.object({
+//   proofConfig: v.custom<GPCProofConfig>(() => true),
+//   membershipLists: v.record(
+//     v.string(),
+//     v.union([v.array(v.array(PODValueSchema)), v.array(PODValueSchema)])
+//   ),
+//   externalNullifier: v.optional(PODValueSchema),
+//   watermark: v.optional(PODValueSchema)
+// });
+
+// const GPCProveReturnSchema = v.object({
+//   proof: v.custom<Groth16Proof>(() => true),
+//   boundConfig: v.custom<GPCBoundConfig>(() => true),
+//   revealedClaims: v.custom<GPCRevealedClaims>(() => true)
+// });
+
 const ProveResultSchema = v.union([
   v.object({
     success: v.literal(true),
@@ -185,27 +201,31 @@ export const ParcnetRPCSchema = {
   },
   pod: {
     query: {
-      input: v.tuple([PODSchemaSchema]),
+      input: v.tuple([PODSchemaSchema] as [query: typeof PODSchemaSchema]),
       output: v.array(v.string())
     },
     insert: {
-      input: v.tuple([v.string()]),
+      input: v.tuple([v.string()] as [
+        serializedPOD: ReturnType<typeof v.string>
+      ]),
       output: v.void()
     },
     delete: {
-      input: v.tuple([v.string()]),
+      input: v.tuple([v.string()] as [signature: ReturnType<typeof v.string>]),
       output: v.void()
     },
     subscribe: {
-      input: v.tuple([PODSchemaSchema]),
+      input: v.tuple([PODSchemaSchema] as [query: typeof PODSchemaSchema]),
       output: v.string()
     },
     unsubscribe: {
-      input: v.tuple([v.string()]),
+      input: v.tuple([v.string()] as [
+        subscriptionId: ReturnType<typeof v.string>
+      ]),
       output: v.void()
     },
     sign: {
-      input: v.tuple([PODEntriesSchema]),
+      input: v.tuple([PODEntriesSchema] as [entries: typeof PODEntriesSchema]),
       output: v.string()
     }
   }

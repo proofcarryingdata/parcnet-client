@@ -15,7 +15,10 @@ export default defineConfig({
       plugins: [
         // Generate the documentation.
         starlightTypeDoc({
-          entryPoints: ["../../packages/app-connector/src/index.ts"],
+          entryPoints: [
+            "../../packages/app-connector/src/index.ts",
+            "../../packages/podspec/src/index.ts"
+          ],
           tsconfig: "../../packages/app-connector/tsconfig.json"
         })
       ],

@@ -8,7 +8,6 @@ import type { GPCBoundConfig, GPCProof, GPCRevealedClaims } from "@pcd/gpc";
 import type { PODEntries } from "@pcd/pod";
 import { POD } from "@pcd/pod";
 import { EventEmitter } from "eventemitter3";
-import type { PodspecProofRequest } from "../../podspec/src/index.js";
 import type { ParcnetRPCConnector } from "./rpc_client.js";
 
 /**
@@ -107,7 +106,7 @@ export class ParcnetGPCWrapper {
 
   // In a world with POD2, we would use new POD2 types rather than GPCPCD.
   // The existing args system and GPC wrapper works well, so we can use that.
-  async prove(args: PodspecProofRequest): Promise<ProveResult> {
+  async prove(args: p.PodspecProofRequest): Promise<ProveResult> {
     const result = await this.#api.gpc.prove(args);
     return result;
   }
@@ -116,7 +115,7 @@ export class ParcnetGPCWrapper {
     proof: GPCProof,
     config: GPCBoundConfig,
     revealedClaims: GPCRevealedClaims,
-    proofRequest: PodspecProofRequest
+    proofRequest: p.PodspecProofRequest
   ): Promise<boolean> {
     return this.#api.gpc.verify(proof, config, revealedClaims, proofRequest);
   }

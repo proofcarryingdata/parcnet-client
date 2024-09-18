@@ -14,6 +14,7 @@ In this guide we'll look at how to get started as an app developer, connect to a
 To get started with the Zapp SDK, you will need to install the `@parcnet-js/app-connector` package, using your preferred package manager:
 
 <PackageManagers
+  frame="none"
   pkgManagers={["npm", "yarn", "pnpm", "bun"]}
   pkg="@parcnet-js/app-connector"
 />
@@ -22,7 +23,7 @@ To get started with the Zapp SDK, you will need to install the `@parcnet-js/app-
 
 Next, import the connector package in your application code:
 
-```ts wrap=true
+```ts wrap=true title="src/main.ts"
 import { connect } from "@parcnet-js/connector";
 ```
 
@@ -33,7 +34,7 @@ To connect, you will need to define some data about your Zapp, select a host HTM
 ### Defining your Zapp
 
 To define your Zapp:
-```ts wrap=true
+```ts wrap=true title="src/main.ts"
 import { connect, Zapp } from "@parcnet-js/app-connector";
 
 const myZapp: Zapp = {
@@ -46,7 +47,7 @@ Try to give your Zapp a simple, memorable name that is clearly tied to its brand
 ### Select an HTML element
 
 The app connector works by inserting an `<iframe>` element into the web page, and uses this to exchange messages with the PARCNET client. To avoid interfering with other elements on your page, you should add an element that the app connector can use. For example, your HTML might look something like this:
-```html wrap=true
+```html wrap=true title="public/index.html"
 <!doctype html>
 <html lang="en">
   <head>
@@ -76,7 +77,7 @@ Finally, you must choose the PARCNET client you want to connect to. The client i
 
 Now we're ready to connect:
 
-```ts wrap=true
+```ts wrap=true title="src/main.ts"
 import { connect, Zapp } from "@parcnet-js/app-connector";
 
 // The details of our Zapp
@@ -104,7 +105,7 @@ User data is stored in [POD](https://pod.org/) format. This is a cryptography-fr
 
 New PODs are created by signing a data object. This is straightforward:
 
-```ts wrap=true
+```ts wrap=true title="src/main.ts"
 const data: PODEntries = {
   greeting: { type: "string", value: "Hello, world" },
   magic_number: { type: "int", value: 1337n },
@@ -128,7 +129,7 @@ The POD's unique signature is the signed hash of the Merkle root, but you can tr
 
 Once you have a POD, you can insert it to the data store:
 
-```ts wrap=true
+```ts wrap=true title="src/main.ts"
 await z.pod.insert(signedPOD);
 ```
 
@@ -136,7 +137,7 @@ PARCNET clients are responsible for saving the data and synchronizing it between
 
 In this example, we're inserting the POD that we created by requesting a signature from the client, but your app could also have a back-end service which signs PODs using your own private key. Those PODs can be inserted using the `insert` API. For example:
 
-```ts wrap=true
+```ts wrap=true title="src/main.ts"
 // Fetch the serialized POD from the server
 const response = await fetch('https://your-api.com/get-pod');
 const serializedPOD = await response.text();
@@ -154,7 +155,7 @@ The details of your backend may be different, but this approach works for PODs p
 
 Your app can also delete PODs for which it knows the signature:
 
-```ts wrap=true
+```ts wrap=true title="src/main.ts"
 await z.pod.delete(signature);
 ```
 
@@ -164,7 +165,7 @@ This tells the client to drop the POD from the user's data store.
 
 To read PODs from the data store, you can define queries which describe certain criteria for PODs:
 
-```ts wrap=true
+```ts wrap=true title="src/main.ts"
 const queryResult = await z.pod.query({
   entries: {
     greeting: { type: "string" },
@@ -177,11 +178,11 @@ This will return any PODs which have entries matching the description. The resul
 
 Queries can contain more advanced constraints:
 
-```ts wrap=true
+```ts wrap=true title="src/main.ts"
 const validGreetings = [
   { type: "string", value: "Hello, world" },
   { type: "string", value: "Ahoy there!" },
-  { type: "string", value: "Hello. My name is Inigo Montoya. You killed my father. Prepare to die!" }
+  { type: "string", value: "Good morning, starshine. The Earth says hello!" }
 ];
 
 const validNumberRange = { min: 1000n, max: 1500n };
@@ -206,13 +207,15 @@ PODs are designed to make it easy to create cryptographic proofs about their str
 
 GPCs allow you to describe aspects of a POD, and make proofs about that POD without revealing all of the underlying data. For example, you could prove that you have a POD signed by a particular public key without revealing the POD's content, or prove that you have a POD with a particular entry whose value lies in a certain range or belongs to a list, without revealing the exact value.
 
+### Making proofs
+
 To create a proof, you must create a **proof request**. The proof request contains information about what you would like to prove, and the user can decide whether to allow the proof. Here's an example:
 
-```ts wrap=true
+```ts wrap=true title="src/main.ts"
 const validGreetings = [
   { type: "string", value: "Hello, world" },
   { type: "string", value: "Ahoy there!" },
-  { type: "string", value: "Hello. My name is Inigo Montoya. You killed my father. Prepare to die!" }
+  { type: "string", value: "Good morning, starshine. The Earth says hello!" }
 ];
 
 const validNumberRange = { min: 1000n, max: 1500n };
@@ -236,3 +239,74 @@ const result = await z.gpc.prove({
 ```
 
 This proof will require a POD with a valid `greeting` and `magic_number`, and will also reveal the value of the `email_address` entry.
+
+The result has a field `success` which is set to `true` if the proof was created successfully. 
+
+If `success` is false then the result also contains an `error` field containing an error message.
+
+If `success` is true then the result has a further three fields:
+- `proof`, which contains the cryptographic proof for later verification
+- `boundConfig`, which contains the proof configuration
+- `revealedClaims`, which contains the "claims" about the data which can be verified with reference to the `proof`
+
+In the example above, the `revealedClaims` field would contain something like this:
+```ts wrap=true
+{
+  pods: {
+    pod1: {
+      entries: {
+        email_address: {
+          type: "string",
+          value: "test@example.com"
+        }
+      }
+    }
+  },
+  membershipLists: {
+    { type: "string", value: "Hello, world" },
+    { type: "string", value: "Ahoy there!" },
+    { type: "string", value: "Good morning, starshine. The Earth says hello!" }
+  }
+}
+```
+
+The `membershipLists` contains information about the list membership rules that apply to some entries, and contains information that was part of the input. However, the `pods` section contains details about the specific POD that the user selected, which was not part of your input.
+
+### Verifying proofs
+
+TODO
+
+## User identity
+
+Users have identity credentials, which their clients help them to manage. You can request certain public information about the user's identity using the API.
+
+### Semaphore v3 commitment
+
+The user's [Semaphore](https://semaphore.pse.dev/) v3 commitment can be retrieved like this:
+
+```ts wrap=true title="src/main.ts"
+const commitment = await z.identity.getSemaphoreV3Commitment();
+```
+
+The commitment is a `bigint` and uniquely identifies the user.
+
+### Semaphore v4 commitment
+
+The user's [Semaphore](https://semaphore.pse.dev/) v4 commitment can be retrieved like this:
+
+```ts wrap=true title="src/main.ts"
+const commitment = await z.identity.getSemaphoreV4Commitment();
+```
+
+The commitment is a `bigint` and uniquely identifies the user.
+
+
+### Semaphore v4 public key
+
+The user's [Semaphore](https://semaphore.pse.dev/) v4 public key can be retrieved like this:
+
+```ts wrap=true title="src/main.ts"
+const commitment = await z.identity.getSemaphoreV4PublicKey();
+```
+
+The public key is a `string` and uniquely identifies the user.

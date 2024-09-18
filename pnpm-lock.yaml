@@ -4,11 +4,6 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-patchedDependencies:
-  '@brenoroosevelt/toast':
-    hash: epzw5amkvmmm344rhqu423x3cq
-    path: patches/@brenoroosevelt__toast.patch
-
 importers:
 
   .:
@@ -57,8 +52,8 @@ importers:
         specifier: 0.1.7
         version: 0.1.7
       '@pcd/proto-pod-gpc-artifacts':
-        specifier: ^0.5.0
-        version: 0.5.0
+        specifier: ^0.9.0
+        version: 0.9.0
       '@semaphore-protocol/identity':
         specifier: ^4.0.3
         version: 4.0.3
@@ -225,7 +220,7 @@ importers:
     dependencies:
       '@brenoroosevelt/toast':
         specifier: ^2.0.3
-        version: 2.0.3(patch_hash=epzw5amkvmmm344rhqu423x3cq)
+        version: 2.0.3
       '@parcnet-js/client-rpc':
         specifier: workspace:*
         version: link:../client-rpc
@@ -1302,9 +1297,6 @@ packages:
 
   '@pcd/pod@0.1.7':
     resolution: {integrity: sha512-y8wPXLw36VPsTBYR05TkURyb5v1S40kQmDwL26sEDxX90ZwAv6vTIjRpC4pmxk5gIFGtxTgxMembfrH2vZDOkA==}
-
-  '@pcd/proto-pod-gpc-artifacts@0.5.0':
-    resolution: {integrity: sha512-YL23VeD2KemZlDrDZ38PbO9UsGh3x1yNnvNqstL5wbEmv9H+HUNXRJU07TmaJ2JYoWJpEPZ9g/yJ0oxSD6qSjg==}
 
   '@pcd/proto-pod-gpc-artifacts@0.9.0':
     resolution: {integrity: sha512-DipHMqcwpwCGy0/4hpENYjhKPcxVDEM4Koe13L1QpDYlOVVlUfsV9Y5ObpjtZELH4Q8jLWEW2tnMW9vR+c388w==}
@@ -5694,7 +5686,7 @@ snapshots:
   '@biomejs/cli-win32-x64@1.9.1':
     optional: true
 
-  '@brenoroosevelt/toast@2.0.3(patch_hash=epzw5amkvmmm344rhqu423x3cq)': {}
+  '@brenoroosevelt/toast@2.0.3': {}
 
   '@changesets/apply-release-plan@7.0.5':
     dependencies:
@@ -6337,8 +6329,6 @@ snapshots:
       js-sha256: 0.10.1
       json-bigint: 1.0.0
       poseidon-lite: 0.2.1
-
-  '@pcd/proto-pod-gpc-artifacts@0.5.0': {}
 
   '@pcd/proto-pod-gpc-artifacts@0.9.0': {}
 
