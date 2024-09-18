@@ -24,7 +24,7 @@ export default defineConfig({
       ],
       title: "Zapp SDK",
       social: {
-        github: "https://github.com/proofcarryingdata/zupass",
+        github: "https://github.com/proofcarryingdata/parcnet-client",
         "x.com": "https://twitter.com/zupassproject"
       },
       components: {
