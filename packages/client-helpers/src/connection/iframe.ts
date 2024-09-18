@@ -156,6 +156,7 @@ async function handleMessage(
 interface ListenResult {
   advice: ConnectorAdvice;
   zapp: Zapp;
+  origin: string;
 }
 
 export async function listen(): Promise<ListenResult> {
@@ -194,7 +195,8 @@ export async function listen(): Promise<ListenResult> {
               });
             }
           }),
-          zapp: msg.zapp
+          zapp: msg.zapp,
+          origin: event.origin
         });
       }
     };
