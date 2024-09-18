@@ -29,8 +29,5 @@
     "mprocs": "^0.7.1"
   },
   "pnpm": {
-    "patchedDependencies": {
-      "@brenoroosevelt/toast": "patches/@brenoroosevelt__toast.patch"
-    }
   }
 }
