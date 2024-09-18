@@ -5,9 +5,9 @@ description: First steps with the Zapp SDK
 
 import { PackageManagers } from "starlight-package-managers";
 
-The Zapp SDK lets you build JavaScript apps which connect to PARCNET clients, giving you access to programmable cryptography tools which enable secure and private interaction with the user's personal data.
+The Zapp SDK lets you build JavaScript apps which connect to Zupass, giving you access to programmable cryptography tools which enable secure and private interaction with the user's personal data.
 
-In this guide we'll look at how to get started as an app developer, connect to a PARCNET client, and interact with the user's data store.
+In this guide we'll look at how to get started as an app developer, connect to Zupass, and interact with the user's data store.
 
 ## Installation
 
@@ -27,9 +27,9 @@ Next, import the connector package in your application code:
 import { connect } from "@parcnet-js/connector";
 ```
 
-## Connect to PARCNET
+## Connect to Zupass
 
-To connect, you will need to define some data about your Zapp, select a host HTML element, and choose a PARCNET client to connect to.
+To connect, you will need to define some data about your Zapp, select a host HTML element, and choose a Zupass URL to connect to.
 
 ### Defining your Zapp
 
@@ -46,7 +46,7 @@ Try to give your Zapp a simple, memorable name that is clearly tied to its brand
 
 ### Select an HTML element
 
-The app connector works by inserting an `<iframe>` element into the web page, and uses this to exchange messages with the PARCNET client. To avoid interfering with other elements on your page, you should add an element that the app connector can use. For example, your HTML might look something like this:
+The app connector works by inserting an `<iframe>` element into the web page, and uses this to exchange messages with Zupass. To avoid interfering with other elements on your page, you should add an element that the app connector can use. For example, your HTML might look something like this:
 ```html wrap=true title="public/index.html"
 <!doctype html>
 <html lang="en">
@@ -56,7 +56,7 @@ The app connector works by inserting an `<iframe>` element into the web page, an
     <title>My First Zapp</title>
   </head>
   <body>
-    <div id="parcnet-app-connector">
+    <div id="app-connector">
       <!-- This element will be used by the app connector -->
     </div>
     <div id="app">
@@ -67,11 +67,11 @@ The app connector works by inserting an `<iframe>` element into the web page, an
 </html>
 ```
 
-Here we're using an element with the ID `parcnet-app-connector` to host the `iframe`. It's important that your application does not change this element once the app connector has started.
+Here we're using an element with the ID `app-connector` to host the `iframe`. It's important that your application does not change this element once the app connector has started.
 
-### Choose a PARCNET client URL
+### Choose a Zupass URL
 
-Finally, you must choose the PARCNET client you want to connect to. The client is identified by the URL it's hosted on. For Zupass production, the URL is `https://zupass.org`, but you might be running a local development version on something like `http://localhost:3000`. Or you might be running another client altogether, in which case use the URL that it's hosted at.
+Finally, you must choose the Zupass URL you want to connect to. The client is identified by the URL it's hosted on. For Zupass production, the URL is `https://zupass.org`, but you might be running a local development version on something like `http://localhost:3000`. Or you might be running another client altogether, in which case use the URL that it's hosted at.
 
 ### Putting it all together
 
@@ -88,7 +88,7 @@ const myZapp: Zapp = {
 // The HTML element to host the <iframe>
 const element = document.getElementById("parcnet-app-connector") as HTMLElement;
 
-// The URL to the PARCNET client
+// The URL to Zupass
 const clientUrl = "http://localhost:3000";
 
 // Connect!
@@ -123,7 +123,7 @@ console.log(signedPOD.signature);
 
 The result of the `sign` method is a `POD` data object. Internally, this stores the data entries as a Merkle tree, but it's not necessary to understand how this works.
 
-The POD's unique signature is the signed hash of the Merkle root, but you can treat it as an opaque identifier. The signature is created using a private key belonging to the user, which is managed by the PARCNET client - your app does not have direct access to the private key.
+The POD's unique signature is the signed hash of the Merkle root, but you can treat it as an opaque identifier. The signature is created using a private key belonging to the user, which is managed by Zupass - your app does not have direct access to the private key.
 
 ### Inserting PODs to the data store
 
@@ -133,7 +133,7 @@ Once you have a POD, you can insert it to the data store:
 await z.pod.insert(signedPOD);
 ```
 
-PARCNET clients are responsible for saving the data and synchronizing it between devices, so your app doesn't need to worry about how this data is persisted.
+Zupass is responsible for saving the data and synchronizing it between devices, so your app doesn't need to worry about how this data is persisted.
 
 In this example, we're inserting the POD that we created by requesting a signature from the client, but your app could also have a back-end service which signs PODs using your own private key. Those PODs can be inserted using the `insert` API. For example:
 
