@@ -13,8 +13,7 @@ const request: PodspecProofRequest = {
         entries: {
           wis: {
             type: "int",
-            inRange: { min: BigInt(5), max: BigInt(1000) },
-            isRevealed: true
+            inRange: { min: BigInt(5), max: BigInt(1000) }
           },
           str: { type: "int", inRange: { min: BigInt(5), max: BigInt(1000) } }
         },
@@ -29,6 +28,9 @@ const request: PodspecProofRequest = {
             ]
           }
         ]
+      },
+      revealed: {
+        wis: true
       }
     },
     pod2: {
@@ -36,10 +38,12 @@ const request: PodspecProofRequest = {
         entries: {
           test: {
             type: "string",
-            isMemberOf: [{ type: "string", value: "secret" }],
-            isRevealed: true
+            isMemberOf: [{ type: "string", value: "secret" }]
           }
         }
+      },
+      revealed: {
+        test: true
       }
     }
   }
@@ -62,33 +66,41 @@ export function GPC(): ReactNode {
 const request: PodspecProofRequest = {
   pods: {
     pod1: {
-      entries: {
-        wis: {
-          type: "int",
-          inRange: { min: BigInt(5), max: BigInt(1000) },
-          isRevealed: true
+      pod: {
+        entries: {
+          wis: {
+            type: "int",
+            inRange: { min: BigInt(5), max: BigInt(1000) }
+          },
+          str: { type: "int", inRange: { min: BigInt(5), max: BigInt(1000) } }
         },
-        str: { type: "int", inRange: { min: BigInt(5), max: BigInt(1000) } }
-      },
-      tuples: [
-        {
-          entries: ["wis", "str"],
-          isNotMemberOf: [
-            [
-              { type: "int", value: BigInt(100) },
-              { type: "int", value: BigInt(500) }
+        tuples: [
+          {
+            entries: ["wis", "str"],
+            isNotMemberOf: [
+              [
+                { type: "int", value: BigInt(100) },
+                { type: "int", value: BigInt(500) }
+              ]
             ]
-          ]
-        }
-      ]
+          }
+        ]
+      },
+      revealed: {
+        wis: true
+      }
     },
     pod2: {
-      entries: {
-        test: {
-          type: "string",
-          isMemberOf: [{ type: "string", value: "secret" }],
-          isRevealed: true
+      pod: {
+        entries: {
+          test: {
+            type: "string",
+            isMemberOf: [{ type: "string", value: "secret" }]
+          }
         }
+      },
+      revealed: {
+        test: true
       }
     }
   }

@@ -23,14 +23,11 @@
   },
   "packageManager": "pnpm@8.15.6",
   "engines": {
-    "node": ">=22"
+    "node": ">=20"
   },
   "dependencies": {
     "mprocs": "^0.7.1"
   },
   "pnpm": {
-    "patchedDependencies": {
-      "@brenoroosevelt/toast": "patches/@brenoroosevelt__toast.patch"
-    }
   }
 }

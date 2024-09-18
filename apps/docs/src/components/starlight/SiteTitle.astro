@@ -1,0 +1,85 @@
+---
+import type { Props } from "@astrojs/starlight/props";
+
+const menuItems = [{ name: "Docs", href: "/guides/getting-started" }];
+
+function pathsMatch(pathA: string, pathB: string): boolean {
+  return pathB.includes(pathA);
+}
+---
+
+<div>
+  <a href={Astro.props.siteTitleHref} class="site-title sl-flex group">
+    <svg class="group-hover:text-yellow-300 dark:group-hover:text-white transition-colors duration-300 ease-in-out" stroke="currentColor" fill="currentColor" style="width: 24px; height: 24px;" stroke-width="0" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+      <path d="M11.251.068a.5.5 0 0 1 .227.58L9.677 6.5H13a.5.5 0 0 1 .364.843l-8 8.5a.5.5 0 0 1-.842-.49L6.323 9.5H3a.5.5 0 0 1-.364-.843l8-8.5a.5.5 0 0 1 .615-.09z"></path>
+    </svg>
+    {Astro.props.siteTitle}
+  </a>
+
+  <div class="sl-hidden separator"></div>
+
+  <div class="sl-hidden menu-items">
+    {
+      menuItems.map((menuItem) => (
+        <a
+          href={menuItem.href}
+          aria-current={
+            pathsMatch(encodeURI(menuItem.href), Astro.url.pathname) && "page"
+          }
+        >
+          <span>{menuItem.name}</span>
+        </a>
+      ))
+    }
+  </div>
+</div>
+
+<style>
+  .site-title {
+		align-items: center;
+		gap: 0.75rem;
+		font-size: var(--sl-text-h4);
+		font-weight: 600;
+		color: var(--sl-color-text-accent);
+		text-decoration: none;
+		white-space: nowrap;
+	}
+  div {
+    display: flex;
+    gap: var(--sl-content-pad-x);
+    align-items: center;
+  }
+
+  div.separator {
+    content: "";
+    height: 2rem;
+    border-inline-end: 1px solid var(--sl-color-gray-5);
+  }
+
+  div a {
+    text-decoration: none;
+    color: var(--sl-color-white);
+    font-size: var(--sl-text-base);
+    font-weight: 500;
+  }
+
+  div a:hover {
+    color: var(--sl-color-text-accent);
+  }
+
+  [aria-current="page"],
+  [aria-current="page"]:hover,
+  [aria-current="page"]:focus {
+    color: var(--sl-color-text-accent);
+  }
+
+	@media (min-width: 50rem) {
+		.menu-items {
+			display: flex;
+		}
+		.separator {
+			display: block;
+		}
+	}
+</style>
+

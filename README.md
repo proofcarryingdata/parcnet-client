@@ -8,7 +8,6 @@ This monorepo includes the following packages/apps:
 
 ### Apps (Clients)
 
-- `client-nodejs`, an example PARCNET client in TypeScript and running on NodeJS, which accepts connections from applications via a websocket and is intended to be run locally
 - `client-web`, an example PARCNET client in TypeScript and running in browser `<iframe>`, which accepts connections via a browser `MessageChannel` and is intended to be hosted by a third-party service (similar to Zupass)
 
 ### Packages
@@ -56,6 +55,6 @@ pnpm watch
 
 ## How to use/test
 
-To see the apps in action, run either `client-web` or `client-nodejs`. Then run `test-app` and open `test-app` at [http://localhost:3200](http://localhost:3200).
+To see the apps in action, run `client-web`. Then run `test-app` and open `test-app` at [http://localhost:3200](http://localhost:3200).
 
-By default it will connect to `client-web` on `http://localhost:5173`. By clicking the lightning icon in the top-right of the screen, you can configure it to connect to another client. `client-nodejs` runs at `http://localhost:3050` - remember to select "websocket" rather than "iframe" when using `client-nodejs`.
+By default it will connect to `client-web` on `http://localhost:5173`. By clicking the lightning icon in the top-right of the screen, you can configure it to connect to another client, such as Zupass.

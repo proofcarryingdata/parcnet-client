@@ -19,13 +19,16 @@ export interface SubscriptionUpdateResult {
   update: string[];
 }
 
+export interface GPCProveReturn {
+  proof: GPCProof;
+  boundConfig: GPCBoundConfig;
+  revealedClaims: GPCRevealedClaims;
+}
+
 export type ProveResult =
-  | {
+  | ({
       success: true;
-      proof: GPCProof;
-      boundConfig: GPCBoundConfig;
-      revealedClaims: GPCRevealedClaims;
-    }
+    } & GPCProveReturn)
   | {
       success: false;
       error: string;

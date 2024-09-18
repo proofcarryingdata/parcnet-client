@@ -1,3 +1,3 @@
-# `@parcnet/eslint-config`
+# `@parcnet-js/eslint-config`
 
 Collection of internal eslint configurations.

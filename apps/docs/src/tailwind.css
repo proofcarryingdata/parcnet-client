@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+Add additional Tailwind styles to this file, for example with @layer:
+https://tailwindcss.com/docs/adding-custom-styles#using-css-and-layer
+*/
+
+/* Dark mode colors. */
+:root {
+  --sl-color-accent-low: #0f3f2f;
+  --sl-color-accent: #34ff9f;
+  --sl-color-accent-high: #60faa0;
+  --sl-color-white: #ffffff;
+  --sl-color-gray-1: #ecf2ef;
+  --sl-color-gray-2: #c0c7c4;
+  --sl-color-gray-3: #88968f;
+  --sl-color-gray-4: #54615a;
+  --sl-color-gray-5: #35413b;
+  --sl-color-gray-6: #242f2a;
+  --sl-color-black: #131a17;
+}
+/* Light mode colors. */
+:root[data-theme="light"] {
+  --sl-color-accent-low: #a0e8c0;
+  --sl-color-accent: #00b050;
+  --sl-color-accent-high: #075228;
+  --sl-color-white: #141a16;
+  --sl-color-gray-1: #1f2922;
+  --sl-color-gray-2: #2e3a32;
+  --sl-color-gray-3: #4a574e;
+  --sl-color-gray-4: #778078;
+  --sl-color-gray-5: #aab3ac;
+  --sl-color-gray-6: #e0e6e2;
+  --sl-color-gray-7: #f0f4f1;
+  --sl-color-black: #ffffff;
+}
+
+@layer components {
+  [data-has-sidebar] main {
+    @apply dark:bg-[rgba(0,0,0,0.25)];
+  }
+}
