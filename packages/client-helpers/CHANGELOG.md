@@ -1,5 +1,11 @@
 # @parcnet-js/client-helpers
 
+## 0.0.3
+
+### Patch Changes
+
+- a8f7781: Return origin of connecting Zapp when successfully receiving a connection
+
 ## 0.0.2
 
 ### Patch Changes
