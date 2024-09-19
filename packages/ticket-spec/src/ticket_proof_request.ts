@@ -48,7 +48,7 @@ export type TicketClassificationTuples =
   | PublicKeyAndEventIdAndProductIdTuples;
 
 export interface TicketProofRequest {
-  attributes: TicketClassificationTuples;
+  classificationTuples: TicketClassificationTuples;
   fieldsToReveal: Partial<FieldsToReveal>;
   externalNullifier?: PODValue;
   watermark?: PODValue;
@@ -72,7 +72,7 @@ function isPublicKeyAndEventIdAndProductIdTuples(
  * @returns The ticket proof request.
  */
 export function ticketProofRequest({
-  attributes: classificationTuples,
+  classificationTuples,
   fieldsToReveal,
   externalNullifier,
   watermark

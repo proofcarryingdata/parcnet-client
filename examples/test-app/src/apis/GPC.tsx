@@ -1,10 +1,10 @@
+import { ProveResult } from "@parcnet-js/client-rpc";
 import type { PodspecProofRequest } from "@parcnet-js/podspec";
 import { TicketSpec, ticketProofRequest } from "@parcnet-js/ticket-spec";
 import type { POD } from "@pcd/pod";
 import JSONBig from "json-bigint";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
-import type { ProveResult } from "../../../../packages/client-rpc/src";
 import { TryIt } from "../components/TryIt";
 import { useParcnetClient } from "../hooks/useParcnetClient";
 
@@ -263,7 +263,7 @@ await z.pod.insert(pod);
             <code className="block text-xs font-base rounded-md p-2 whitespace-pre-wrap">
               {`
 const request = ticketProofRequest({
-  attributes: [
+  classificationTuples: [
     [
       // The public key to match
       "${publicKey}",
@@ -285,7 +285,7 @@ const gpcProof = await z.gpc.prove(request);
             onClick={async () => {
               try {
                 const hmm = ticketProofRequest({
-                  attributes: [[publicKey!, EVENT_ID]],
+                  classificationTuples: [[publicKey!, EVENT_ID]],
                   fieldsToReveal: {
                     eventId: true
                   }

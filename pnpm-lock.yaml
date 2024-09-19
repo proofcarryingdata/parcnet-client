@@ -151,6 +151,9 @@ importers:
       '@parcnet-js/app-connector':
         specifier: workspace:*
         version: link:../../packages/app-connector
+      '@parcnet-js/client-rpc':
+        specifier: workspace:*
+        version: link:../../packages/client-rpc
       '@parcnet-js/podspec':
         specifier: workspace:*
         version: link:../../packages/podspec
