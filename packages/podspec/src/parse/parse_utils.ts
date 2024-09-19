@@ -305,6 +305,13 @@ export type PODValueNativeTypes = {
   eddsa_pubkey: string;
 };
 
+export type PODValueCoerceableNativeTypes = {
+  string: string;
+  int: bigint | number | boolean;
+  cryptographic: bigint | number | boolean;
+  eddsa_pubkey: string;
+};
+
 /**
  * Mapping of PODValue type names to their PODValue data types.
  */

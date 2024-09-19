@@ -31,6 +31,9 @@ export class ParcnetGPCProcessor implements ParcnetGPCRPC {
   public async prove(request: PodspecProofRequest): Promise<ProveResult> {
     const prs = proofRequest(request);
 
+    console.dir(prs, { depth: null });
+    console.dir(this.pods.getAll(), { depth: null });
+
     const inputPods = prs.queryForInputs(this.pods.getAll());
     if (
       Object.values(inputPods).some((candidates) => candidates.length === 0)

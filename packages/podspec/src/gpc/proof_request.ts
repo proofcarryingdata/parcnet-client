@@ -145,7 +145,9 @@ function makeProofRequest<P extends NamedPODs>(
         (entrySchema.type === "cryptographic" || entrySchema.type === "int") &&
         entrySchema.inRange;
       const isOwnerID =
-        entrySchema.type === "cryptographic" && owner?.entry === entryName;
+        (entrySchema.type === "cryptographic" ||
+          entrySchema.type === "eddsa_pubkey") &&
+        owner?.entry === entryName;
 
       if (
         !isRevealed &&

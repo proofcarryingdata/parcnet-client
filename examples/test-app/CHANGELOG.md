@@ -1,5 +1,14 @@
 # test-app
 
+## 1.0.4
+
+### Patch Changes
+
+- Updated dependencies
+  - @parcnet-js/podspec@0.0.3
+  - @parcnet-js/app-connector@0.0.4
+  - @parcnet-js/ticket-spec@0.0.1
+
 ## 1.0.3
 
 ### Patch Changes

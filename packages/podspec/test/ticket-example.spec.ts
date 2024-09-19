@@ -23,7 +23,7 @@ const TicketEntries = p.entries({
   ticketSecret: { type: "optional", innerType: { type: "string" } },
   timestampConsumed: { type: "int" },
   timestampSigned: { type: "int" },
-  attendeeSemaphoreId: { type: "string" },
+  attendeeSemaphoreId: { type: "cryptographic" },
   isConsumed: { type: "int" },
   isRevoked: { type: "int" },
   ticketCategory: { type: "string" },
@@ -53,7 +53,7 @@ const VALID_TICKET_DATA = {
   ticketSecret: "secret123",
   timestampConsumed: 1714857600,
   timestampSigned: 1714857600,
-  attendeeSemaphoreId: "1234567890",
+  attendeeSemaphoreId: 1234567890,
   isConsumed: 0,
   isRevoked: 0,
   ticketCategory: "Category 1",
@@ -251,7 +251,7 @@ describe.concurrent("podspec ticket example", function () {
     const ticketEntries = TicketEntries.parse(
       {
         ...VALID_TICKET_DATA,
-        attendeeSemaphoreId: identity.commitment.toString()
+        attendeeSemaphoreId: identity.commitment
       },
       { coerce: true }
     );
@@ -294,10 +294,11 @@ describe.concurrent("podspec ticket example", function () {
     // The product ID is not defined, because it has no GPC checks and is not
     // revealed
     expect(req.proofConfig.pods.ticketPod?.entries.productId).toBeUndefined();
-    // There are only two configured entries, event ID and ticket ID
+    // There are three configured entries, event ID, ticket ID, and the
+    // attendee's Semaphore ID (which is the owner)
     expect(
       Object.keys(req.proofConfig.pods.ticketPod?.entries ?? {})
-    ).toHaveLength(2);
+    ).toHaveLength(3);
 
     const result = await gpcProve(
       req.proofConfig,

@@ -5,7 +5,7 @@ import type {
   ParcnetPODRPC,
   ParcnetRPC
 } from "@parcnet-js/client-rpc";
-import type { Identity } from "@semaphore-protocol/identity";
+import type { Identity } from "@semaphore-protocol/core";
 import type { Dispatch } from "react";
 import type { ClientAction } from "../state.js";
 import { ParcnetGPCProcessor } from "./gpc.js";

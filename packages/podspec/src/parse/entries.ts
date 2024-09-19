@@ -17,16 +17,13 @@ import {
   eddsaPublicKeyCoercer
 } from "../schemas/eddsa_pubkey.js";
 import type { EntriesSchema, EntriesTupleSchema } from "../schemas/entries.js";
-import type {
-  DefinedEntrySchema,
-  EntrySchema,
-  OptionalSchema
-} from "../schemas/entry.js";
+import type { EntrySchema } from "../schemas/entry.js";
 import { checkPODIntValue, intCoercer } from "../schemas/int.js";
 import { checkPODStringValue, stringCoercer } from "../schemas/string.js";
+import type { EntriesOutputType } from "../type_inference.js";
 import { deepFreeze } from "../utils.js";
 import { parseEntry } from "./entry.js";
-import type { PODValueNativeTypes, ParseResult } from "./parse_utils.js";
+import type { ParseResult } from "./parse_utils.js";
 import { FAILURE, SUCCESS, safeCheckTuple } from "./parse_utils.js";
 
 const COERCERS: Record<PODValue["type"], (data: unknown) => unknown> = {
@@ -306,38 +303,3 @@ export function safeParseEntries<E extends EntriesSchema>(
     ? FAILURE(issues)
     : SUCCESS(output as EntriesOutputType<E>);
 }
-
-/**
- * Gets the output type for entries matching a given schema.
- * The output type is a record mapping string keys to PODValues, and is
- * therefore similar to {@link PODEntries}, but is specific about the values
- * that certain entries ought to have.
- */
-export type EntriesOutputType<E extends EntriesSchema> = AddQuestionMarks<{
-  [k in keyof E]: E[k] extends DefinedEntrySchema
-    ? {
-        type: E[k]["type"];
-        value: PODValueNativeTypes[E[k]["type"]];
-      }
-    : E[k] extends OptionalSchema
-      ?
-          | {
-              type: E[k]["innerType"]["type"];
-              value: PODValueNativeTypes[E[k]["innerType"]["type"]];
-            }
-          | undefined
-      : never;
-}>;
-type optionalKeys<T extends object> = {
-  [k in keyof T]: undefined extends T[k] ? k : never;
-}[keyof T];
-type requiredKeys<T extends object> = {
-  [k in keyof T]: undefined extends T[k] ? never : k;
-}[keyof T];
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AddQuestionMarks<T extends object, _O = any> = {
-  [K in requiredKeys<T>]: T[K];
-} & {
-  [K in optionalKeys<T>]?: T[K];
-};
