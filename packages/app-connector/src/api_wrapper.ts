@@ -121,6 +121,26 @@ export class ParcnetGPCWrapper {
   }
 }
 
+export class ParcnetIdentityWrapper {
+  #api: ParcnetIdentityRPC;
+
+  constructor(api: ParcnetIdentityRPC) {
+    this.#api = api;
+  }
+
+  async getPublicKey(): Promise<string> {
+    return this.#api.getPublicKey();
+  }
+
+  async getSemaphoreV3Commitment(): Promise<bigint> {
+    return this.#api.getSemaphoreV3Commitment();
+  }
+
+  async getSemaphoreV4Commitment(): Promise<bigint> {
+    return this.#api.getSemaphoreV4Commitment();
+  }
+}
+
 /**
  * Wraps the Parcnet RPC API to provide a more user-friendly interface.
  * Specifically, this handles serialization and deserialization of PODs and
@@ -128,12 +148,12 @@ export class ParcnetGPCWrapper {
  */
 export class ParcnetAPI {
   public pod: ParcnetPODWrapper;
-  public identity: ParcnetIdentityRPC;
+  public identity: ParcnetIdentityWrapper;
   public gpc: ParcnetGPCWrapper;
 
   constructor(api: ParcnetRPCConnector) {
     this.pod = new ParcnetPODWrapper(api);
-    this.identity = api.identity;
+    this.identity = new ParcnetIdentityWrapper(api.identity);
     this.gpc = new ParcnetGPCWrapper(api);
   }
 }

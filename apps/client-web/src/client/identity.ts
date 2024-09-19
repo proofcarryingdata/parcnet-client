@@ -11,7 +11,7 @@ export class ParcnetIdentityProcessor implements ParcnetIdentityRPC {
   async getSemaphoreV4Commitment(): Promise<bigint> {
     return this.v4Identity.commitment;
   }
-  async getSemaphoreV4PublicKey(): Promise<string> {
+  async getPublicKey(): Promise<string> {
     return encodePublicKey(this.v4Identity.publicKey);
   }
 }

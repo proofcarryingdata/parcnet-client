@@ -1,5 +1,11 @@
 # @parcnet-js/client-rpc
 
+## 0.0.3
+
+### Patch Changes
+
+- Rename getSemaphoreV4PublicKey -> getPublicKey
+
 ## 0.0.2
 
 ### Patch Changes

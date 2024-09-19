@@ -301,12 +301,12 @@ const commitment = await z.identity.getSemaphoreV4Commitment();
 The commitment is a `bigint` and uniquely identifies the user.
 
 
-### Semaphore v4 public key
+### Public key
 
 The user's [Semaphore](https://semaphore.pse.dev/) v4 public key can be retrieved like this:
 
 ```ts wrap=true title="src/main.ts"
-const commitment = await z.identity.getSemaphoreV4PublicKey();
+const commitment = await z.identity.getPublicKey();
 ```
 
 The public key is a `string` and uniquely identifies the user.

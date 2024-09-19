@@ -194,7 +194,7 @@ export const ParcnetRPCSchema = {
       input: v.tuple([]),
       output: v.bigint()
     },
-    getSemaphoreV4PublicKey: {
+    getPublicKey: {
       input: v.tuple([]),
       output: v.string()
     }

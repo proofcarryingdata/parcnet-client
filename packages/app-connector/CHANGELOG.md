@@ -1,5 +1,13 @@
 # @parcnet-js/app-connector
 
+## 0.0.3
+
+### Patch Changes
+
+- Rename getSemaphoreV4PublicKey -> getPublicKey
+- Updated dependencies
+  - @parcnet-js/client-rpc@0.0.3
+
 ## 0.0.2
 
 ### Patch Changes

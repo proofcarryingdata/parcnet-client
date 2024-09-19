@@ -1,5 +1,14 @@
 # client-web
 
+## 0.0.4
+
+### Patch Changes
+
+- Rename getSemaphoreV4PublicKey -> getPublicKey
+- Updated dependencies
+  - @parcnet-js/client-rpc@0.0.3
+  - @parcnet-js/client-helpers@0.0.4
+
 ## 0.0.3
 
 ### Patch Changes

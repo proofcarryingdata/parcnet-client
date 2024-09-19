@@ -196,11 +196,11 @@ export class ParcnetRPCConnector implements ParcnetRPC, ParcnetEvents {
           ParcnetRPCSchema.identity.getSemaphoreV4Commitment
         );
       },
-      getSemaphoreV4PublicKey: async (): Promise<string> => {
+      getPublicKey: async (): Promise<string> => {
         return this.#typedInvoke(
-          "identity.getSemaphoreV4PublicKey",
+          "identity.getPublicKey",
           [],
-          ParcnetRPCSchema.identity.getSemaphoreV4PublicKey
+          ParcnetRPCSchema.identity.getPublicKey
         );
       }
     };
