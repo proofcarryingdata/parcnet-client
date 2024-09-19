@@ -205,7 +205,6 @@ export class PodSpec<const E extends EntriesSchema = EntriesSchema> {
     >;
     owner?: ProofConfigOwner<E>;
   }): ProofConfigPODSchema<E> {
-    console.log("this.schema", this.schema);
     return {
       pod: this.schema,
       revealed,

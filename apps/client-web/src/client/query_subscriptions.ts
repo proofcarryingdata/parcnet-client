@@ -4,8 +4,9 @@ import type { EntriesSchema, PODSchema, PodSpec } from "@parcnet-js/podspec";
 import { EventEmitter } from "eventemitter3";
 import type { PODCollection } from "./pod_collection.js";
 
-interface Subscription {
-  query: PodSpec<EntriesSchema>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+interface Subscription<E extends EntriesSchema = any> {
+  query: PodSpec<E>;
   serial: number;
 }
 
@@ -63,7 +64,7 @@ export class QuerySubscriptions {
   ): Promise<string> {
     const subscriptionId = (this.nextSubscriptionId++).toString();
     this.subscriptions.set(subscriptionId, {
-      query: p.pod(query) as PodSpec<EntriesSchema>,
+      query: p.pod(query),
       serial: 0
     });
 
