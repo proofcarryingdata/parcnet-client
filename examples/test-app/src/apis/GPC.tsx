@@ -1,4 +1,4 @@
-import { ProveResult } from "@parcnet-js/client-rpc";
+import type { ProveResult } from "@parcnet-js/client-rpc";
 import type { PodspecProofRequest } from "@parcnet-js/podspec";
 import { TicketSpec, ticketProofRequest } from "@parcnet-js/ticket-spec";
 import type { POD } from "@pcd/pod";
