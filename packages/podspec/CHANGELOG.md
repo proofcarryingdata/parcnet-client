@@ -1,5 +1,11 @@
 # @parcnet-js/podspec
 
+## 0.0.3
+
+### Patch Changes
+
+- Better support for proof requests
+
 ## 0.0.2
 
 ### Patch Changes

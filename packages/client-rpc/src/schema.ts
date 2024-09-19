@@ -88,7 +88,12 @@ const PODSchemaSchema = v.object({
   entries: v.record(v.string(), EntrySchema),
   tuples: v.optional(v.array(PODTupleSchema)),
   signerPublicKey: v.optional(SignerPublicKeySchema),
-  signature: v.optional(SignatureSchema)
+  signature: v.optional(SignatureSchema),
+  meta: v.optional(
+    v.object({
+      labelEntry: v.string()
+    })
+  )
 });
 
 const ProofConfigPODSchemaSchema = v.object({
@@ -107,22 +112,6 @@ const PodspecProofRequestSchema = v.object({
   externalNullifier: v.optional(PODValueSchema),
   watermark: v.optional(PODValueSchema)
 });
-
-// const ProofRequestSchema = v.object({
-//   proofConfig: v.custom<GPCProofConfig>(() => true),
-//   membershipLists: v.record(
-//     v.string(),
-//     v.union([v.array(v.array(PODValueSchema)), v.array(PODValueSchema)])
-//   ),
-//   externalNullifier: v.optional(PODValueSchema),
-//   watermark: v.optional(PODValueSchema)
-// });
-
-// const GPCProveReturnSchema = v.object({
-//   proof: v.custom<Groth16Proof>(() => true),
-//   boundConfig: v.custom<GPCBoundConfig>(() => true),
-//   revealedClaims: v.custom<GPCRevealedClaims>(() => true)
-// });
 
 const ProveResultSchema = v.union([
   v.object({

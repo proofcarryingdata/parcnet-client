@@ -2,7 +2,7 @@ import type { ConnectorAdvice } from "@parcnet-js/client-helpers";
 import type { ProveResult, Zapp } from "@parcnet-js/client-rpc";
 import type { PodspecProofRequest } from "@parcnet-js/podspec";
 import type { POD } from "@pcd/pod";
-import type { Identity } from "@semaphore-protocol/identity";
+import type { Identity as IdentityV4 } from "@semaphore-protocol/core";
 
 export type ClientState = {
   loggedIn: boolean;
@@ -18,7 +18,7 @@ export type ClientState = {
         resolve?: (result: ProveResult) => void;
       }
     | undefined;
-  identity: Identity;
+  identity: IdentityV4;
 };
 
 export type ClientAction =

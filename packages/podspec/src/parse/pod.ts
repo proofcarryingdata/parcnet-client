@@ -12,8 +12,13 @@ import type {
 } from "../gpc/proof_request.js";
 import type { EntriesSchema } from "../schemas/entries.js";
 import type { PODSchema } from "../schemas/pod.js";
-import type { EntriesOutputType, EntriesParseOptions } from "./entries.js";
-import { DEFAULT_ENTRIES_PARSE_OPTIONS, safeParseEntries } from "./entries.js";
+import type { EntriesOutputType } from "../type_inference.js";
+import type { EntriesParseOptions } from "./entries.js";
+import {
+  DEFAULT_ENTRIES_PARSE_OPTIONS,
+  EntriesSpec,
+  safeParseEntries
+} from "./entries.js";
 import type { ParseResult } from "./parse_utils.js";
 import { FAILURE, SUCCESS, safeCheckTuple } from "./parse_utils.js";
 
@@ -85,6 +90,49 @@ export class PodSpec<const E extends EntriesSchema = EntriesSchema> {
     path: string[] = []
   ): StrongPOD<EntriesOutputType<E>> {
     const result = this.safeParse(input, options, path);
+    if (result.isValid) {
+      return result.value;
+    } else {
+      throw new PodspecError(result.issues);
+    }
+  }
+
+  /**
+   * Parse input data as PODEntries according to this PodSpec's schema.
+   * Returns a {@link ParseResult} rather than throwing an exception.
+   *
+   * @param input The entries to parse.
+   * @param options The options to use when parsing.
+   * @param path The path to use when parsing.
+   * @returns A result containing either a valid value or a list of errors.
+   */
+  public safeParseEntries(
+    input: Record<string, PODValue | string | bigint | number>,
+    options: EntriesParseOptions<E> = DEFAULT_ENTRIES_PARSE_OPTIONS,
+    path: string[] = []
+  ): ParseResult<EntriesOutputType<E>> {
+    return EntriesSpec.create(this.schema.entries as E).safeParse(
+      input,
+      options,
+      path
+    );
+  }
+
+  /**
+   * Identical to {@link safeParseEntries}, except it throws an exception if errors
+   * are found, rather than returning a {@link ParseResult}.
+   *
+   * @param input The entries to parse.
+   * @param options The options to use when parsing.
+   * @param path The path to use when parsing.
+   * @returns The parsed entries.
+   */
+  public parseEntries(
+    input: Record<string, PODValue | string | bigint | number>,
+    options: EntriesParseOptions<E> = DEFAULT_ENTRIES_PARSE_OPTIONS,
+    path: string[] = []
+  ): EntriesOutputType<E> {
+    const result = this.safeParseEntries(input, options, path);
     if (result.isValid) {
       return result.value;
     } else {

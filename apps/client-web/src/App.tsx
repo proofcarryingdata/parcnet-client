@@ -153,7 +153,11 @@ function ProvePODInfo({
           {pods.map((pod) => {
             return (
               <option key={pod.signature} value={pod.signature}>
-                {pod.signature.substring(0, 16)}
+                {schema.pod.meta?.labelEntry
+                  ? pod.content
+                      .asEntries()
+                      [schema.pod.meta.labelEntry].value.toString()
+                  : pod.signature.substring(0, 16)}
               </option>
             );
           })}
@@ -296,7 +300,11 @@ function Prove({
                 {
                   pods: proveOperation.selectedPods as Record<string, POD>,
                   membershipLists: prs.membershipLists,
-                  watermark: prs.watermark
+                  watermark: prs.watermark,
+                  owner: {
+                    semaphoreV4: getIdentity(),
+                    externalNullifier: prs.externalNullifier
+                  }
                 },
                 new URL("/artifacts", window.location.origin).toString()
               )

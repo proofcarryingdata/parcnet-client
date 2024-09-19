@@ -70,7 +70,8 @@ export default tseslint.config(
       "@typescript-eslint/require-await": "off",
       "import/no-extraneous-dependencies": "error",
       "@typescript-eslint/consistent-type-imports": "error",
-      "@typescript-eslint/no-import-type-side-effects": "error"
+      "@typescript-eslint/no-import-type-side-effects": "error",
+      "no-unexpected-multiline": "off"
     }
   }
 );

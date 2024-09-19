@@ -1,6 +1,6 @@
 import type { ParcnetIdentityRPC } from "@parcnet-js/client-rpc";
 import { encodePublicKey } from "@pcd/pod";
-import type { Identity } from "@semaphore-protocol/identity";
+import type { Identity } from "@semaphore-protocol/core";
 
 export class ParcnetIdentityProcessor implements ParcnetIdentityRPC {
   public constructor(private readonly v4Identity: Identity) {}

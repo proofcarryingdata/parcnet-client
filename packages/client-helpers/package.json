@@ -1,6 +1,6 @@
 {
   "name": "@parcnet-js/client-helpers",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "license": "GPL-3.0-or-later",
   "type": "module",
   "main": "dist/index.js",
@@ -26,16 +26,11 @@
   "files": ["dist", "LICENSE"],
   "dependencies": {
     "@parcnet-js/client-rpc": "workspace:*",
-    "json-bigint": "^1.0.0",
-    "valibot": "^0.42.0",
-    "ws": "^8.18.0"
+    "valibot": "^0.42.0"
   },
   "devDependencies": {
     "@parcnet-js/eslint-config": "workspace:*",
     "@parcnet-js/typescript-config": "workspace:*",
-    "@types/json-bigint": "^1.0.1",
-    "@types/node": "^20.11.24",
-    "@types/ws": "^8.5.12",
     "tsup": "^8.2.4",
     "typescript": "^5.5"
   },

@@ -1,5 +1,5 @@
 import { POD } from "@pcd/pod";
-import { Identity } from "@semaphore-protocol/identity";
+import { Identity } from "@semaphore-protocol/core";
 
 export function loadPODsFromStorage(): POD[] {
   let pods: POD[] = [];

@@ -1,13 +1,5 @@
 import type { PODValue } from "@pcd/pod";
 import type { EntriesSchema } from "./entries.js";
-import type { EntrySchema } from "./entry.js";
-
-type RealEntriesSchemaLiteralEntries<T extends EntriesSchema> = {
-  [K in keyof T]: T[K] & EntrySchema;
-};
-
-type RealEntriesSchemaLiteral<E extends EntriesSchema> =
-  RealEntriesSchemaLiteralEntries<E> & EntriesSchema;
 
 /**
  * Schema for validating a POD.
@@ -15,7 +7,7 @@ type RealEntriesSchemaLiteral<E extends EntriesSchema> =
 export type PODSchema<E extends EntriesSchema> = {
   entries: E & EntriesSchema;
   tuples?: {
-    entries: (keyof (RealEntriesSchemaLiteral<E> & {
+    entries: (keyof (E & {
       $signerPublicKey: never;
     }) &
       string)[];
@@ -29,6 +21,9 @@ export type PODSchema<E extends EntriesSchema> = {
   signature?: {
     isMemberOf?: string[];
     isNotMemberOf?: string[];
+  };
+  meta?: {
+    labelEntry: keyof E & string;
   };
 };
 
