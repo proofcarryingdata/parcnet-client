@@ -1,5 +1,11 @@
 # @parcnet-js/app-connector
 
+## 0.0.5
+
+### Patch Changes
+
+- Support meta field on proof requests
+
 ## 0.0.4
 
 ### Patch Changes
