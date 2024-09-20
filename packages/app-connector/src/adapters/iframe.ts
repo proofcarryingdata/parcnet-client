@@ -94,7 +94,7 @@ export function connect(
   const iframe = document.createElement("iframe");
   const sandboxAttr = document.createAttribute("sandbox");
   sandboxAttr.value =
-    "allow-same-origin allow-scripts allow-popups allow-modals allow-forms";
+    "allow-same-origin allow-scripts allow-popups allow-modals allow-forms allow-storage-access-by-user-activation";
   iframe.attributes.setNamedItem(sandboxAttr);
   iframe.style.borderWidth = "0px";
   iframe.style.width = "100%";

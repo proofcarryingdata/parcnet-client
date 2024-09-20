@@ -1,5 +1,11 @@
 # @parcnet-js/app-connector
 
+## 0.0.6
+
+### Patch Changes
+
+- Allow storage access API requests from iframes
+
 ## 0.0.5
 
 ### Patch Changes
