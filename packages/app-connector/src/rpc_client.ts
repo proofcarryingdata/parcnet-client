@@ -19,9 +19,13 @@ import {
 import type { PodspecProofRequest } from "@parcnet-js/podspec";
 import type { GPCBoundConfig, GPCProof, GPCRevealedClaims } from "@pcd/gpc";
 import type { PODEntries } from "@pcd/pod";
-import { EventEmitter } from "eventemitter3";
+import { type Emitter, createNanoEvents } from "nanoevents";
 import * as v from "valibot";
 import type { DialogController } from "./adapters/iframe.js";
+
+interface ParcnetEventSignatures {
+  "subscription-update": (result: SubscriptionUpdateResult) => void;
+}
 
 /**
  * The RPC connector handles low-level communication with the client.
@@ -51,7 +55,7 @@ export class ParcnetRPCConnector implements ParcnetRPC, ParcnetEvents {
     number,
     { resolve: (value: unknown) => void; reject: (reason?: unknown) => void }
   >();
-  #emitter: EventEmitter;
+  #emitter: Emitter<ParcnetEventSignatures>;
   #connected = false;
 
   /**
@@ -108,7 +112,7 @@ export class ParcnetRPCConnector implements ParcnetRPC, ParcnetEvents {
   constructor(port: MessagePort, dialogController: DialogController) {
     this.#port = port;
     this.#dialogController = dialogController;
-    this.#emitter = new EventEmitter();
+    this.#emitter = createNanoEvents<ParcnetEventSignatures>();
     this.pod = {
       query: async (query: PODQuery): Promise<string[]> => {
         return this.#typedInvoke(
@@ -282,19 +286,8 @@ export class ParcnetRPCConnector implements ParcnetRPC, ParcnetEvents {
   on(
     event: "subscription-update",
     callback: (result: SubscriptionUpdateResult) => void
-  ): void {
-    this.#emitter.on("subscription-update", callback);
-  }
-
-  off(
-    event: "subscription-update",
-    callback: (result: SubscriptionUpdateResult) => void
-  ): void {
-    this.#emitter.off("subscription-update", callback);
-  }
-
-  removeAllListeners(): void {
-    this.#emitter.removeAllListeners("subscription-update");
+  ): () => void {
+    return this.#emitter.on("subscription-update", callback);
   }
 
   #emitSubscriptionUpdate(update: string[], subscriptionId: string): void {

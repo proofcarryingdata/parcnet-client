@@ -7,8 +7,12 @@ import type * as p from "@parcnet-js/podspec";
 import type { GPCBoundConfig, GPCProof, GPCRevealedClaims } from "@pcd/gpc";
 import type { PODEntries } from "@pcd/pod";
 import { POD } from "@pcd/pod";
-import { EventEmitter } from "eventemitter3";
+import { type Emitter, createNanoEvents } from "nanoevents";
 import type { ParcnetRPCConnector } from "./rpc_client.js";
+
+type SubscriptionEvents = {
+  update: (result: POD[]) => void;
+};
 
 /**
  * A Subscription object is returned to the caller when a subscription is
@@ -19,13 +23,13 @@ import type { ParcnetRPCConnector } from "./rpc_client.js";
  * first creating the subscription, before any updates are available.
  */
 export class Subscription<E extends p.EntriesSchema> {
-  #emitter: EventEmitter;
+  #emitter: Emitter<SubscriptionEvents>;
   #query: p.PodSpec<E>;
   #api: ParcnetPODWrapper;
 
   constructor(
     query: p.PodSpec<E>,
-    emitter: EventEmitter,
+    emitter: Emitter<SubscriptionEvents>,
     api: ParcnetPODWrapper
   ) {
     this.#emitter = emitter;
@@ -37,18 +41,14 @@ export class Subscription<E extends p.EntriesSchema> {
     return this.#api.query(this.#query);
   }
 
-  on(event: "update", callback: (result: POD[]) => void): void {
-    this.#emitter.on(event, callback);
-  }
-
-  off(event: "update", callback: (result: POD[]) => void): void {
-    this.#emitter.off(event, callback);
+  on(event: "update", callback: (result: POD[]) => void): () => void {
+    return this.#emitter.on(event, callback);
   }
 }
 
 export class ParcnetPODWrapper {
   #api: ParcnetRPCConnector;
-  #subscriptionEmitters: Map<string, EventEmitter>;
+  #subscriptionEmitters: Map<string, Emitter<SubscriptionEvents>>;
 
   constructor(api: ParcnetRPCConnector) {
     this.#api = api;
@@ -73,7 +73,7 @@ export class ParcnetPODWrapper {
     query: p.PodSpec<E>
   ): Promise<Subscription<E>> {
     const subscriptionId = await this.#api.pod.subscribe(query.schema);
-    const emitter = new EventEmitter();
+    const emitter = createNanoEvents<SubscriptionEvents>();
     const subscription = new Subscription(query, emitter, this);
     this.#subscriptionEmitters.set(subscriptionId, emitter);
     return subscription;

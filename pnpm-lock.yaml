@@ -245,12 +245,9 @@ importers:
       '@pcd/pod':
         specifier: ^0.1.7
         version: 0.1.7
-      eventemitter3:
-        specifier: ^5.0.1
-        version: 5.0.1
-      json-bigint:
-        specifier: ^1.0.0
-        version: 1.0.0
+      nanoevents:
+        specifier: ^9.0.0
+        version: 9.0.0
       valibot:
         specifier: ^0.42.0
         version: 0.42.0(typescript@5.5.4)
@@ -3720,6 +3717,10 @@ packages:
 
   nanoassert@2.0.0:
     resolution: {integrity: sha512-7vO7n28+aYO4J+8w96AzhmU8G+Y/xpPDJz/se19ICsqj/momRbb9mh9ZUtkoJ5X3nTnPdhEJyc0qnM6yAsHBaA==}
+
+  nanoevents@9.0.0:
+    resolution: {integrity: sha512-X8pU7IOpgKXVLPxYUI55ymXc8XuBE+uypfEyEFBtHkD1EX9KavYTVc+vXZHFyHKzA1TaZoVDqklLdQBBrxIuAw==}
+    engines: {node: ^18.0.0 || >=20.0.0}
 
   nanoid@3.3.7:
     resolution: {integrity: sha512-eSRppjcPIatRIMC1U6UngP8XFcz8MQWGQdt1MTBQ7NaAmvXDfvNxbvWV3x2y6CdEUciCSsDHDQZbhYaB8QEo2g==}
@@ -9484,6 +9485,8 @@ snapshots:
       thenify-all: 1.6.0
 
   nanoassert@2.0.0: {}
+
+  nanoevents@9.0.0: {}
 
   nanoid@3.3.7: {}
 
