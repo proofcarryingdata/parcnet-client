@@ -60,6 +60,7 @@ export function ParcnetIframeProvider({
   children: React.ReactNode;
 }): ReactNode {
   const ref = useRef<HTMLDivElement>(null);
+  const isMounted = useRef(false);
 
   const [value, setValue] = useState<ClientState>({
     state: ClientConnectionState.CONNECTING,
@@ -67,6 +68,10 @@ export function ParcnetIframeProvider({
   });
 
   useEffect(() => {
+    if (!isMounted.current) {
+      isMounted.current = true;
+      return;
+    }
     if (!isHosted()) {
       if (ref.current) {
         void connect(zapp, ref.current, url).then((zupass) => {
@@ -86,6 +91,11 @@ export function ParcnetIframeProvider({
         });
       });
     }
+
+    return () => {
+      isMounted.current = false;
+    };
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

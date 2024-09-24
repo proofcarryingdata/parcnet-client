@@ -24,11 +24,9 @@ function App() {
 
   useEffect(() => {
     void (async () => {
-      if (window.parent) {
-        const { zapp, advice } = await listen();
-        dispatch({ type: "set-zapp", zapp });
-        dispatch({ type: "set-advice", advice });
-      }
+      const { zapp, advice } = await listen();
+      dispatch({ type: "set-zapp", zapp });
+      dispatch({ type: "set-advice", advice });
     })();
   }, [dispatch]);
 
