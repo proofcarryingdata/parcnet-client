@@ -6,35 +6,31 @@ import { gpcProve } from "@pcd/gpc";
 import type { POD } from "@pcd/pod";
 import { POD_INT_MAX, POD_INT_MIN } from "@pcd/pod";
 import type { Dispatch, ReactNode } from "react";
-import { Fragment, useEffect, useReducer, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { ParcnetClientProcessor } from "./client/client";
-import { PODCollection } from "./client/pod_collection";
-import {
-  getIdentity,
-  loadPODsFromStorage,
-  savePODsToStorage
-} from "./client/utils";
-import { Rabbit } from "./rabbit";
+import { getIdentity, savePODsToStorage } from "./client/utils";
+import { Layout } from "./components/Layout";
 import type { ClientAction, ClientState } from "./state";
-import { clientReducer } from "./state";
+import { useAppState } from "./state";
 
 function App() {
-  const [state, dispatch] = useReducer(clientReducer, {
-    loggedIn: false,
-    advice: null,
-    zapp: null,
-    authorized: false,
-    proofInProgress: undefined,
-    identity: getIdentity()
-  });
+  const { state, dispatch } = useAppState();
+
+  useEffect(() => {
+    state.pods.onUpdate(() => {
+      savePODsToStorage(state.pods.getAll());
+    });
+  }, [state.pods]);
 
   useEffect(() => {
     void (async () => {
-      const { zapp, advice } = await listen();
-      dispatch({ type: "set-zapp", zapp });
-      dispatch({ type: "set-advice", advice });
+      if (window.parent) {
+        const { zapp, advice } = await listen();
+        dispatch({ type: "set-zapp", zapp });
+        dispatch({ type: "set-advice", advice });
+      }
     })();
-  }, []);
+  }, [dispatch]);
 
   useEffect(() => {
     if (state.advice && !state.loggedIn) {
@@ -43,46 +39,39 @@ function App() {
   }, [state.advice, state.loggedIn]);
 
   useEffect(() => {
-    if (state.authorized && state.advice) {
+    if (state.advice && state.authorized) {
       state.advice.hideClient();
-      const pods = new PODCollection(loadPODsFromStorage());
-      pods.onUpdate(() => {
-        savePODsToStorage(pods.getAll());
-      });
       state.advice.ready(
-        new ParcnetClientProcessor(state.advice, pods, dispatch, getIdentity())
+        new ParcnetClientProcessor(
+          state.advice,
+          state.pods,
+          dispatch,
+          state.identity
+        )
       );
     }
-  }, [state.authorized, state.advice]);
+  }, [state.advice, state.authorized, state.pods, state.identity, dispatch]);
 
   return (
-    <main className="mx-auto max-w-md container">
-      <div className="font-mono my-4 bg-black text-white p-4 rounded-lg">
-        <div className="flex items-center w-full my-4">
-          <div className="my-4 w-full">Welcome to PARCNET</div>
-          <div className="w-8 h-8">
-            <Rabbit />
-          </div>
-        </div>
-        {!state.loggedIn && (
-          <button
-            className="border-2 font-semibold cursor-pointer border-white py-1 px-2 uppercase active:translate-x-[2px] active:translate-y-[2px]"
-            onClick={() => dispatch({ type: "login", loggedIn: true })}
-          >
-            Connect
-          </button>
+    <Layout>
+      {!state.loggedIn && (
+        <button
+          className="border-2 font-semibold cursor-pointer border-white py-1 px-2 uppercase active:translate-x-[2px] active:translate-y-[2px]"
+          onClick={() => dispatch({ type: "login", loggedIn: true })}
+        >
+          Connect
+        </button>
+      )}
+      {state.loggedIn && !state.authorized && state.zapp && (
+        <Authorize zapp={state.zapp} dispatch={dispatch} />
+      )}
+      {state.loggedIn &&
+        state.authorized &&
+        state.zapp &&
+        state.proofInProgress && (
+          <Prove proveOperation={state.proofInProgress} dispatch={dispatch} />
         )}
-        {state.loggedIn && !state.authorized && state.zapp && (
-          <Authorize zapp={state.zapp} dispatch={dispatch} />
-        )}
-        {state.loggedIn &&
-          state.authorized &&
-          state.zapp &&
-          state.proofInProgress && (
-            <Prove proveOperation={state.proofInProgress} dispatch={dispatch} />
-          )}
-      </div>
-    </main>
+    </Layout>
   );
 }
 
@@ -238,7 +227,7 @@ function ProvePODInfo({
   );
 }
 
-function Prove({
+export function Prove({
   proveOperation,
   dispatch
 }: {

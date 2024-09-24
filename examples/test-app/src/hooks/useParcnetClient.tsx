@@ -1,5 +1,6 @@
 import type { ParcnetAPI, Zapp } from "@parcnet-js/app-connector";
-import { connect } from "@parcnet-js/app-connector";
+import { connect, connectToHost } from "@parcnet-js/app-connector";
+import { isHosted } from "@parcnet-js/app-connector/src/adapters/hosted";
 import type { ReactNode } from "react";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 
@@ -66,8 +67,18 @@ export function ParcnetIframeProvider({
   });
 
   useEffect(() => {
-    if (ref.current) {
-      void connect(zapp, ref.current, url).then((zupass) => {
+    if (!isHosted()) {
+      if (ref.current) {
+        void connect(zapp, ref.current, url).then((zupass) => {
+          setValue({
+            state: ClientConnectionState.CONNECTED,
+            z: zupass,
+            ref
+          });
+        });
+      }
+    } else {
+      void connectToHost(zapp).then((zupass) => {
         setValue({
           state: ClientConnectionState.CONNECTED,
           z: zupass,

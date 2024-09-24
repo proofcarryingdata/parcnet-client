@@ -3,8 +3,59 @@ import type { ProveResult, Zapp } from "@parcnet-js/client-rpc";
 import type { PodspecProofRequest } from "@parcnet-js/podspec";
 import type { POD } from "@pcd/pod";
 import type { Identity as IdentityV4 } from "@semaphore-protocol/core";
+import { createContext, useContext, useReducer } from "react";
+import { PODCollection } from "./client/pod_collection";
+import { getIdentity, loadPODsFromStorage } from "./client/utils";
+
+export const StateContext = createContext<
+  | {
+      state: ClientState;
+      dispatch: React.Dispatch<ClientAction>;
+    }
+  | undefined
+>(undefined);
+
+function initializeState(): ClientState {
+  return {
+    embeddedMode: !!window.parent,
+    loggedIn: false,
+    advice: null,
+    zapp: null,
+    authorized: false,
+    proofInProgress: undefined,
+    identity: getIdentity(),
+    pods: new PODCollection(loadPODsFromStorage()),
+    zapps: new Map([["test-zapp", "http://localhost:3200"]])
+  } satisfies ClientState;
+}
+
+export const StateProvider = ({ children }: { children: React.ReactNode }) => {
+  const [state, dispatch] = useReducer(
+    clientReducer,
+    undefined,
+    initializeState
+  );
+
+  return (
+    <StateContext.Provider value={{ state, dispatch }}>
+      {children}
+    </StateContext.Provider>
+  );
+};
+
+export function useAppState(): {
+  state: ClientState;
+  dispatch: React.Dispatch<ClientAction>;
+} {
+  const context = useContext(StateContext);
+  if (context === undefined) {
+    throw new Error("useState must be used within a StateProvider");
+  }
+  return context;
+}
 
 export type ClientState = {
+  embeddedMode: boolean;
   loggedIn: boolean;
   authorized: boolean;
   advice: ConnectorAdvice | null;
@@ -19,6 +70,8 @@ export type ClientState = {
       }
     | undefined;
   identity: IdentityV4;
+  pods: PODCollection;
+  zapps: Map<string, string>;
 };
 
 export type ClientAction =

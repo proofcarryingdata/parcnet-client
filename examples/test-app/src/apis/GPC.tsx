@@ -285,7 +285,9 @@ const gpcProof = await z.gpc.prove(request);
             onClick={async () => {
               try {
                 const hmm = ticketProofRequest({
-                  classificationTuples: [[publicKey!, EVENT_ID]],
+                  classificationTuples: [
+                    [await z.identity.getPublicKey(), EVENT_ID]
+                  ],
                   fieldsToReveal: {
                     eventId: true
                   }
