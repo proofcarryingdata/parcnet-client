@@ -284,19 +284,20 @@ const gpcProof = await z.gpc.prove(request);
           <TryIt
             onClick={async () => {
               try {
-                const hmm = ticketProofRequest({
-                  classificationTuples: [[publicKey!, EVENT_ID]],
+                const request = ticketProofRequest({
+                  classificationTuples: [
+                    [await z.identity.getPublicKey(), EVENT_ID]
+                  ],
                   fieldsToReveal: {
                     eventId: true
                   }
                 });
-                console.log(hmm.schema);
-                setProveResult(await z.gpc.prove(hmm.schema));
+                setProveResult(await z.gpc.prove(request.schema));
               } catch (e) {
                 console.log(e);
               }
             }}
-            label="Get GPC Proof"
+            label="Get Ticket Proof"
           />
           {proveResult && (
             <pre className="whitespace-pre-wrap">

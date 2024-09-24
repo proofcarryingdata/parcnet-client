@@ -7,10 +7,15 @@ export default defineConfig({
   plugins: [
     react(),
     nodePolyfills({
-      include: ["assert", "buffer", "constants"]
+      include: ["buffer", "constants"]
     })
   ],
   esbuild: {
     target: "es2020"
+  },
+  resolve: {
+    alias: {
+      "@": new URL("./src", import.meta.url).pathname
+    }
   }
 });

@@ -6,7 +6,7 @@
     "declarationMap": true,
     "esModuleInterop": true,
     "incremental": false,
-    "isolatedDeclarations": false,
+    "isolatedDeclarations": true,
     "isolatedModules": true,
     "lib": ["es2020", "DOM", "DOM.Iterable"],
     "module": "NodeNext",
@@ -19,6 +19,7 @@
     "resolvePackageJsonExports": true,
     "skipLibCheck": true,
     "strict": true,
-    "target": "ES2020"
+    "target": "ES2020",
+    "verbatimModuleSyntax": true
   }
 }

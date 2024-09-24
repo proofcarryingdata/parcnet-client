@@ -1,5 +1,11 @@
 # @parcnet-js/app-connector
 
+## 0.0.7
+
+### Patch Changes
+
+- Support Zapps embedded inside client
+
 ## 0.0.6
 
 ### Patch Changes
