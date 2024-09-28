@@ -8,14 +8,21 @@
   "types": "src/index.ts",
   "exports": {
     ".": {
-      "types": "./src/index.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.js"
+      "import": { "types": "./src/index.ts", "import": "./dist/index.js" },
+      "require": {
+        "types": "./src/index.ts",
+        "require": "./dist/index.cjs"
+      }
     },
     "./connection/iframe": {
-      "types": "./src/connection/iframe.ts",
-      "import": "./dist/connection/iframe.js",
-      "require": "./dist/connection/iframe.cjs"
+      "import": {
+        "types": "./src/connection/iframe.ts",
+        "import": "./dist/connection/iframe.js"
+      },
+      "require": {
+        "types": "./src/connection/iframe.ts",
+        "require": "./dist/connection/iframe.cjs"
+      }
     }
   },
   "scripts": {
@@ -38,14 +45,21 @@
     "types": "./dist/index.d.ts",
     "exports": {
       ".": {
-        "types": "./dist/index.d.ts",
-        "import": "./dist/index.js",
-        "require": "./dist/index.cjs"
+        "import": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
+        "require": {
+          "types": "./dist/index.d.cts",
+          "require": "./dist/index.cjs"
+        }
       },
       "./connection/iframe": {
-        "types": "./dist/connection/iframe.d.ts",
-        "import": "./dist/connection/iframe.js",
-        "require": "./dist/connection/iframe.cjs"
+        "import": {
+          "types": "./dist/connection/iframe.d.ts",
+          "import": "./dist/connection/iframe.js"
+        },
+        "require": {
+          "types": "./dist/connection/iframe.d.cts",
+          "require": "./dist/connection/iframe.cjs"
+        }
       }
     }
   }
