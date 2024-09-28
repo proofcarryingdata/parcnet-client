@@ -1,5 +1,5 @@
 import * as v from "valibot";
-import { ParcnetRPCSchema } from "./schema.js";
+import { PODDataSchema, ParcnetRPCSchema } from "./schema.js";
 import { ZappSchema } from "./zapp.js";
 
 export enum InitializationMessageType {
@@ -64,7 +64,7 @@ export const RPCMessageSchema = v.variant("type", [
   }),
   v.object({
     type: v.literal(RPCMessageType.PARCNET_CLIENT_SUBSCRIPTION_UPDATE),
-    update: v.array(v.string()),
+    update: v.array(PODDataSchema),
     subscriptionId: v.string(),
     subscriptionSerial: v.number()
   })

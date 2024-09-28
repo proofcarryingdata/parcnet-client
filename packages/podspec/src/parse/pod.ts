@@ -1,4 +1,4 @@
-import type { POD, PODContent, PODEntries, PODValue } from "@pcd/pod";
+import type { PODEntries, PODValue } from "@pcd/pod";
 import type {
   PodspecSignatureExcludedByListIssue,
   PodspecSignatureNotInListIssue,
@@ -22,19 +22,17 @@ import {
 import type { ParseResult } from "./parse_utils.js";
 import { FAILURE, SUCCESS, safeCheckTuple } from "./parse_utils.js";
 
-/**
- * "Strong" PODContent is an extension of PODContent which extends the
- * `asEntries()` method to return a strongly-typed PODEntries.
- */
-interface StrongPODContent<T extends PODEntries> extends PODContent {
-  asEntries(): T;
+export interface PODData {
+  entries: PODEntries;
+  signature: string;
+  signerPublicKey: string;
 }
 
 /**
  * A "strong" POD is a POD with a strongly-typed entries.
  */
-export interface StrongPOD<T extends PODEntries> extends POD {
-  content: StrongPODContent<T>;
+export interface StrongPOD<T extends PODEntries> extends PODData {
+  entries: T;
 }
 
 type SchemaIdentityFn = <E extends EntriesSchema>(
@@ -68,7 +66,7 @@ export class PodSpec<const E extends EntriesSchema = EntriesSchema> {
    * @returns A result containing either a valid value or a list of errors.
    */
   public safeParse(
-    input: POD,
+    input: PODData,
     options: EntriesParseOptions<E> = DEFAULT_ENTRIES_PARSE_OPTIONS,
     path: string[] = []
   ): ParseResult<StrongPOD<EntriesOutputType<E>>> {
@@ -85,7 +83,7 @@ export class PodSpec<const E extends EntriesSchema = EntriesSchema> {
    * @returns The parsed POD.
    */
   public parse(
-    input: POD,
+    input: PODData,
     options: EntriesParseOptions<E> = DEFAULT_ENTRIES_PARSE_OPTIONS,
     path: string[] = []
   ): StrongPOD<EntriesOutputType<E>> {
@@ -148,7 +146,7 @@ export class PodSpec<const E extends EntriesSchema = EntriesSchema> {
    * @param input The PODs to test
    * @returns An array of matches and their indexes within the input array.
    */
-  public query(input: POD[]): {
+  public query(input: PODData[]): {
     matches: StrongPOD<EntriesOutputType<E>>[];
     matchingIndexes: number[];
   } {
@@ -242,13 +240,13 @@ export const pod = <const E extends EntriesSchema>(schema: PODSchema<E>) =>
  */
 export function safeParsePod<E extends EntriesSchema>(
   schema: PODSchema<E>,
-  data: POD,
+  data: PODData,
   options: EntriesParseOptions<E> = DEFAULT_ENTRIES_PARSE_OPTIONS,
   path: string[] = []
 ): ParseResult<StrongPOD<EntriesOutputType<E>>> {
   const entriesResult = safeParseEntries(
     schema.entries,
-    data.content.asEntries(),
+    data.entries,
     options,
     [...path, "entries"]
   );

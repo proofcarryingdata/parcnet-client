@@ -7,6 +7,7 @@ import { gpcVerify } from "@pcd/gpc";
 import type { Dispatch } from "react";
 import type { ClientAction } from "../state";
 import type { PODCollection } from "./pod_collection";
+import { podToPODData } from "./utils";
 
 export class ParcnetGPCProcessor implements ParcnetGPCRPC {
   public constructor(
@@ -18,7 +19,7 @@ export class ParcnetGPCProcessor implements ParcnetGPCRPC {
   public async canProve(request: PodspecProofRequest): Promise<boolean> {
     const prs = proofRequest(request);
 
-    const inputPods = prs.queryForInputs(this.pods.getAll());
+    const inputPods = prs.queryForInputs(this.pods.getAll().map(podToPODData));
     if (
       Object.values(inputPods).some((candidates) => candidates.length === 0)
     ) {
@@ -30,7 +31,7 @@ export class ParcnetGPCProcessor implements ParcnetGPCRPC {
 
   public async prove(request: PodspecProofRequest): Promise<ProveResult> {
     const prs = proofRequest(request);
-    const inputPods = prs.queryForInputs(this.pods.getAll());
+    const inputPods = prs.queryForInputs(this.pods.getAll().map(podToPODData));
     if (
       Object.values(inputPods).some((candidates) => candidates.length === 0)
     ) {

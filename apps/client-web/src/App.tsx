@@ -1,9 +1,9 @@
 import { listen } from "@parcnet-js/client-helpers/connection/iframe";
-import type { Zapp } from "@parcnet-js/client-rpc";
+import type { PODData, Zapp } from "@parcnet-js/client-rpc";
 import type { EntriesSchema, ProofConfigPODSchema } from "@parcnet-js/podspec";
 import { proofRequest } from "@parcnet-js/podspec";
 import { gpcProve } from "@pcd/gpc";
-import type { POD } from "@pcd/pod";
+import { POD } from "@pcd/pod";
 import { POD_INT_MAX, POD_INT_MIN } from "@pcd/pod";
 import type { Dispatch, ReactNode } from "react";
 import { Fragment, useEffect, useState } from "react";
@@ -94,9 +94,9 @@ function ProvePODInfo({
 }: {
   name: string;
   schema: ProofConfigPODSchema<EntriesSchema>;
-  pods: POD[];
-  selectedPOD: POD | undefined;
-  onChange: (pod: POD | undefined) => void;
+  pods: PODData[];
+  selectedPOD: PODData | undefined;
+  onChange: (pod: PODData | undefined) => void;
 }): ReactNode {
   const revealedEntries = Object.entries(schema.pod.entries)
     .map(([name, entry]) => {
@@ -107,7 +107,7 @@ function ProvePODInfo({
     })
     .filter(([name, _entry]) => schema.revealed?.[name] ?? false);
 
-  const selectedPODEntries = selectedPOD?.content.asEntries();
+  const selectedPODEntries = selectedPOD?.entries;
 
   const entriesWithConstraints = Object.entries(schema.pod.entries)
     .map(([name, entry]) => {
@@ -141,9 +141,7 @@ function ProvePODInfo({
             return (
               <option key={pod.signature} value={pod.signature}>
                 {schema.pod.meta?.labelEntry
-                  ? pod.content
-                      .asEntries()
-                      [schema.pod.meta.labelEntry].value.toString()
+                  ? pod.entries[schema.pod.meta.labelEntry].value.toString()
                   : pod.signature.substring(0, 16)}
               </option>
             );
@@ -285,7 +283,20 @@ export function Prove({
               gpcProve(
                 prs.proofConfig,
                 {
-                  pods: proveOperation.selectedPods as Record<string, POD>,
+                  pods: Object.fromEntries(
+                    Object.entries(
+                      proveOperation.selectedPods as Record<string, PODData>
+                    ).map(([name, podData]) => {
+                      return [
+                        name,
+                        POD.load(
+                          podData.entries,
+                          podData.signature,
+                          podData.signerPublicKey
+                        )
+                      ];
+                    })
+                  ),
                   membershipLists: prs.membershipLists,
                   watermark: prs.watermark,
                   owner: {

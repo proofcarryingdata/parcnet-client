@@ -3,6 +3,6 @@
   "compilerOptions": {
     "outDir": "dist"
   },
-  "include": ["src", "test"],
+  "include": ["src", "test", "../client-rpc/src/pod_data.ts"],
   "exclude": ["node_modules", "dist"]
 }

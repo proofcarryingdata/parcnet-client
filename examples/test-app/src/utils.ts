@@ -29,3 +29,10 @@ export function getConnectionInfo(): ClientConnectionInfo {
   }
   return connectionInfo;
 }
+
+export function safeStringify(obj: unknown): string {
+  return JSON.stringify(obj, (key, value) =>
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    typeof value === "bigint" ? value.toString() : value
+  );
+}

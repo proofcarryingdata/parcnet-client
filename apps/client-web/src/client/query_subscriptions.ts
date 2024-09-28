@@ -1,8 +1,9 @@
-import type { SubscriptionUpdateResult } from "@parcnet-js/client-rpc";
+import type { PODData, SubscriptionUpdateResult } from "@parcnet-js/client-rpc";
 import * as p from "@parcnet-js/podspec";
 import type { EntriesSchema, PODSchema, PodSpec } from "@parcnet-js/podspec";
 import { EventEmitter } from "eventemitter3";
 import type { PODCollection } from "./pod_collection.js";
+import { podToPODData } from "./utils.js";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface Subscription<E extends EntriesSchema = any> {
@@ -23,14 +24,13 @@ export class QuerySubscriptions {
     this.pods.onUpdate((update) => {
       if (update.type === "delete") {
         for (const [id, sub] of this.subscriptions.entries()) {
-          const result = sub.query.query([update.affectedPOD]);
+          const result = sub.query.query([podToPODData(update.affectedPOD)]);
           if (result.matches.length > 0) {
             this.emitter.emit(
               "query-update",
               {
-                update: sub.query
-                  .query(this.pods.getAll())
-                  .matches.map((pod) => pod.serialize()),
+                update: sub.query.query(this.pods.getAll().map(podToPODData))
+                  .matches as PODData[],
                 subscriptionId: id
               },
               sub.serial
@@ -40,14 +40,13 @@ export class QuerySubscriptions {
         }
       } else if (update.type === "insert") {
         for (const [id, sub] of this.subscriptions.entries()) {
-          const result = sub.query.query([update.affectedPOD]);
+          const result = sub.query.query([podToPODData(update.affectedPOD)]);
           if (result.matches.length > 0) {
             this.emitter.emit(
               "query-update",
               {
-                update: sub.query
-                  .query(this.pods.getAll())
-                  .matches.map((pod) => pod.serialize()),
+                update: sub.query.query(this.pods.getAll().map(podToPODData))
+                  .matches as PODData[],
                 subscriptionId: id
               },
               sub.serial

@@ -167,6 +167,19 @@ importers:
         specifier: ^5.6.2
         version: 5.6.2
 
+  examples/minimal-app:
+    dependencies:
+      '@parcnet-js/app-connector':
+        specifier: workspace:*
+        version: link:../../packages/app-connector
+    devDependencies:
+      typescript:
+        specifier: ^5.5.3
+        version: 5.6.2
+      vite:
+        specifier: ^5.4.1
+        version: 5.4.4(@types/node@22.5.5)
+
   examples/test-app:
     dependencies:
       '@parcnet-js/app-connector':
@@ -187,9 +200,6 @@ importers:
       '@semaphore-protocol/identity':
         specifier: ^3.15.2
         version: 3.15.2
-      json-bigint:
-        specifier: ^1.0.0
-        version: 1.0.0
       lodash:
         specifier: ^4.17.21
         version: 4.17.21

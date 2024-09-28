@@ -1,5 +1,6 @@
+import type { PODData } from "@parcnet-js/client-rpc";
 import * as p from "@parcnet-js/podspec";
-import type { POD } from "@pcd/pod";
+import { POD } from "@pcd/pod";
 import { EventEmitter } from "eventemitter3";
 
 export interface PODCollectionUpdate {
@@ -16,7 +17,12 @@ export class PODCollection {
 
   constructor(private pods: POD[] = []) {}
 
-  public insert(pod: POD): void {
+  public insert(podData: PODData): void {
+    const pod = POD.load(
+      podData.entries,
+      podData.signature,
+      podData.signerPublicKey
+    );
     this.pods.push(pod);
     this.emitter.emit("update", { type: "insert", affectedPOD: pod });
   }
@@ -36,8 +42,14 @@ export class PODCollection {
     }
   }
 
-  public query<E extends p.EntriesSchema>(query: p.PODSchema<E>): POD[] {
-    return p.pod(query).query(this.pods).matches;
+  public query<E extends p.EntriesSchema>(query: p.PODSchema<E>): PODData[] {
+    return p.pod(query).query(
+      this.pods.map((pod) => ({
+        entries: pod.content.asEntries(),
+        signature: pod.signature,
+        signerPublicKey: pod.signerPublicKey
+      }))
+    ).matches;
   }
 
   public onUpdate(listener: (update: PODCollectionUpdate) => void): void {

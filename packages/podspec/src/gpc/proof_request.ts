@@ -7,8 +7,8 @@ import type {
   PODEntryIdentifier,
   PODMembershipLists
 } from "@pcd/gpc";
-import type { POD, PODName, PODValue } from "@pcd/pod";
-import { PodSpec } from "../parse/pod.js";
+import type { PODName, PODValue } from "@pcd/pod";
+import { type PODData, PodSpec } from "../parse/pod.js";
 import type { EntriesSchema } from "../schemas/entries.js";
 import type { PODSchema } from "../schemas/pod.js";
 
@@ -95,15 +95,15 @@ export class ProofRequestSpec<
    * @param pods The PODs to query.
    * @returns A record of the PODs that are allowed in this proof.
    */
-  public queryForInputs(pods: POD[]): Record<keyof P["pods"], POD[]> {
-    const result: Record<string, POD[]> = {};
+  public queryForInputs(pods: PODData[]): Record<keyof P["pods"], PODData[]> {
+    const result: Record<string, PODData[]> = {};
     for (const [podName, proofConfigPODSchema] of Object.entries(
       this.schema.pods as Record<string, ProofConfigPODSchema<EntriesSchema>>
     )) {
       const podSchema = proofConfigPODSchema.pod;
       result[podName] = PodSpec.create(podSchema).query(pods).matches;
     }
-    return result as Record<keyof P["pods"], POD[]>;
+    return result as Record<keyof P["pods"], PODData[]>;
   }
 }
 

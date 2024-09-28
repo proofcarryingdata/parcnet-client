@@ -1,7 +1,6 @@
 import type { ConnectorAdvice } from "@parcnet-js/client-helpers";
-import type { ProveResult, Zapp } from "@parcnet-js/client-rpc";
+import type { PODData, ProveResult, Zapp } from "@parcnet-js/client-rpc";
 import type { PodspecProofRequest } from "@parcnet-js/podspec";
-import type { POD } from "@pcd/pod";
 import type { Identity as IdentityV4 } from "@semaphore-protocol/core";
 import { createContext, useContext, useReducer } from "react";
 import { PODCollection } from "./client/pod_collection";
@@ -62,8 +61,8 @@ export type ClientState = {
   zapp: Zapp | null;
   proofInProgress:
     | {
-        pods: Record<string, POD[]>;
-        selectedPods: Record<string, POD | undefined>;
+        pods: Record<string, PODData[]>;
+        selectedPods: Record<string, PODData | undefined>;
         proofRequest: PodspecProofRequest;
         proving: boolean;
         resolve?: (result: ProveResult) => void;
@@ -93,8 +92,8 @@ export type ClientAction =
     }
   | {
       type: "set-proof-in-progress";
-      pods: Record<string, POD[]>;
-      selectedPods: Record<string, POD | undefined>;
+      pods: Record<string, PODData[]>;
+      selectedPods: Record<string, PODData | undefined>;
       proofRequest: PodspecProofRequest;
       proving: boolean;
       resolve?: (result: ProveResult) => void;

@@ -74,6 +74,7 @@ type AssertEntrySchemaType = ValidEntrySchemaType extends EntrySchema["type"]
   : false;
 
 // This will cause a compile-time error if the types don't match
+// @ts-expect-error declared value never read, but this is OK
 const _: AssertEntrySchemaType = true;
 
 // Runtime check function

@@ -11,6 +11,7 @@ import type {
 } from "../src/error.js";
 import { IssueCode } from "../src/error.js";
 import * as p from "../src/index.js";
+import type { PODData } from "../src/parse/pod.js";
 import { $c, $i, $s } from "../src/pod_value_utils.js";
 import type { EntriesTupleSchema } from "../src/schemas/entries.js";
 import { generateKeyPair, generateRandomHex } from "./utils.js";
@@ -19,6 +20,14 @@ export const GPC_NPM_ARTIFACTS_PATH = path.join(
   __dirname,
   "../node_modules/@pcd/proto-pod-gpc-artifacts"
 );
+
+function podToPODData(pod: POD): PODData {
+  return {
+    entries: pod.content.asEntries(),
+    signature: pod.signature,
+    signerPublicKey: pod.signerPublicKey
+  };
+}
 
 describe("podspec should work", function () {
   it("should validate POD entries", () => {
@@ -393,7 +402,7 @@ describe("podspec should work", function () {
       privateKey
     );
 
-    const result = myPodSpec.safeParse(pod);
+    const result = myPodSpec.safeParse(podToPODData(pod));
     assert(result.isValid);
   });
 
@@ -432,7 +441,7 @@ describe("podspec should work", function () {
         privateKey
       );
 
-      const result = myPodSpec.safeParse(pod);
+      const result = myPodSpec.safeParse(podToPODData(pod));
       expect(result.isValid).to.eq(true);
       assert(result.isValid);
     }
@@ -446,7 +455,7 @@ describe("podspec should work", function () {
         privateKey
       );
 
-      const result = myPodSpec.safeParse(pod);
+      const result = myPodSpec.safeParse(podToPODData(pod));
       expect(result.isValid).to.eq(false);
       assert(result.isValid === false);
       assert(result.issues[0] !== undefined);
@@ -482,7 +491,7 @@ describe("podspec should work", function () {
       )
     ];
 
-    const queryResult = myPodSpec.query(pods);
+    const queryResult = myPodSpec.query(pods.map(podToPODData));
 
     expect(queryResult.matches[0]).to.eq(pods[1]);
     expect(queryResult.matchingIndexes).to.eql([1]);
@@ -504,7 +513,7 @@ describe("podspec should work", function () {
       POD.sign({ foo: { type: "int", value: 10n } }, key)
     ];
 
-    const queryResult = myPodSpec.query(pods);
+    const queryResult = myPodSpec.query(pods.map(podToPODData));
 
     expect(queryResult.matches).to.eql([pods[0], pods[3]]);
     expect(queryResult.matchingIndexes).to.eql([0, 3]);
@@ -552,7 +561,7 @@ describe("podspec should work", function () {
       )
     ];
 
-    const queryResult = myPodSpec.query(pods);
+    const queryResult = myPodSpec.query(pods.map(podToPODData));
 
     expect(queryResult.matches).to.eql([pods[0]]);
     expect(queryResult.matchingIndexes).to.eql([0]);
@@ -593,7 +602,7 @@ describe("podspec should work", function () {
       }
     });
 
-    const queryResult = myPodSpec.query(pods.slice());
+    const queryResult = myPodSpec.query(pods.map(podToPODData));
 
     expect(queryResult.matches).to.eql([pods[1]]);
     expect(queryResult.matchingIndexes).to.eql([1]);
@@ -725,7 +734,7 @@ describe("podspec should work", function () {
       )
     ];
 
-    const candidatePODs = prs.queryForInputs(pods);
+    const candidatePODs = prs.queryForInputs(pods.map(podToPODData));
 
     expect(candidatePODs.pod1).to.eql([pods[1]]);
     expect(candidatePODs.pod2).to.eql([pods[3]]);
@@ -738,7 +747,18 @@ describe("podspec should work", function () {
       pr.proofConfig,
       {
         membershipLists: pr.membershipLists,
-        pods: { pod1: candidatePODs.pod1[0], pod2: candidatePODs.pod2[0] }
+        pods: {
+          pod1: POD.load(
+            candidatePODs.pod1[0].entries,
+            candidatePODs.pod1[0].signature,
+            candidatePODs.pod1[0].signerPublicKey
+          ),
+          pod2: POD.load(
+            candidatePODs.pod2[0].entries,
+            candidatePODs.pod2[0].signature,
+            candidatePODs.pod2[0].signerPublicKey
+          )
+        }
       },
       GPC_NPM_ARTIFACTS_PATH
     );

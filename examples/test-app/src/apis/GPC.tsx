@@ -1,12 +1,11 @@
-import type { ProveResult } from "@parcnet-js/client-rpc";
+import type { PODData, ProveResult } from "@parcnet-js/client-rpc";
 import type { PodspecProofRequest } from "@parcnet-js/podspec";
 import { TicketSpec, ticketProofRequest } from "@parcnet-js/ticket-spec";
-import type { POD } from "@pcd/pod";
-import JSONBig from "json-bigint";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { TryIt } from "../components/TryIt";
 import { useParcnetClient } from "../hooks/useParcnetClient";
+import { safeStringify } from "../utils";
 
 const EVENT_ID = "fca101d3-8c9d-56e4-9a25-6a3c1abf0fed";
 const PRODUCT_ID = "59c3df09-2093-4b54-9033-7bf54b6f75db";
@@ -60,7 +59,7 @@ export function GPC(): ReactNode {
   const [verified, setVerified] = useState<boolean | undefined>();
   const [identityV3, setIdentityV3] = useState<bigint | undefined>();
   const [publicKey, setPublicKey] = useState<string | undefined>();
-  const [ticket, setTicket] = useState<POD | undefined>();
+  const [ticket, setTicket] = useState<PODData | undefined>();
 
   useEffect(() => {
     void (async () => {
@@ -142,7 +141,7 @@ const gpcProof = await z.gpc.prove(request);
           />
           {proveResult && (
             <pre className="whitespace-pre-wrap">
-              {JSONBig.stringify(proveResult, null, 2)}
+              {safeStringify(proveResult)}
             </pre>
           )}
         </div>
@@ -301,7 +300,7 @@ const gpcProof = await z.gpc.prove(request);
           />
           {proveResult && (
             <pre className="whitespace-pre-wrap">
-              {JSONBig.stringify(proveResult, null, 2)}
+              {safeStringify(proveResult)}
             </pre>
           )}
         </div>

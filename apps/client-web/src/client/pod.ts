@@ -1,4 +1,4 @@
-import type { PODQuery, ParcnetPODRPC } from "@parcnet-js/client-rpc";
+import type { PODData, PODQuery, ParcnetPODRPC } from "@parcnet-js/client-rpc";
 import type { PODEntries } from "@pcd/pod";
 import { POD, encodePrivateKey } from "@pcd/pod";
 import type { Identity } from "@semaphore-protocol/core";
@@ -12,13 +12,12 @@ export class ParcnetPODProcessor implements ParcnetPODRPC {
     private readonly identity: Identity
   ) {}
 
-  public async query(query: PODQuery): Promise<string[]> {
-    return this.pods.query(query).map((pod) => pod.serialize());
+  public async query(query: PODQuery): Promise<PODData[]> {
+    return this.pods.query(query);
   }
 
-  public async insert(serializedPod: string): Promise<void> {
-    const pod = POD.deserialize(serializedPod);
-    this.pods.insert(pod);
+  public async insert(podData: PODData): Promise<void> {
+    this.pods.insert(podData);
   }
 
   public async delete(signature: string): Promise<void> {
@@ -33,7 +32,7 @@ export class ParcnetPODProcessor implements ParcnetPODRPC {
     this.subscriptions.unsubscribe(subscriptionId);
   }
 
-  public async sign(entries: PODEntries): Promise<string> {
+  public async sign(entries: PODEntries): Promise<PODData> {
     /**
      * @todo: Once we have decided how to restrict this, we would implement
      * some security restrictions here.
@@ -42,6 +41,10 @@ export class ParcnetPODProcessor implements ParcnetPODRPC {
       entries,
       encodePrivateKey(Buffer.from(this.identity.export(), "base64"))
     );
-    return pod.serialize();
+    return {
+      entries: pod.content.asEntries(),
+      signature: pod.signature,
+      signerPublicKey: pod.signerPublicKey
+    };
   }
 }

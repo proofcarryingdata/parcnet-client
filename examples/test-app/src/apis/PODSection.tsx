@@ -1,17 +1,23 @@
-import type { ParcnetAPI, Subscription } from "@parcnet-js/app-connector";
+import type {
+  PODData,
+  ParcnetAPI,
+  Subscription
+} from "@parcnet-js/app-connector";
 import * as p from "@parcnet-js/podspec";
-import type { POD, PODEntries, PODValue } from "@pcd/pod";
-import { POD_INT_MAX, POD_INT_MIN } from "@pcd/pod";
-import JSONBig from "json-bigint";
+import type { PODEntries, PODValue } from "@pcd/pod";
 import type { Dispatch, ReactNode, SetStateAction } from "react";
 import { useReducer, useState } from "react";
 import { Button } from "../components/Button";
 import { TryIt } from "../components/TryIt";
 import { useParcnetClient } from "../hooks/useParcnetClient";
+import { safeStringify } from "../utils";
+
+const POD_INT_MIN = 0n;
+const POD_INT_MAX = 100n;
 
 export function PODSection(): ReactNode {
   const { z, connected } = useParcnetClient();
-  const [pod, setPOD] = useState<POD | null>(null);
+  const [pod, setPOD] = useState<PODData | null>(null);
 
   return !connected ? null : (
     <div>
@@ -33,7 +39,7 @@ export function PODSection(): ReactNode {
 }
 
 function QueryPODs({ z }: { z: ParcnetAPI }): ReactNode {
-  const [pods, setPODs] = useState<POD[] | undefined>(undefined);
+  const [pods, setPODs] = useState<PODData[] | undefined>(undefined);
 
   return (
     <div>
@@ -80,17 +86,7 @@ const pods = await z.pod.query(q);
         label="Query PODs"
       />
       {pods !== undefined && (
-        <pre className="whitespace-pre-wrap">
-          {JSONBig.stringify(
-            pods.map((p) => ({
-              entries: p.content.asEntries(),
-              signature: p.signature,
-              signerPublicKey: p.signerPublicKey
-            })),
-            null,
-            2
-          )}
-        </pre>
+        <pre className="whitespace-pre-wrap">{safeStringify(pods)}</pre>
       )}
     </div>
   );
@@ -201,12 +197,12 @@ function SignPOD({
   setSignedPOD
 }: {
   z: ParcnetAPI;
-  setSignedPOD: Dispatch<SetStateAction<POD | null>>;
+  setSignedPOD: Dispatch<SetStateAction<PODData | null>>;
 }): ReactNode {
   const [creationState, setCreationState] = useState<PODCreationState>(
     PODCreationState.None
   );
-  const [pod, setPOD] = useState<POD | null>(null);
+  const [pod, setPOD] = useState<PODData | null>(null);
   const [entries, dispatch] = useReducer(editPODReducer, {
     test: { type: "string", value: "Testing" }
   } satisfies PODEntries);
@@ -358,7 +354,10 @@ function EditPODEntry({
   );
 }
 
-function InsertPOD({ z, pod }: { z: ParcnetAPI; pod: POD | null }): ReactNode {
+function InsertPOD({
+  z,
+  pod
+}: { z: ParcnetAPI; pod: PODData | null }): ReactNode {
   const [insertionState, setInsertionState] = useState<PODCreationState>(
     PODCreationState.None
   );
@@ -463,7 +462,7 @@ function DeletePOD({ z }: { z: ParcnetAPI }): ReactNode {
 }
 
 function SubscribeToPODs({ z }: { z: ParcnetAPI }): ReactNode {
-  const [pods, setPODs] = useState<POD[]>([]);
+  const [pods, setPODs] = useState<PODData[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [subscription, setSubscription] = useState<Subscription<any> | null>(
     null
@@ -520,17 +519,7 @@ const sub = await z.pod.subscribe(q);
       />
       {pods.length > 0 && subscription !== null && (
         <div>
-          <pre className="whitespace-pre-wrap">
-            {JSONBig.stringify(
-              pods.map((p) => ({
-                entries: p.content.asEntries(),
-                signature: p.signature,
-                signerPublicKey: p.signerPublicKey
-              })),
-              null,
-              2
-            )}
-          </pre>
+          <pre className="whitespace-pre-wrap">{safeStringify(pods)}</pre>
         </div>
       )}
     </div>

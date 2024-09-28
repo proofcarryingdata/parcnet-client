@@ -30,7 +30,7 @@
   },
   "scripts": {
     "lint": "eslint . --max-warnings 0",
-    "build": "tsup 'src/**/*@(ts|tsx)' --format cjs,esm --clean --sourcemap",
+    "build": "tsup 'src/**/*@(ts|tsx)' --format cjs,esm --clean --sourcemap --no-splitting",
     "prepublish": "tsup 'src/**/*@(ts|tsx)' --format cjs,esm --clean --sourcemap --dts",
     "test": "vitest run"
   },

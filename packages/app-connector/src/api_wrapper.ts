@@ -1,4 +1,5 @@
 import type {
+  PODData,
   ParcnetIdentityRPC,
   ParcnetRPC,
   ProveResult
@@ -6,12 +7,13 @@ import type {
 import type * as p from "@parcnet-js/podspec";
 import type { GPCBoundConfig, GPCProof, GPCRevealedClaims } from "@pcd/gpc";
 import type { PODEntries } from "@pcd/pod";
-import { POD } from "@pcd/pod";
 import { type Emitter, createNanoEvents } from "nanoevents";
 import type { ParcnetRPCConnector } from "./rpc_client.js";
 
+export type { PODData };
+
 type SubscriptionEvents = {
-  update: (result: POD[]) => void;
+  update: (result: PODData[]) => void;
 };
 
 /**
@@ -37,11 +39,11 @@ export class Subscription<E extends p.EntriesSchema> {
     this.#api = api;
   }
 
-  async query(): Promise<POD[]> {
+  async query(): Promise<PODData[]> {
     return this.#api.query(this.#query);
   }
 
-  on(event: "update", callback: (result: POD[]) => void): () => void {
+  on(event: "update", callback: (result: PODData[]) => void): () => void {
     return this.#emitter.on(event, callback);
   }
 }
@@ -56,17 +58,15 @@ export class ParcnetPODWrapper {
     this.#api.on("subscription-update", (result) => {
       const emitter = this.#subscriptionEmitters.get(result.subscriptionId);
       if (emitter) {
-        emitter.emit(
-          "update",
-          result.update.map((pod) => POD.deserialize(pod))
-        );
+        emitter.emit("update", result.update);
       }
     });
   }
 
-  async query<E extends p.EntriesSchema>(query: p.PodSpec<E>): Promise<POD[]> {
-    const pods = await this.#api.pod.query(query.schema);
-    return pods.map((pod) => POD.deserialize(pod));
+  async query<E extends p.EntriesSchema>(
+    query: p.PodSpec<E>
+  ): Promise<PODData[]> {
+    return this.#api.pod.query(query.schema);
   }
 
   async subscribe<E extends p.EntriesSchema>(
@@ -79,18 +79,16 @@ export class ParcnetPODWrapper {
     return subscription;
   }
 
-  async insert(pod: POD): Promise<void> {
-    const serialized = pod.serialize();
-    return this.#api.pod.insert(serialized);
+  async insert(podData: PODData): Promise<void> {
+    return this.#api.pod.insert(podData);
   }
 
   async delete(signature: string): Promise<void> {
     return this.#api.pod.delete(signature);
   }
 
-  async sign(entries: PODEntries): Promise<POD> {
-    const pod = await this.#api.pod.sign(entries);
-    return POD.deserialize(pod);
+  async sign(entries: PODEntries): Promise<PODData> {
+    return this.#api.pod.sign(entries);
   }
 }
 

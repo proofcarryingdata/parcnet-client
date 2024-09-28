@@ -1,4 +1,5 @@
 import type {
+  PODData,
   PODQuery,
   ParcnetEvents,
   ParcnetGPCRPC,
@@ -114,24 +115,24 @@ export class ParcnetRPCConnector implements ParcnetRPC, ParcnetEvents {
     this.#dialogController = dialogController;
     this.#emitter = createNanoEvents<ParcnetEventSignatures>();
     this.pod = {
-      query: async (query: PODQuery): Promise<string[]> => {
+      query: async (query: PODQuery): Promise<PODData[]> => {
         return this.#typedInvoke(
           "pod.query",
           [query],
           ParcnetRPCSchema.pod.query
         );
       },
-      insert: async (serializedPod: string): Promise<void> => {
+      insert: async (podData: PODData): Promise<void> => {
         return this.#typedInvoke(
           "pod.insert",
-          [serializedPod],
+          [podData],
           ParcnetRPCSchema.pod.insert
         );
       },
-      delete: async (serializedPod: string): Promise<void> => {
+      delete: async (signature: string): Promise<void> => {
         return this.#typedInvoke(
           "pod.delete",
-          [serializedPod],
+          [signature],
           ParcnetRPCSchema.pod.delete
         );
       },
@@ -149,7 +150,7 @@ export class ParcnetRPCConnector implements ParcnetRPC, ParcnetEvents {
           ParcnetRPCSchema.pod.unsubscribe
         );
       },
-      sign: async (entries: PODEntries): Promise<string> => {
+      sign: async (entries: PODEntries): Promise<PODData> => {
         return this.#typedInvoke(
           "pod.sign",
           [entries],
@@ -284,13 +285,13 @@ export class ParcnetRPCConnector implements ParcnetRPC, ParcnetEvents {
   }
 
   on(
-    event: "subscription-update",
+    _event: "subscription-update",
     callback: (result: SubscriptionUpdateResult) => void
   ): () => void {
     return this.#emitter.on("subscription-update", callback);
   }
 
-  #emitSubscriptionUpdate(update: string[], subscriptionId: string): void {
+  #emitSubscriptionUpdate(update: PODData[], subscriptionId: string): void {
     this.#emitter.emit("subscription-update", { update, subscriptionId });
   }
 
