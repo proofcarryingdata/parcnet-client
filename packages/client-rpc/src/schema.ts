@@ -229,7 +229,7 @@ type InferredRPCSchema<T extends RPCSchema> = {
 };
 
 type InferredNewSchema = InferredRPCSchema<typeof ParcnetRPCSchema>;
-export const _schemaTypeCheck = {} as InferredNewSchema satisfies Omit<
+const _schemaTypeCheck = {} as InferredNewSchema satisfies Omit<
   ParcnetRPC,
   "_version"
 >;
