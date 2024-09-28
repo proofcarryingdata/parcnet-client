@@ -442,9 +442,15 @@ importers:
       '@parcnet-js/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
+      '@pcd/gpc':
+        specifier: 0.0.8
+        version: 0.0.8
       '@pcd/pod':
         specifier: 0.1.7
         version: 0.1.7
+      '@pcd/proto-pod-gpc-artifacts':
+        specifier: ^0.9.0
+        version: 0.9.0
       '@semaphore-protocol/core':
         specifier: ^4.0.3
         version: 4.0.3

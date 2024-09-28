@@ -1,0 +1,73 @@
+---
+title: Making Proofs about Ticket PODs
+description: How to use POD tickets for authentication
+---
+import { Aside } from '@astrojs/starlight/components';
+
+Zupass tickets are [PODs](https://www.pod.org), Provable Object Datatypes. This means that they're ZK-friendly, and it's easy to make proofs about them.
+
+ZK proofs in Zupass are used to reveal information about some POD-format data that the user has. This might involve directly revealing specific POD entries, such as the e-mail address associated with an event ticket. Or, it might involve revealing that an entry has a value in a given range, or with a value that matches a list of valid values. Or, it might even involve revealing that a set of related entry values match a sets of values from a list.
+
+<Aside type="note" title="What are entries?">
+PODs are collections of "entries", which are name and value pairs, where values have a type of `string` (for text), `int` (for integers), `cryptographic` (for very large integers), and `eddsa_pubkey` (for EdDSA public keys).
+
+Zero-knowledge proofs in Zupass work by proving that a POD's entries match certain criteria, without necessarily revealing _how_ they match it. For example, you could prove that a `birthdate` entry of type `int` is below a certain number, indicating that a person was born before a certain date, without revealing what the `birthdate` value is.
+</Aside>
+
+Zupass allows you to configure proofs by providing a set of criteria describing one or more PODs that the user must have. If the user has matching PODs, they can make a proof and share it with someone else - such as with your application or another user of your app. As the app developer, it's your job to design the proof configuration.
+
+Because this system is very flexible, it can also be intimidating at first. Mistakes can be subtle, and might result in a proof that doesn't really prove what you want it to. To help with this, there's a specialized library for preparing ticket proof requests, `ticket-spec`. This guide will explain how to use it.
+
+# What's in a ticket proof
+
+Ticket proofs enable the user to prove that they hold an event ticket matching certain criteria. There are three important entries that a ticket POD has, and which you probably want to verify in your proof:
+- Public key of the ticket signer or issuer
+- The unique ID of the event
+- Optionally, the unique ID of the product type, if the event has multiple types of tickets
+
+"Product type" might apply for events which have Speaker and General tickets, or which have Month-long, Week-long, or Day passes, or other similar 
+
+For example, if you want the user to prove that they have a ticket to Devcon 7, then you want them to prove the following:
+
+- That their ticket POD was signed by the Devcon ticket issuance key
+- That their ticket has the event identifier for Devcon
+- That their ticket is of the appropriate type, if you want to offer a different experience to holders of different ticket types
+
+## How to specify ticket details
+
+To match a ticket based on the above criteria, you must specify _either_ pairs of public key and event ID, or triples of public key, event ID, and product ID. For example:
+
+```ts wrap=true title="src/main.ts"
+const pair = {
+  publicKey: "2C4B7JzSakdQaRlnJPPlbksW9F04vYc5QFLy//nuIho",
+  eventId: "ab9306be-019f-40d9-990d-88826a15fde5"
+};
+const triple = {
+  publicKey: "2C4B7JzSakdQaRlnJPPlbksW9F04vYc5QFLy//nuIho",
+  eventId: "ab9306be-019f-40d9-990d-88826a15fde5",
+  productId: "672c6ff1-9947-41d4-8876-4ef1e3317f08" 
+};
+```
+
+The first example, containing only a public key and event ID, will match any ticket which has those attributes. The second is more precise, requiring that the ticket have a specific product type.
+
+It's possible to specify _multiple_ pairs or triples. For example:
+```ts wrap=true title="src/main.ts"
+const pairs = [
+  {
+    publicKey: "2C4B7JzSakdQaRlnJPPlbksW9F04vYc5QFLy//nuIho",
+    eventId: "ab9306be-019f-40d9-990d-88826a15fde5"
+  },
+  {
+    publicKey: "2C4B7JzSakdQaRlnJPPlbksW9F04vYc5QFLy//nuIho",
+    eventId: "5ddb8781-b893-4187-9044-9ac229368aac"
+  }
+]
+```
+
+In this case, the proof request will match any ticket which matches _either_ of the above pairs. If you provide more, then the ticket just needs to match any of the provided pairs.
+
+This underlines an important principle: when the proof is created, you might not know _which_ pair of values the user's ticket matches. This is by design, and is part of how ZK proofs provide privacy. If you only need to know that the user has a ticket matching a list of values, but don't need to know exactly which ticket the user has, then by default that information will not 
+
+## What gets revealed in a ticket proof
+

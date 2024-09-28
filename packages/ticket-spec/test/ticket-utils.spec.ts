@@ -4,7 +4,7 @@ import { Identity as IdentityV3 } from "@semaphore-protocol/identity";
 import { v4 as uuidv4 } from "uuid";
 import { describe, expect, it } from "vitest";
 import { assert } from "vitest";
-import { TicketSpec } from "../src/index.js";
+import { TicketSpec, ticketProofRequest } from "../src/index.js";
 
 const identityV3 = new IdentityV3();
 const identityV4 = new IdentityV4();
@@ -51,5 +51,14 @@ describe("ticket-utils", () => {
       "attendeeName",
       "attendeeEmail"
     ]);
+  });
+
+  it("should create a ticket proof", () => {
+    const request = ticketProofRequest({
+      classificationTuples: [],
+      fieldsToReveal: {},
+      externalNullifier: { type: "string", value: "1" },
+      watermark: { type: "string", value: "1" }
+    });
   });
 });
