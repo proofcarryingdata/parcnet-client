@@ -9,7 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@parcnet-js/app-connector": "workspace:*"
+    "@parcnet-js/app-connector": "workspace:*",
+    "@parcnet-js/podspec": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.5.3",

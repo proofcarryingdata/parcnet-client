@@ -172,6 +172,9 @@ importers:
       '@parcnet-js/app-connector':
         specifier: workspace:*
         version: link:../../packages/app-connector
+      '@parcnet-js/podspec':
+        specifier: workspace:*
+        version: link:../../packages/podspec
     devDependencies:
       typescript:
         specifier: ^5.5.3
