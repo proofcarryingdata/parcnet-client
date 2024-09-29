@@ -1,6 +1,5 @@
 import type { ParcnetAPI, Zapp } from "@parcnet-js/app-connector";
-import { connect, connectToHost } from "@parcnet-js/app-connector";
-import { isHosted } from "@parcnet-js/app-connector/src/adapters/hosted";
+import { connect, connectToHost, isHosted } from "@parcnet-js/app-connector";
 import type { ReactNode } from "react";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 
