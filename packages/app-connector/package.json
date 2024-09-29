@@ -6,6 +6,15 @@
   "main": "dist/index.cjs",
   "module": "dist/index.js",
   "types": "src/index.ts",
+  "exports": {
+    ".": {
+      "import": { "types": "./src/index.ts", "import": "./dist/index.js" },
+      "require": {
+        "types": "./src/index.ts",
+        "require": "./dist/index.cjs"
+      }
+    }
+  },
   "scripts": {
     "lint": "eslint . --max-warnings 0",
     "build": "tsup 'src/**/*@(ts|tsx)' --format cjs,esm --clean --sourcemap",
@@ -33,6 +42,16 @@
   },
   "publishConfig": {
     "access": "public",
-    "types": "dist/index.d.ts"
-  }
+    "types": "dist/index.d.ts",
+    "exports": {
+      ".": {
+        "import": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
+        "require": {
+          "types": "./dist/index.d.cts",
+          "require": "./dist/index.cjs"
+        }
+      }
+    }
+  },
+  "sideEffects": false
 }
