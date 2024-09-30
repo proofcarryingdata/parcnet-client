@@ -181,7 +181,6 @@ function makeProofRequest<P extends NamedPODs>(
           entrySchema.isNotMemberOf;
       }
     }
-    pods[podName] = podConfig;
 
     for (const entriesTupleSchema of podSchema.tuples ?? []) {
       const tupleName = `tuple_${podName}_entries_${entriesTupleSchema.entries.join(
@@ -206,7 +205,22 @@ function makeProofRequest<P extends NamedPODs>(
         membershipLists[`blocklist_${tupleName}`] =
           entriesTupleSchema.isNotMemberOf;
       }
+      // Tuples may contain entries which are not revealed or subject to any
+      // membership rules or constraints, in which case we need to add them to
+      // the proof config so that they are included.
+      for (const entry of entriesTupleSchema.entries) {
+        if (entry === "$signerPublicKey") {
+          continue;
+        }
+        if (!(entry in podConfig.entries)) {
+          podConfig.entries[entry] = {
+            isRevealed: false
+          };
+        }
+      }
     }
+
+    pods[podName] = podConfig;
   }
 
   return {
