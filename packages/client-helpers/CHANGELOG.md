@@ -1,5 +1,11 @@
 # @parcnet-js/client-helpers
 
+## 0.0.7
+
+### Patch Changes
+
+- @parcnet-js/client-rpc@0.0.5
+
 ## 0.0.6
 
 ### Patch Changes

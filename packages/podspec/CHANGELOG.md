@@ -1,5 +1,11 @@
 # @parcnet-js/podspec
 
+## 0.0.4
+
+### Patch Changes
+
+- 0cc537e: Add entries to config if included in tuples
+
 ## 0.0.3
 
 ### Patch Changes
