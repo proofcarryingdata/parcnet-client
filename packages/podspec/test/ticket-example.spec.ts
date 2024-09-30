@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import { assert, describe, expect, it } from "vitest";
 import * as p from "../src/index.js";
 import { $s } from "../src/pod_value_utils.js";
+import { podToPODData } from "../src/utils.js";
 import { GPC_NPM_ARTIFACTS_PATH } from "./podspec.spec.js";
 import { generateKeyPair } from "./utils.js";
 
@@ -76,7 +77,7 @@ describe.concurrent("podspec ticket example", function () {
 
     const podSpec = p.pod({ entries: TicketEntries.schema });
 
-    const result = podSpec.safeParse(pod);
+    const result = podSpec.safeParse(podToPODData(pod));
     expect(result.isValid).toBe(true);
     assert(result.isValid);
   });
@@ -159,7 +160,7 @@ describe.concurrent("podspec ticket example", function () {
       residentPod,
       differentEventPod,
       otherPod
-    ];
+    ].map(podToPODData);
 
     // Create a podspec which matches all tickets
     const allTicketsPodSpec = p.pod({ entries: TicketEntries.schema });
