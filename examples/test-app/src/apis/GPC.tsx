@@ -270,7 +270,11 @@ const request = ticketProofRequest({
     }
   ],
   fieldsToReveal: {
-    eventId: true
+    attendeeEmail: true
+  },
+  externalNullifier: {
+    type: "string",
+    value: "APP_SPECIFIC_NULLIFIER"
   }
 });
 
@@ -290,7 +294,11 @@ const gpcProof = await z.gpc.prove(request);
                     }
                   ],
                   fieldsToReveal: {
-                    eventId: true
+                    attendeeEmail: true
+                  },
+                  externalNullifier: {
+                    type: "string",
+                    value: "APP_SPECIFIC_NULLIFIER"
                   }
                 });
                 setProveResult(await z.gpc.prove(request.schema));

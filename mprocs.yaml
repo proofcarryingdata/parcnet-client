@@ -9,6 +9,10 @@ procs:
     cwd: "examples/test-app"
     shell: "pnpm dev"
     autostart: false
+  docs:
+    cwd: "apps/docs"
+    shell: pnpm dev
+    autostart: false
 keymap_procs: # keymap when process list is focused
   <1>: { c: select-proc, index: 0 }
   <2>: { c: select-proc, index: 1 }
