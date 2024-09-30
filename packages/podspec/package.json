@@ -8,7 +8,10 @@
   "types": "src/index.ts",
   "exports": {
     ".": {
-      "import": { "types": "./src/index.ts", "import": "./dist/index.js" },
+      "import": {
+        "types": "./src/index.ts",
+        "import": "./dist/index.js"
+      },
       "require": {
         "types": "./src/index.ts",
         "require": "./dist/index.cjs"
@@ -53,7 +56,10 @@
     "types": "dist/index.d.ts",
     "exports": {
       ".": {
-        "import": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
+        "import": {
+          "types": "./dist/index.d.ts",
+          "import": "./dist/index.js"
+        },
         "require": {
           "types": "./dist/index.d.cts",
           "require": "./dist/index.cjs"
