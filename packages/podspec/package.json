@@ -26,6 +26,16 @@
         "types": "./src/pod_value_utils.ts",
         "require": "./dist/pod_value_utils.cjs"
       }
+    },
+    "./data": {
+      "import": {
+        "types": "./src/data.ts",
+        "import": "./dist/data.js"
+      },
+      "require": {
+        "types": "./src/data.ts",
+        "require": "./dist/data.cjs"
+      }
     }
   },
   "scripts": {
@@ -73,6 +83,16 @@
         "require": {
           "types": "./dist/pod_value_utils.d.cts",
           "require": "./dist/pod_value_utils.cjs"
+        }
+      },
+      "./data": {
+        "import": {
+          "types": "./dist/data.d.ts",
+          "import": "./dist/data.js"
+        },
+        "require": {
+          "types": "./dist/data.d.cts",
+          "require": "./dist/data.cjs"
         }
       }
     }

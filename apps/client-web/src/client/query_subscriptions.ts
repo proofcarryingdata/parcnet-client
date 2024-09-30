@@ -1,9 +1,9 @@
 import type { PODData, SubscriptionUpdateResult } from "@parcnet-js/client-rpc";
 import * as p from "@parcnet-js/podspec";
 import type { EntriesSchema, PODSchema, PodSpec } from "@parcnet-js/podspec";
+import { podToPODData } from "@parcnet-js/podspec/data";
 import { EventEmitter } from "eventemitter3";
 import type { PODCollection } from "./pod_collection.js";
-import { podToPODData } from "./utils.js";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface Subscription<E extends EntriesSchema = any> {

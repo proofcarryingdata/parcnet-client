@@ -1,4 +1,3 @@
-import type { PODData } from "@parcnet-js/client-rpc";
 import { POD } from "@pcd/pod";
 import { Identity } from "@semaphore-protocol/core";
 
@@ -36,12 +35,4 @@ export function getIdentity(): Identity {
   }
 
   return identity;
-}
-
-export function podToPODData(pod: POD): PODData {
-  return {
-    entries: pod.content.asEntries(),
-    signature: pod.signature,
-    signerPublicKey: pod.signerPublicKey
-  };
 }

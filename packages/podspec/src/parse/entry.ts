@@ -1,5 +1,5 @@
-import { checkBigintBounds } from "@pcd/pod";
 import type { PODCryptographicValue, PODIntValue } from "@pcd/pod";
+import { checkBigintBounds } from "@pcd/pod";
 import type { PodspecBaseIssue, PodspecNotInRangeIssue } from "../error.js";
 import { IssueCode } from "../error.js";
 import type { DefinedEntrySchema } from "../schemas/entry.js";

@@ -3,9 +3,9 @@ import { POD } from "@pcd/pod";
 import { Identity } from "@semaphore-protocol/identity";
 import { v4 as uuidv4 } from "uuid";
 import { assert, describe, expect, it } from "vitest";
+import { podToPODData } from "../src/data.js";
 import * as p from "../src/index.js";
 import { $s } from "../src/pod_value_utils.js";
-import { podToPODData } from "../src/utils.js";
 import { GPC_NPM_ARTIFACTS_PATH } from "./podspec.spec.js";
 import { generateKeyPair } from "./utils.js";
 
