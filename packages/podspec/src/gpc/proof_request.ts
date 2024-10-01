@@ -161,12 +161,12 @@ function makeProofRequest<P extends NamedPODs>(
 
       const entryConfig: GPCProofEntryConfig = {
         isRevealed,
-        isMemberOf: isMemberOf
-          ? `allowlist_${podName}_${entryName}`
-          : undefined,
-        isNotMemberOf: isNotMemberOf
-          ? `blocklist_${podName}_${entryName}`
-          : undefined,
+        ...(isMemberOf
+          ? { isMemberOf: `allowlist_${podName}_${entryName}` }
+          : {}),
+        ...(isNotMemberOf
+          ? { isNotMemberOf: `blocklist_${podName}_${entryName}` }
+          : {}),
         ...(inRange ? { inRange: entrySchema.inRange } : {}),
         ...(isOwnerID ? { isOwnerID: owner.protocol } : {})
       };

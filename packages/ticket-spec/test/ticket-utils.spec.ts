@@ -60,5 +60,25 @@ describe("ticket-utils", () => {
       externalNullifier: { type: "string", value: "1" },
       watermark: { type: "string", value: "1" }
     });
+
+    const proofRequest = request.getProofRequest();
+    expect(proofRequest.externalNullifier).toEqual({
+      type: "string",
+      value: "1"
+    });
+    expect(proofRequest.watermark).toEqual({
+      type: "string",
+      value: "1"
+    });
+    expect(Object.keys(proofRequest.membershipLists)).toHaveLength(0);
+    expect(proofRequest.proofConfig.pods.ticket).toBeDefined();
+    // The owner entry is present because we specified an external nullifier
+    expect(
+      Object.keys(proofRequest.proofConfig.pods.ticket?.entries ?? {})
+    ).toHaveLength(1);
+    expect(proofRequest.proofConfig.pods.ticket?.entries?.owner).toEqual({
+      isOwnerID: "SemaphoreV4",
+      isRevealed: false
+    });
   });
 });
