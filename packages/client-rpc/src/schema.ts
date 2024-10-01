@@ -3,7 +3,7 @@ import type { Groth16Proof } from "snarkjs";
 import * as v from "valibot";
 import type { ParcnetRPC } from "./rpc_interfaces.js";
 
-const PODValueSchema = v.union([
+const PODValueSchema = v.variant("type", [
   v.object({
     type: v.literal("string"),
     value: v.string()
@@ -24,7 +24,7 @@ const PODValueSchema = v.union([
 
 const PODEntriesSchema = v.record(v.string(), PODValueSchema);
 
-const DefinedEntrySchema = v.union([
+const DefinedEntrySchema = v.variant("type", [
   v.object({
     type: v.literal("string"),
     isMemberOf: v.optional(v.array(PODValueSchema)),
@@ -66,7 +66,10 @@ const OptionalEntrySchema = v.object({
   innerType: DefinedEntrySchema
 });
 
-const EntrySchema = v.union([DefinedEntrySchema, OptionalEntrySchema]);
+const EntrySchema = v.variant("type", [
+  DefinedEntrySchema,
+  OptionalEntrySchema
+]);
 
 const PODTupleSchema = v.object({
   entries: v.array(v.string()),
@@ -113,7 +116,7 @@ const PodspecProofRequestSchema = v.object({
   watermark: v.optional(PODValueSchema)
 });
 
-const ProveResultSchema = v.union([
+const ProveResultSchema = v.variant("success", [
   v.object({
     success: v.literal(true),
     // TODO: More specific schemas for these

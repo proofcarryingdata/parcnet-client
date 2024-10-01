@@ -36,7 +36,7 @@ export type ParcnetRPCMethodName =
   | `pod.${keyof typeof ParcnetRPCSchema.pod}`
   | `identity.${keyof typeof ParcnetRPCSchema.identity}`;
 
-export const RPCMessageSchema = v.union([
+export const RPCMessageSchema = v.variant("type", [
   v.object({
     type: v.literal(RPCMessageType.PARCNET_CLIENT_INVOKE),
     serial: v.number(),
@@ -70,7 +70,7 @@ export const RPCMessageSchema = v.union([
   })
 ]);
 
-export const InitializationMessageSchema = v.union([
+export const InitializationMessageSchema = v.variant("type", [
   v.object({
     type: v.literal(InitializationMessageType.PARCNET_CLIENT_CONNECT),
     zapp: ZappSchema
