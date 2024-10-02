@@ -5,6 +5,7 @@ import type {
 } from "@parcnet-js/client-rpc";
 import { RPCMessageSchema, RPCMessageType } from "@parcnet-js/client-rpc";
 import * as p from "@parcnet-js/podspec";
+import { podToPODData } from "@parcnet-js/podspec";
 import { POD } from "@pcd/pod";
 import * as v from "valibot";
 import { assert, describe, expect, it } from "vitest";
@@ -104,7 +105,6 @@ describe("parcnet-client should work", function () {
       },
       generateRandomHex(32)
     );
-    const serializedPod = pod.serialize();
 
     const query = p.pod({
       entries: {
@@ -136,13 +136,13 @@ describe("parcnet-client should work", function () {
       type: RPCMessageType.PARCNET_CLIENT_SUBSCRIPTION_UPDATE,
       subscriptionSerial: 1,
       subscriptionId: "test",
-      update: [serializedPod]
+      update: [podToPODData(pod)]
     } satisfies RPCMessage);
 
     // Wait for the subscription update to be received
     await expect(waitForUpdatePromise).resolves.toMatchObject({
       subscriptionId: "test",
-      update: [serializedPod]
+      update: [podToPODData(pod)]
     });
   });
 });

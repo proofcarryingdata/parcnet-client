@@ -1,4 +1,5 @@
 import type {
+  PODData,
   PODQuery,
   ParcnetEvents,
   ParcnetGPCRPC,
@@ -117,30 +118,27 @@ export class ParcnetRPCConnector implements ParcnetRPC, ParcnetEvents {
       query: async (
         collectionId: string,
         query: PODQuery
-      ): Promise<string[]> => {
+      ): Promise<PODData[]> => {
         return this.#typedInvoke(
           "pod.query",
           [collectionId, query],
           ParcnetRPCSchema.pod.query
         );
       },
-      insert: async (
-        collectionId: string,
-        serializedPod: string
-      ): Promise<void> => {
+      insert: async (collectionId: string, podData: PODData): Promise<void> => {
         return this.#typedInvoke(
           "pod.insert",
-          [collectionId, serializedPod],
+          [collectionId, podData],
           ParcnetRPCSchema.pod.insert
         );
       },
       delete: async (
         collectionId: string,
-        serializedPod: string
+        signature: string
       ): Promise<void> => {
         return this.#typedInvoke(
           "pod.delete",
-          [collectionId, serializedPod],
+          [collectionId, signature],
           ParcnetRPCSchema.pod.delete
         );
       },
@@ -161,7 +159,7 @@ export class ParcnetRPCConnector implements ParcnetRPC, ParcnetEvents {
           ParcnetRPCSchema.pod.unsubscribe
         );
       },
-      sign: async (entries: PODEntries): Promise<string> => {
+      sign: async (entries: PODEntries): Promise<PODData> => {
         return this.#typedInvoke(
           "pod.sign",
           [entries],
@@ -325,7 +323,7 @@ export class ParcnetRPCConnector implements ParcnetRPC, ParcnetEvents {
     return this.#emitter.on("subscription-update", callback);
   }
 
-  #emitSubscriptionUpdate(update: string[], subscriptionId: string): void {
+  #emitSubscriptionUpdate(update: PODData[], subscriptionId: string): void {
     this.#emitter.emit("subscription-update", { update, subscriptionId });
   }
 

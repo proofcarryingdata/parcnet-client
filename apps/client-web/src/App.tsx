@@ -384,6 +384,7 @@ function Authorize({
 
 function ApprovePermissions({
   zapp,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   dispatch
 }: {
   zapp: Zapp;
