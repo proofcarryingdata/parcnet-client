@@ -8,7 +8,7 @@ import { POD_INT_MAX, POD_INT_MIN } from "@pcd/pod";
 import type { Dispatch, ReactNode } from "react";
 import { Fragment, useEffect, useState } from "react";
 import { ParcnetClientProcessor } from "./client/client";
-import { getIdentity, savePODsToStorage } from "./client/utils";
+import { getIdentity } from "./client/utils";
 import { Layout } from "./components/Layout";
 import type { ClientAction, ClientState } from "./state";
 import { useAppState } from "./state";
@@ -17,38 +17,40 @@ function App() {
   const { state, dispatch } = useAppState();
 
   useEffect(() => {
-    state.pods.onUpdate(() => {
-      savePODsToStorage(state.pods.getAll());
-    });
-  }, [state.pods]);
-
-  useEffect(() => {
     void (async () => {
-      const { zapp, advice } = await listen();
-      dispatch({ type: "set-zapp", zapp });
+      const { zapp, advice, origin } = await listen();
+      dispatch({ type: "set-zapp", zapp, origin });
       dispatch({ type: "set-advice", advice });
     })();
   }, [dispatch]);
 
   useEffect(() => {
-    if (state.advice && !state.loggedIn) {
+    if (state.advice && !state.loggedIn && !state.authorized) {
       state.advice.showClient();
     }
-  }, [state.advice, state.loggedIn]);
+  }, [state.advice, state.loggedIn, state.authorized]);
 
   useEffect(() => {
-    if (state.advice && state.authorized) {
+    if (state.advice && state.authorized && state.zapp) {
       state.advice.hideClient();
       state.advice.ready(
         new ParcnetClientProcessor(
           state.advice,
           state.pods,
           dispatch,
-          state.identity
+          state.identity,
+          state.zapp
         )
       );
     }
-  }, [state.advice, state.authorized, state.pods, state.identity, dispatch]);
+  }, [
+    state.advice,
+    state.authorized,
+    state.pods,
+    state.identity,
+    dispatch,
+    state.zapp
+  ]);
 
   return (
     <Layout>
@@ -365,7 +367,7 @@ function Authorize({
               Permissions
             </th>
             <td className="border-2 border-white w-full px-2 py-1">
-              {zapp.permissions?.join(", ") ?? "-"}
+              {Object.keys(zapp.permissions ?? {}).join(", ") ?? "-"}
             </td>
           </tr>
         </tbody>

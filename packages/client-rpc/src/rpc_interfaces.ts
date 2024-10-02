@@ -35,8 +35,20 @@ export type ProveResult =
     };
 
 export interface ParcnetGPCRPC {
-  prove: (request: PodspecProofRequest) => Promise<ProveResult>;
-  canProve: (request: PodspecProofRequest) => Promise<boolean>;
+  prove: ({
+    request,
+    collectionIds
+  }: {
+    request: PodspecProofRequest;
+    collectionIds?: string[];
+  }) => Promise<ProveResult>;
+  canProve: ({
+    request,
+    collectionIds
+  }: {
+    request: PodspecProofRequest;
+    collectionIds?: string[];
+  }) => Promise<boolean>;
   verify: (
     proof: GPCProof,
     boundConfig: GPCBoundConfig,
@@ -58,10 +70,10 @@ export interface ParcnetIdentityRPC {
 
 export interface ParcnetPODRPC {
   // Returns array of serialized PODs
-  query: (query: PODQuery) => Promise<string[]>;
-  insert: (serializedPod: string) => Promise<void>;
-  delete: (signature: string) => Promise<void>;
-  subscribe: (query: PODQuery) => Promise<string>;
+  query: (collectionId: string, query: PODQuery) => Promise<string[]>;
+  insert: (collectionId: string, serializedPod: string) => Promise<void>;
+  delete: (collectionId: string, signature: string) => Promise<void>;
+  subscribe: (collectionId: string, query: PODQuery) => Promise<string>;
   unsubscribe: (subscriptionId: string) => Promise<void>;
   // Returns serialized POD
   sign: (entries: PODEntries) => Promise<string>;
