@@ -1,5 +1,13 @@
 # @parcnet-js/ticket-utils
 
+## 0.0.4-next.0
+
+### Patch Changes
+
+- Updated dependencies
+  - @parcnet-js/client-rpc@0.0.6-next.0
+  - @parcnet-js/podspec@0.0.5-next.0
+
 ## 0.0.3
 
 ### Patch Changes

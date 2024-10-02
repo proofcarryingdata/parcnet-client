@@ -1,5 +1,11 @@
 # @parcnet-js/podspec
 
+## 0.0.5-next.0
+
+### Patch Changes
+
+- Support collection-based permissions and PODData type
+
 ## 0.0.4
 
 ### Patch Changes
