@@ -130,6 +130,13 @@ const ProveResultSchema = v.variant("success", [
   })
 ]);
 
+const CollectionIdSchema = v.string();
+
+const ProveArgsSchema = v.object({
+  request: PodspecProofRequestSchema,
+  collectionIds: v.optional(v.array(CollectionIdSchema))
+});
+
 export type RPCFunction<
   I extends v.TupleSchema<
     v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>[],
@@ -161,15 +168,11 @@ type RPCSchema = Record<string, Record<string, RPCFunction>>;
 export const ParcnetRPCSchema = {
   gpc: {
     prove: {
-      input: v.tuple([PodspecProofRequestSchema] as [
-        proofRequest: typeof PodspecProofRequestSchema
-      ]),
+      input: v.tuple([ProveArgsSchema]),
       output: ProveResultSchema
     },
     canProve: {
-      input: v.tuple([PodspecProofRequestSchema] as [
-        proofRequest: typeof PodspecProofRequestSchema
-      ]),
+      input: v.tuple([ProveArgsSchema]),
       output: v.boolean()
     },
     verify: {
@@ -193,21 +196,31 @@ export const ParcnetRPCSchema = {
   },
   pod: {
     query: {
-      input: v.tuple([PODSchemaSchema] as [query: typeof PODSchemaSchema]),
+      input: v.tuple([v.string(), PODSchemaSchema] as [
+        collectionId: ReturnType<typeof v.string>,
+        query: typeof PODSchemaSchema
+      ]),
       output: v.array(v.string())
     },
     insert: {
-      input: v.tuple([v.string()] as [
+      input: v.tuple([v.string(), v.string()] as [
+        collectionId: ReturnType<typeof v.string>,
         serializedPOD: ReturnType<typeof v.string>
       ]),
       output: v.void()
     },
     delete: {
-      input: v.tuple([v.string()] as [signature: ReturnType<typeof v.string>]),
+      input: v.tuple([v.string(), v.string()] as [
+        collectionId: ReturnType<typeof v.string>,
+        signature: ReturnType<typeof v.string>
+      ]),
       output: v.void()
     },
     subscribe: {
-      input: v.tuple([PODSchemaSchema] as [query: typeof PODSchemaSchema]),
+      input: v.tuple([v.string(), PODSchemaSchema] as [
+        collectionId: ReturnType<typeof v.string>,
+        query: typeof PODSchemaSchema
+      ]),
       output: v.string()
     },
     unsubscribe: {

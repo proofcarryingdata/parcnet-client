@@ -7,7 +7,7 @@ export interface PODCollectionUpdate {
   affectedPOD: POD;
 }
 
-interface PODCollectionEvents {
+export interface PODCollectionEvents {
   update: [update: PODCollectionUpdate];
 }
 
