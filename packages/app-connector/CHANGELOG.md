@@ -1,5 +1,14 @@
 # @parcnet-js/app-connector
 
+## 0.0.10-alpha.0
+
+### Patch Changes
+
+- Support collection-based permissions and PODData type
+- Updated dependencies
+  - @parcnet-js/client-rpc@0.0.7-alpha.0
+  - @parcnet-js/podspec@0.0.6-alpha.0
+
 ## 0.0.9
 
 ### Patch Changes

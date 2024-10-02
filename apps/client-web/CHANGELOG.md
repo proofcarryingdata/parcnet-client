@@ -1,5 +1,14 @@
 # client-web
 
+## 0.0.9-alpha.0
+
+### Patch Changes
+
+- Updated dependencies
+  - @parcnet-js/client-rpc@0.0.7-alpha.0
+  - @parcnet-js/podspec@0.0.6-alpha.0
+  - @parcnet-js/client-helpers@0.0.9-alpha.0
+
 ## 0.0.8
 
 ### Patch Changes

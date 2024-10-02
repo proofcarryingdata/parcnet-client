@@ -1,5 +1,13 @@
 # @parcnet-js/client-rpc
 
+## 0.0.6-next.0
+
+### Patch Changes
+
+- Support collection-based permissions and PODData type
+- Updated dependencies
+  - @parcnet-js/podspec@0.0.6-alpha.0
+
 ## 0.0.6
 
 ### Patch Changes

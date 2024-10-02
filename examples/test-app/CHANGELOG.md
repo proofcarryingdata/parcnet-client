@@ -1,14 +1,25 @@
 # test-app
 
+<<<<<<< HEAD
 ## 1.0.10
+=======
+## 1.0.10-next.0
+>>>>>>> 260a079 (Bump package versions)
 
 ### Patch Changes
 
 - Updated dependencies
+<<<<<<< HEAD
   - @parcnet-js/app-connector@0.0.9
   - @parcnet-js/ticket-spec@0.0.4
   - @parcnet-js/client-rpc@0.0.6
   - @parcnet-js/podspec@0.0.5
+=======
+  - @parcnet-js/app-connector@0.0.9-next.0
+  - @parcnet-js/client-rpc@0.0.6-next.0
+  - @parcnet-js/podspec@0.0.5-next.0
+  - @parcnet-js/ticket-spec@0.0.4-next.0
+>>>>>>> 260a079 (Bump package versions)
 
 ## 1.0.9
 

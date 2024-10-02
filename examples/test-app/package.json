@@ -1,6 +1,10 @@
 {
   "name": "test-app",
+<<<<<<< HEAD
   "version": "1.0.10",
+=======
+  "version": "1.0.10-next.0",
+>>>>>>> 260a079 (Bump package versions)
   "private": true,
   "type": "module",
   "scripts": {
