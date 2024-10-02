@@ -114,31 +114,43 @@ export class ParcnetRPCConnector implements ParcnetRPC, ParcnetEvents {
     this.#dialogController = dialogController;
     this.#emitter = createNanoEvents<ParcnetEventSignatures>();
     this.pod = {
-      query: async (query: PODQuery): Promise<string[]> => {
+      query: async (
+        collectionId: string,
+        query: PODQuery
+      ): Promise<string[]> => {
         return this.#typedInvoke(
           "pod.query",
-          [query],
+          [collectionId, query],
           ParcnetRPCSchema.pod.query
         );
       },
-      insert: async (serializedPod: string): Promise<void> => {
+      insert: async (
+        collectionId: string,
+        serializedPod: string
+      ): Promise<void> => {
         return this.#typedInvoke(
           "pod.insert",
-          [serializedPod],
+          [collectionId, serializedPod],
           ParcnetRPCSchema.pod.insert
         );
       },
-      delete: async (serializedPod: string): Promise<void> => {
+      delete: async (
+        collectionId: string,
+        serializedPod: string
+      ): Promise<void> => {
         return this.#typedInvoke(
           "pod.delete",
-          [serializedPod],
+          [collectionId, serializedPod],
           ParcnetRPCSchema.pod.delete
         );
       },
-      subscribe: async (query: PODQuery): Promise<string> => {
+      subscribe: async (
+        collectionId: string,
+        query: PODQuery
+      ): Promise<string> => {
         return this.#typedInvoke(
           "pod.subscribe",
-          [query],
+          [collectionId, query],
           ParcnetRPCSchema.pod.subscribe
         );
       },
@@ -158,17 +170,29 @@ export class ParcnetRPCConnector implements ParcnetRPC, ParcnetEvents {
       }
     };
     this.gpc = {
-      prove: async (request: PodspecProofRequest): Promise<ProveResult> => {
+      prove: async ({
+        request,
+        collectionIds
+      }: {
+        request: PodspecProofRequest;
+        collectionIds?: string[];
+      }): Promise<ProveResult> => {
         return this.#typedInvoke(
           "gpc.prove",
-          [request],
+          [{ collectionIds, request }],
           ParcnetRPCSchema.gpc.prove
         );
       },
-      canProve: async (request: PodspecProofRequest): Promise<boolean> => {
+      canProve: async ({
+        request,
+        collectionIds
+      }: {
+        request: PodspecProofRequest;
+        collectionIds?: string[];
+      }): Promise<boolean> => {
         return this.#typedInvoke(
           "gpc.canProve",
-          [request],
+          [{ collectionIds, request }],
           ParcnetRPCSchema.gpc.canProve
         );
       },

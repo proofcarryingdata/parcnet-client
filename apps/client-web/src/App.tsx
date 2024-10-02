@@ -367,7 +367,7 @@ function Authorize({
               Permissions
             </th>
             <td className="border-2 border-white w-full px-2 py-1">
-              {Object.keys(zapp.permissions ?? {}).join(", ") ?? "-"}
+              <ApprovePermissions zapp={zapp} dispatch={dispatch} />
             </td>
           </tr>
         </tbody>
@@ -379,6 +379,63 @@ function Authorize({
         Authorize
       </button>
     </div>
+  );
+}
+
+function ApprovePermissions({
+  zapp,
+  dispatch
+}: {
+  zapp: Zapp;
+  dispatch: Dispatch<ClientAction>;
+}): ReactNode {
+  return (
+    <ul className="list-disc pl-4">
+      {zapp.permissions.READ_PUBLIC_IDENTIFIERS && (
+        <li>Read public identifiers</li>
+      )}
+      {zapp.permissions.SIGN_POD && <li>Sign POD</li>}
+      {zapp.permissions.REQUEST_PROOF && (
+        <li>
+          Request proof for collections:{" "}
+          <strong className="uppercase text-green-300">
+            {zapp.permissions.REQUEST_PROOF.collections.join(", ")}
+          </strong>
+        </li>
+      )}
+      {zapp.permissions.READ_POD && (
+        <li>
+          Read POD from collections:{" "}
+          <strong className="uppercase text-green-300">
+            {zapp.permissions.READ_POD.collections.join(", ")}
+          </strong>
+        </li>
+      )}
+      {zapp.permissions.INSERT_POD && (
+        <li>
+          Insert POD into collections:{" "}
+          <strong className="uppercase text-green-300">
+            {zapp.permissions.INSERT_POD.collections.join(", ")}
+          </strong>
+        </li>
+      )}
+      {zapp.permissions.DELETE_POD && (
+        <li>
+          Delete POD from collections:{" "}
+          <strong className="uppercase text-green-300">
+            {zapp.permissions.DELETE_POD.collections.join(", ")}
+          </strong>
+        </li>
+      )}
+      {zapp.permissions.SUGGEST_PODS && (
+        <li>
+          Suggest PODs for collections:{" "}
+          <strong className="uppercase text-green-300">
+            {zapp.permissions.SUGGEST_PODS.collections.join(", ")}
+          </strong>
+        </li>
+      )}
+    </ul>
   );
 }
 

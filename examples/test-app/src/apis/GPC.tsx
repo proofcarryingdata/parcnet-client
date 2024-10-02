@@ -133,7 +133,7 @@ const gpcProof = await z.gpc.prove(request);
           <TryIt
             onClick={async () => {
               try {
-                setProveResult(await z.gpc.prove(request));
+                setProveResult(await z.gpc.prove({ request }));
               } catch (e) {
                 console.log(e);
               }
@@ -242,7 +242,7 @@ await z.pod.insert(pod);
               });
 
               const pod = await z.pod.sign(entries);
-              await z.pod.insert(pod);
+              await z.pod.collection("Tickets").insert(pod);
               setTicket(pod);
             }}
             label="Generate Ticket"
@@ -301,7 +301,7 @@ const gpcProof = await z.gpc.prove(request);
                     value: "APP_SPECIFIC_NULLIFIER"
                   }
                 });
-                setProveResult(await z.gpc.prove(request.schema));
+                setProveResult(await z.gpc.prove({ request: request.schema }));
               } catch (e) {
                 console.log(e);
               }

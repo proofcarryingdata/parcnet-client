@@ -71,7 +71,7 @@ const pods = await z.pod.query(q);
                 }
               }
             });
-            const pods = await z.pod.query(q);
+            const pods = await z.pod.collection("Frogs").query(q);
             setPODs(pods);
           } catch (e) {
             console.log(e);
@@ -380,7 +380,7 @@ function InsertPOD({ z, pod }: { z: ParcnetAPI; pod: POD | null }): ReactNode {
       <TryIt
         onClick={async () => {
           try {
-            await z.pod.insert(pod);
+            await z.pod.collection("Frogs").insert(pod);
             setInsertionState(PODCreationState.Success);
           } catch (_e) {
             setInsertionState(PODCreationState.Failure);
@@ -440,7 +440,7 @@ function DeletePOD({ z }: { z: ParcnetAPI }): ReactNode {
       <TryIt
         onClick={async () => {
           try {
-            await z.pod.delete(signature);
+            await z.pod.collection("Frogs").delete(signature);
             setDeletionState(PODDeletionState.Success);
           } catch (_e) {
             setDeletionState(PODDeletionState.Failure);
@@ -505,7 +505,7 @@ const sub = await z.pod.subscribe(q);
                 }
               }
             });
-            const sub = await z.pod.subscribe(q);
+            const sub = await z.pod.collection("Frogs").subscribe(q);
             setSubscription(sub);
             sub.on("update", (update) => {
               setPODs(update);
