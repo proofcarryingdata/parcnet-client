@@ -112,7 +112,10 @@ describe("parcnet-client should work", function () {
       }
     });
 
-    const subscriptionPromise = client.pod.subscribe(query.schema);
+    const subscriptionPromise = client.pod.subscribe(
+      "collection",
+      query.schema
+    );
 
     postRPCMessage(chan.port1, {
       type: RPCMessageType.PARCNET_CLIENT_INVOKE_RESULT,

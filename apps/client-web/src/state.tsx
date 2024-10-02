@@ -7,7 +7,7 @@ import {
 import type { PodspecProofRequest } from "@parcnet-js/podspec";
 import * as p from "@parcnet-js/podspec";
 import { $s } from "@parcnet-js/podspec/pod_value_utils";
-import { POD, encodePrivateKey } from "@pcd/pod";
+import { POD, encodePrivateKey, encodePublicKey } from "@pcd/pod";
 import type { Identity as IdentityV4 } from "@semaphore-protocol/core";
 import isEqual from "lodash/isEqual";
 import { createContext, useContext, useReducer } from "react";
@@ -121,6 +121,18 @@ export function clientReducer(state: ClientState, action: ClientAction) {
     case "authorize":
       if (!state.zapp || !state.zappOrigin) {
         throw new Error("No zapp or zapp origin");
+      }
+      const existingZapps = state.pods.get("zapps").query({
+        entries: {
+          name: { type: "string", isMemberOf: [$s(state.zapp.name)] },
+          origin: { type: "string", isMemberOf: [$s(state.zappOrigin)] }
+        },
+        signerPublicKey: {
+          isMemberOf: [encodePublicKey(state.identity.publicKey)]
+        }
+      });
+      for (const match of existingZapps) {
+        state.pods.get("zapps").delete(match.signature);
       }
       const zappPOD = POD.sign(
         {
