@@ -1,3 +1,4 @@
+import { podToPODData } from "./data.js";
 import type {
   PodspecProofRequestSchema,
   ProofConfigPODSchema,
@@ -7,7 +8,7 @@ import type {
 import { proofRequest } from "./gpc/proof_request.js";
 import type { EntriesSpec } from "./parse/entries.js";
 import { entries } from "./parse/entries.js";
-import type { PodSpec } from "./parse/pod.js";
+import type { PODData, PodSpec } from "./parse/pod.js";
 import { pod } from "./parse/pod.js";
 import type { EntriesSchema } from "./schemas/entries.js";
 import type { PODSchema } from "./schemas/pod.js";
@@ -22,6 +23,7 @@ export {
   entries,
   pod,
   proofRequest,
+  podToPODData,
   type EntriesOutputType,
   type EntriesSchema,
   type EntriesSpec,
@@ -31,6 +33,7 @@ export {
   type ProofConfigPODSchema,
   type PODSchema,
   type PodSpec,
+  type PODData,
   type PodspecProofRequestSchema as PodspecProofRequest,
   type ProofRequest,
   type ProofRequestSpec

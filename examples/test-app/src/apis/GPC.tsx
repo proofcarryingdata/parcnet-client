@@ -1,7 +1,6 @@
 import type { ProveResult } from "@parcnet-js/client-rpc";
-import type { PodspecProofRequest } from "@parcnet-js/podspec";
+import type { PODData, PodspecProofRequest } from "@parcnet-js/podspec";
 import { TicketSpec, ticketProofRequest } from "@parcnet-js/ticket-spec";
-import type { POD } from "@pcd/pod";
 import JSONBig from "json-bigint";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
@@ -60,7 +59,7 @@ export function GPC(): ReactNode {
   const [verified, setVerified] = useState<boolean | undefined>();
   const [identityV3, setIdentityV3] = useState<bigint | undefined>();
   const [publicKey, setPublicKey] = useState<string | undefined>();
-  const [ticket, setTicket] = useState<POD | undefined>();
+  const [ticket, setTicket] = useState<PODData | undefined>();
 
   useEffect(() => {
     void (async () => {

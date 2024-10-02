@@ -5,6 +5,7 @@ import type {
 } from "@parcnet-js/podspec";
 import type { GPCBoundConfig, GPCProof, GPCRevealedClaims } from "@pcd/gpc";
 import type { PODEntries } from "@pcd/pod";
+import type { PODData } from "./pod_data.js";
 
 /**
  * @file This file contains the RPC interfaces for the Parcnet client.
@@ -16,7 +17,7 @@ export type PODQuery = PODSchema<EntriesSchema>;
 
 export interface SubscriptionUpdateResult {
   subscriptionId: string;
-  update: string[];
+  update: PODData[];
 }
 
 export interface GPCProofReturn {
@@ -65,13 +66,13 @@ export interface ParcnetIdentityRPC {
 
 export interface ParcnetPODRPC {
   // Returns array of serialized PODs
-  query: (collectionId: string, query: PODQuery) => Promise<string[]>;
-  insert: (collectionId: string, serializedPod: string) => Promise<void>;
+  query: (collectionId: string, query: PODQuery) => Promise<PODData[]>;
+  insert: (collectionId: string, podData: PODData) => Promise<void>;
   delete: (collectionId: string, signature: string) => Promise<void>;
   subscribe: (collectionId: string, query: PODQuery) => Promise<string>;
   unsubscribe: (subscriptionId: string) => Promise<void>;
   // Returns serialized POD
-  sign: (entries: PODEntries) => Promise<string>;
+  sign: (entries: PODEntries) => Promise<PODData>;
 }
 
 export interface ParcnetRPC {

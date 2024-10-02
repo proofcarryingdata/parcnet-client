@@ -4,6 +4,7 @@ import {
   type ParcnetPODRPC,
   type Zapp
 } from "@parcnet-js/client-rpc";
+import { type PODData, podToPODData } from "@parcnet-js/podspec";
 import type { PODEntries } from "@pcd/pod";
 import { POD, encodePrivateKey } from "@pcd/pod";
 import type { Identity } from "@semaphore-protocol/core";
@@ -18,7 +19,10 @@ export class ParcnetPODProcessor implements ParcnetPODRPC {
     private readonly zapp: Zapp
   ) {}
 
-  public async query(collectionId: string, query: PODQuery): Promise<string[]> {
+  public async query(
+    collectionId: string,
+    query: PODQuery
+  ): Promise<PODData[]> {
     const permission = this.zapp.permissions.READ_POD;
     if (!permission) {
       throw new MissingPermissionError("READ_POD", "pod.query");
@@ -27,16 +31,10 @@ export class ParcnetPODProcessor implements ParcnetPODRPC {
       throw new MissingPermissionError("READ_POD", "pod.query");
     }
 
-    return this.pods
-      .get(collectionId)
-      .query(query)
-      .map((pod) => pod.serialize());
+    return this.pods.get(collectionId).query(query).map(podToPODData);
   }
 
-  public async insert(
-    collectionId: string,
-    serializedPod: string
-  ): Promise<void> {
+  public async insert(collectionId: string, podData: PODData): Promise<void> {
     const permission = this.zapp.permissions.INSERT_POD;
     if (!permission) {
       throw new MissingPermissionError("INSERT_POD", "pod.insert");
@@ -45,7 +43,11 @@ export class ParcnetPODProcessor implements ParcnetPODRPC {
       throw new MissingPermissionError("INSERT_POD", "pod.insert");
     }
 
-    const pod = POD.deserialize(serializedPod);
+    const pod = POD.load(
+      podData.entries,
+      podData.signature,
+      podData.signerPublicKey
+    );
     this.pods.get(collectionId).insert(pod);
   }
 
@@ -80,7 +82,7 @@ export class ParcnetPODProcessor implements ParcnetPODRPC {
     this.subscriptions.unsubscribe(subscriptionId);
   }
 
-  public async sign(entries: PODEntries): Promise<string> {
+  public async sign(entries: PODEntries): Promise<PODData> {
     const permission = this.zapp.permissions.SIGN_POD;
     if (!permission) {
       throw new MissingPermissionError("SIGN_POD", "pod.sign");
@@ -90,6 +92,6 @@ export class ParcnetPODProcessor implements ParcnetPODRPC {
       entries,
       encodePrivateKey(Buffer.from(this.identity.export(), "base64"))
     );
-    return pod.serialize();
+    return podToPODData(pod);
   }
 }

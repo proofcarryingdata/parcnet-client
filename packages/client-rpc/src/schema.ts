@@ -137,6 +137,12 @@ const ProveArgsSchema = v.object({
   collectionIds: v.optional(v.array(CollectionIdSchema))
 });
 
+export const PODDataSchema = v.object({
+  entries: PODEntriesSchema,
+  signature: v.string(),
+  signerPublicKey: v.string()
+});
+
 export type RPCFunction<
   I extends v.TupleSchema<
     v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>[],
@@ -200,12 +206,12 @@ export const ParcnetRPCSchema = {
         collectionId: ReturnType<typeof v.string>,
         query: typeof PODSchemaSchema
       ]),
-      output: v.array(v.string())
+      output: v.array(PODDataSchema)
     },
     insert: {
-      input: v.tuple([v.string(), v.string()] as [
+      input: v.tuple([v.string(), PODDataSchema] as [
         collectionId: ReturnType<typeof v.string>,
-        serializedPOD: ReturnType<typeof v.string>
+        podData: typeof PODDataSchema
       ]),
       output: v.void()
     },
@@ -231,7 +237,7 @@ export const ParcnetRPCSchema = {
     },
     sign: {
       input: v.tuple([PODEntriesSchema] as [entries: typeof PODEntriesSchema]),
-      output: v.string()
+      output: PODDataSchema
     }
   }
 } as const satisfies RPCSchema;

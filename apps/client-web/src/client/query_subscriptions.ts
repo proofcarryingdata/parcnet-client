@@ -1,6 +1,12 @@
 import type { SubscriptionUpdateResult } from "@parcnet-js/client-rpc";
 import * as p from "@parcnet-js/podspec";
-import type { EntriesSchema, PODSchema, PodSpec } from "@parcnet-js/podspec";
+import {
+  type EntriesSchema,
+  type PODSchema,
+  type PodSpec,
+  podToPODData
+} from "@parcnet-js/podspec";
+import type { POD } from "@pcd/pod";
 import { EventEmitter } from "eventemitter3";
 import type { PODCollectionManager } from "./pod_collection_manager.js";
 
@@ -31,7 +37,7 @@ export class QuerySubscriptions {
               {
                 update: sub.query
                   .query(this.pods.get(sub.collectionId).getAll())
-                  .matches.map((pod) => pod.serialize()),
+                  .matches.map((pod) => podToPODData(pod as POD)),
                 subscriptionId: id
               },
               sub.serial
@@ -48,7 +54,7 @@ export class QuerySubscriptions {
               {
                 update: sub.query
                   .query(this.pods.get(sub.collectionId).getAll())
-                  .matches.map((pod) => pod.serialize()),
+                  .matches.map((pod) => podToPODData(pod as POD)),
                 subscriptionId: id
               },
               sub.serial
