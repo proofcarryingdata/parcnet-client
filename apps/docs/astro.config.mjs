@@ -36,7 +36,11 @@ export default defineConfig({
           items: [
             // Each item here is one entry in the navigation menu.
             { label: "Introduction", slug: "guides/introduction" },
-            { label: "Getting Started", slug: "guides/getting-started" }
+            { label: "Getting Started", slug: "guides/getting-started" },
+            {
+              label: "Making Proofs about Ticket PODs",
+              slug: "guides/ticket-proofs"
+            }
           ]
         },
         typeDocSidebarGroup

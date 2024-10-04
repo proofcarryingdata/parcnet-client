@@ -264,15 +264,17 @@ await z.pod.insert(pod);
               {`
 const request = ticketProofRequest({
   classificationTuples: [
-    [
-      // The public key to match
-      "${publicKey}",
-      // The event ID to match
-      "${EVENT_ID}"
-    ]
+    {
+      signerPublicKey: "${publicKey}",
+      eventId: "${EVENT_ID}"
+    }
   ],
   fieldsToReveal: {
-    eventId: true
+    attendeeEmail: true
+  },
+  externalNullifier: {
+    type: "string",
+    value: "APP_SPECIFIC_NULLIFIER"
   }
 });
 
@@ -286,10 +288,17 @@ const gpcProof = await z.gpc.prove(request);
               try {
                 const request = ticketProofRequest({
                   classificationTuples: [
-                    [await z.identity.getPublicKey(), EVENT_ID]
+                    {
+                      signerPublicKey: await z.identity.getPublicKey(),
+                      eventId: EVENT_ID
+                    }
                   ],
                   fieldsToReveal: {
-                    eventId: true
+                    attendeeEmail: true
+                  },
+                  externalNullifier: {
+                    type: "string",
+                    value: "APP_SPECIFIC_NULLIFIER"
                   }
                 });
                 setProveResult(await z.gpc.prove(request.schema));

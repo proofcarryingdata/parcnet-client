@@ -12,5 +12,7 @@ export function generateKeyPair(): { privateKey: string; publicKey: string } {
   const publicKey = encodePublicKey(
     derivePublicKey(decodePrivateKey(privateKey))
   );
+  console.log("privateKey", privateKey);
+  console.log("publicKey", publicKey);
   return { privateKey, publicKey };
 }

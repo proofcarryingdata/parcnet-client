@@ -1,0 +1,235 @@
+---
+title: Making Proofs about Ticket PODs
+description: How to use POD tickets for authentication
+---
+import { Aside } from '@astrojs/starlight/components';
+import { PackageManagers } from "starlight-package-managers";
+
+Zupass tickets are [PODs](https://www.pod.org), Provable Object Datatypes. This means that they're ZK-friendly, and it's easy to make proofs about them.
+
+ZK proofs in Zupass are used to reveal information about some POD-format data that the user has. This might involve directly revealing specific POD entries, such as the e-mail address associated with an event ticket. Or, it might involve revealing that an entry has a value in a given range, or with a value that matches a list of valid values. Or, it might even involve revealing that a set of related entry values match a sets of values from a list.
+
+<Aside type="note" title="What are entries?">
+PODs are collections of "entries", which are name and value pairs, where values have a type of `string` (for text), `int` (for integers), `cryptographic` (for very large integers), and `eddsa_pubkey` (for EdDSA public keys).
+
+Zero-knowledge proofs in Zupass work by proving that a POD's entries match certain criteria, without necessarily revealing _how_ they match it. For example, you could prove that a `birthdate` entry of type `int` is below a certain number, indicating that a person was born before a certain date, without revealing what the `birthdate` value is.
+</Aside>
+
+Zupass allows you to configure proofs by providing a set of criteria describing one or more PODs that the user must have. If the user has matching PODs, they can make a proof and share it with someone else - such as with your application or another user of your app. As the app developer, it's your job to design the proof configuration.
+
+Because this system is very flexible, it can also be intimidating at first. Mistakes can be subtle, and might result in a proof that doesn't really prove what you want it to. To help with this, there's a specialized library for preparing ticket proof requests, `ticket-spec`. This guide will explain how to use it.
+
+# Quick Start
+
+Below you will find more detailed background on ticket proofs. But if you just want to get started, here's how to do it:
+
+Following the [Getting Started](getting-started) guide, install the App Connector module and verify that you can connect to Zupass.
+
+Next, install the `ticket-spec` package:
+
+<PackageManagers
+  frame="none"
+  pkgManagers={["npm", "yarn", "pnpm", "bun"]}
+  pkg="@parcnet-js/ticket-spec"
+/>
+
+Then, you can create a ticket proof request, and use it to create a proof:
+
+```ts wrap=true title="src/main.ts"
+import { ticketProofRequest } from "@parcnet-js/ticket-spec";
+
+const request = ticketProofRequest({
+  classificationTuples: [
+    // If you know the public key and event ID of a POD ticket, you can specify
+    // them here, otherwise delete the object below.
+    {
+      signerPublicKey: "PUBLIC_KEY",
+      eventId: "EVENT_ID"
+    }
+  ],
+  fieldsToReveal: {
+    // The proof will reveal the attendeeEmail entry
+    attendeeEmail: true
+  },
+  externalNullifier: {
+    type: "string",
+    value: "APP_SPECIFIC_NULLIFIER"
+  }
+});
+
+const gpcProof = await z.gpc.prove(request);
+```
+
+This will create a GPC proof which proves that the ticket has a given signer public key and event ID, and also reveals the `attendeeEmail` address for the ticket.
+
+If you know the signer public key and event ID of a ticket then you can specify those in the `classificationTuples` array, but for getting started you can delete those values if you don't know which ones to specify.
+
+The result should be an object containing `proof`, `boundConfig`, and `revealedClaims` fields. For now, we can ignore `proof` and `boundConfig`, and focus on `revealedClaims`, which, given the above example, should look like this:
+
+```ts wrap=true
+{
+  "pods": {
+    "ticket": {
+      "entries": {
+        "attendeeEmail": {
+          "type": "string",
+          "value": "test@example.com"
+        }
+      },
+      "signerPublicKey": "MolS1FubqfCmFB8lHOSTo1smf8hPgTPal6FgpajFiYY"
+    }
+  },
+  "owner": {
+    "externalNullifier": {
+      "type": "string",
+      "value": "APP_SPECIFIC_NULLIFIER"
+    },
+    "nullifierHashV4": 18601332455379395925267579735435017582946383130668625217012137367106027237345
+  },
+  "membershipLists": {
+    "allowlist_tuple_ticket_entries_$signerPublicKey_eventId": [
+      [
+        {
+          "type": "eddsa_pubkey",
+          "value": "MolS1FubqfCmFB8lHOSTo1smf8hPgTPal6FgpajFiYY"
+        },
+        {
+          "type": "string",
+          "value": "fca101d3-8c9d-56e4-9a25-6a3c1abf0fed"
+        }
+      ]
+    ]
+  }
+}
+```
+
+As we saw in the original proof request, the `attendeeEmail` entry is revealed: `revealedClaims.pods.ticket.entries.attendeeEmail` contains the value.
+
+To understand how this works, read on!
+
+# Configuring a ticket proof request
+
+Ticket proofs enable the user to prove that they hold an event ticket matching certain criteria. They also allow the user to selectively reveal certain pieces of data contained in the ticket, such as their email address or name.
+
+A typical use-case for ticket proofs is to prove that the user has a ticket to a specific event, and possibly that the ticket is of a certain "type", such as a speaker ticket or day pass. To determine this, we need to specify two or three entries:
+- Public key of the ticket signer or issuer
+- The unique ID of the event
+- Optionally, the unique ID of the product type, if the event has multiple types of tickets
+
+For example, if you want the user to prove that they have a ticket to a specific event, then you want them to prove the following:
+
+- That their ticket POD was signed by the event organizer's ticket issuance key
+- That their ticket has the correct event identifier
+- That their ticket is of the appropriate type, if you want to offer a different experience to holders of different ticket types
+
+## How to specify ticket details
+
+To match a ticket based on the above criteria, you must specify _either_ pairs of public key and event ID, or triples of public key, event ID, and product ID. For example:
+
+```ts wrap=true title="src/main.ts"
+const pair = [{
+  publicKey: "2C4B7JzSakdQaRlnJPPlbksW9F04vYc5QFLy//nuIho",
+  eventId: "ab9306be-019f-40d9-990d-88826a15fde5"
+}];
+const triple = [{
+  publicKey: "2C4B7JzSakdQaRlnJPPlbksW9F04vYc5QFLy//nuIho",
+  eventId: "ab9306be-019f-40d9-990d-88826a15fde5",
+  productId: "672c6ff1-9947-41d4-8876-4ef1e3317f08" 
+}];
+```
+
+The first example, containing only a public key and event ID, will match any ticket which has those attributes. The second is more precise, requiring that the ticket have a specific product type.
+
+It's possible to specify _multiple_ pairs or triples. For example:
+```ts wrap=true title="src/main.ts"
+const pairs = [
+  {
+    publicKey: "2C4B7JzSakdQaRlnJPPlbksW9F04vYc5QFLy//nuIho",
+    eventId: "ab9306be-019f-40d9-990d-88826a15fde5"
+  },
+  {
+    publicKey: "2C4B7JzSakdQaRlnJPPlbksW9F04vYc5QFLy//nuIho",
+    eventId: "5ddb8781-b893-4187-9044-9ac229368aac"
+  }
+]
+```
+
+These would be used like this:
+
+```ts wrap=true title="src/main.ts" {2-11}
+const request = ticketProofRequest({
+  classificationTuples: [
+    {
+      publicKey: "2C4B7JzSakdQaRlnJPPlbksW9F04vYc5QFLy//nuIho",
+      eventId: "ab9306be-019f-40d9-990d-88826a15fde5"
+    },
+    {
+      publicKey: "2C4B7JzSakdQaRlnJPPlbksW9F04vYc5QFLy//nuIho",
+      eventId: "5ddb8781-b893-4187-9044-9ac229368aac"
+    }
+  ],
+  fieldsToReveal: {
+    // The proof will reveal the attendeeEmail entry
+    attendeeEmail: true
+  },
+  externalNullifier: {
+    type: "string",
+    value: "APP_SPECIFIC_NULLIFIER"
+  }
+});
+```
+
+In this case, the proof request will match any ticket which matches _either_ of the above pairs. If you provide more, then the ticket just needs to match any of the provided pairs.
+
+This underlines an important principle: when the proof is created, you might not know _which_ pair of values the user's ticket matches. This is by design, and is part of how ZK proofs provide privacy. If you only need to know that the user has a ticket matching a list of values, but don't need to know exactly which ticket the user has, then by default that information will not 
+
+## What gets revealed in a ticket proof
+
+If you have specified pairs or triples of public key, event ID and (optionally) product ID, then the list of valid values will be revealed in the proof. This might be the _only_ information you want to reveal: the proof discloses that the user has a ticket which satisfies these criteria, but no more.
+
+However, you might want the proof to disclose more information about the ticket. There are two further types of information that a proof might reveal: a "nullifier hash", a unique value derived from the user's identity, and a subset of the ticket's entries.
+
+### Nullifier hash
+
+A nullifier hash is a unique value which is derived from the user's identity, but which cannot be used to determine the user's identity. Typically this is used to pseudonymously identify a user: if the same user creates two proofs, both proofs will have the same nullifier hash, giving the user a consistent identity, but not one that can be used to determine their public key or other information.
+
+The nullifier hash requires an "external nullifier", a value which your application must provide. This ensures that the nullifier hash is derived from _both_ the user's identity and a value that your application provides. This means that the nullifier hash that the user has when creating proofs for your application will be different to the nullifier hash they have when creating proofs for another application.
+
+### Revealed entries
+
+Proofs can also directly reveal the values held in certain entries, meaning that the `revealedClaims` object in the proof result will be populated with values from the ticket that the use selects when making the proof. In the Quick Start example above, the `attendeeEmail` entry is revealed, but you can reveal any of the ticket's entries by setting them in the `fieldsToReveal` parameter:
+
+```ts wrap=true title="src/main.ts" {10-13}
+const request = ticketProofRequest({
+  classificationTuples: [
+    // If you know the public key and event ID of a POD ticket, you can specify
+    // them here, otherwise delete the object below.
+    {
+      signerPublicKey: "PUBLIC_KEY",
+      eventId: "EVENT_ID"
+    }
+  ],
+  fieldsToReveal: {
+    // Reveal the unique ticket ID
+    ticketId: true,
+    // Reveal the attendee's name
+    attendeeName: true,
+    // Reveal if the ticket is checked in
+    isConsumed: true
+  },
+  externalNullifier: {
+    type: "string",
+    value: "APP_SPECIFIC_NULLIFIER"
+  }
+});
+```
+
+## Watermark
+
+You can add a watermark to your proof, which allows you to uniquely identify a proof. Precisely which value to use for the watermark depends on your application and use-case, but you might use a unique session ID, or a single-use number generated by your application.
+
+If you add a watermark to your proof request, you can check the watermark when later verifying the proof. A typical workflow might involve your client application requesting a random number from your server, which stores the number. The number is passed as a watermark in the proof request, and then you can send the proof to the server for verification. The server then checks that the watermark is equal to the random number it generated. By requiring the watermark to equal some single-use secret value, you ensure that the client cannot re-use a previously-generated proof.
+
+# Verifying a ticket proof
+
+TODO.

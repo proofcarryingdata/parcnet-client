@@ -29,19 +29,19 @@ interface FieldsToReveal {
 /**
  * An array of tuples of a public key and an event ID.
  */
-export type PublicKeyAndEventIdTuples = [
-  signerPublicKey: string,
-  eventId: string
-][];
+export type PublicKeyAndEventIdTuples = {
+  signerPublicKey: string;
+  eventId: string;
+}[];
 
 /**
  * An array of tuples of a public key, an event ID, and a product ID.
  */
-export type PublicKeyAndEventIdAndProductIdTuples = [
-  signerPublicKey: string,
-  eventId: string,
-  productId: string
-][];
+export type PublicKeyAndEventIdAndProductIdTuples = {
+  signerPublicKey: string;
+  eventId: string;
+  productId: string;
+}[];
 
 export type TicketClassificationTuples =
   | PublicKeyAndEventIdTuples
@@ -57,13 +57,13 @@ export interface TicketProofRequest {
 function isPublicKeyAndEventIdTuples(
   a: TicketClassificationTuples
 ): a is PublicKeyAndEventIdTuples {
-  return a.length > 0 && a.every((tuple) => tuple.length === 2);
+  return a.length > 0 && a.every((tuple) => Object.keys(tuple).length === 2);
 }
 
 function isPublicKeyAndEventIdAndProductIdTuples(
   a: TicketClassificationTuples
 ): a is PublicKeyAndEventIdAndProductIdTuples {
-  return a.length > 0 && a.every((tuple) => tuple.length === 3);
+  return a.length > 0 && a.every((tuple) => Object.keys(tuple).length === 3);
 }
 
 /**
@@ -80,27 +80,27 @@ export function ticketProofRequest({
   const podConfig = TicketSpec.extend((schema, f) => {
     return f({
       ...schema,
-      tuples: isPublicKeyAndEventIdTuples(classificationTuples)
+      tuples: isPublicKeyAndEventIdAndProductIdTuples(classificationTuples)
         ? [
             {
-              entries: ["$signerPublicKey", "eventId"],
+              entries: ["$signerPublicKey", "eventId", "productId"],
               isMemberOf: classificationTuples.map(
-                ([signerPublicKey, eventId]) => [
+                ({ signerPublicKey, eventId, productId }) => [
                   $e(signerPublicKey),
-                  $s(eventId)
+                  $s(eventId),
+                  $s(productId)
                 ]
               )
             }
           ]
-        : isPublicKeyAndEventIdAndProductIdTuples(classificationTuples)
+        : isPublicKeyAndEventIdTuples(classificationTuples)
           ? [
               {
-                entries: ["$signerPublicKey", "eventId", "productId"],
+                entries: ["$signerPublicKey", "eventId"],
                 isMemberOf: classificationTuples.map(
-                  ([signerPublicKey, eventId, productId]) => [
+                  ({ signerPublicKey, eventId }) => [
                     $e(signerPublicKey),
-                    $s(eventId),
-                    $s(productId)
+                    $s(eventId)
                   ]
                 )
               }
