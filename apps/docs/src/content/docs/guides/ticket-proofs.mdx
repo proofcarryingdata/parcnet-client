@@ -127,15 +127,15 @@ For example, if you want the user to prove that they have a ticket to a specific
 To match a ticket based on the above criteria, you must specify _either_ pairs of public key and event ID, or triples of public key, event ID, and product ID. For example:
 
 ```ts wrap=true title="src/main.ts"
-const pair = {
+const pair = [{
   publicKey: "2C4B7JzSakdQaRlnJPPlbksW9F04vYc5QFLy//nuIho",
   eventId: "ab9306be-019f-40d9-990d-88826a15fde5"
-};
-const triple = {
+}];
+const triple = [{
   publicKey: "2C4B7JzSakdQaRlnJPPlbksW9F04vYc5QFLy//nuIho",
   eventId: "ab9306be-019f-40d9-990d-88826a15fde5",
   productId: "672c6ff1-9947-41d4-8876-4ef1e3317f08" 
-};
+}];
 ```
 
 The first example, containing only a public key and event ID, will match any ticket which has those attributes. The second is more precise, requiring that the ticket have a specific product type.
@@ -154,6 +154,31 @@ const pairs = [
 ]
 ```
 
+These would be used like this:
+
+```ts wrap=true title="src/main.ts" {2-11}
+const request = ticketProofRequest({
+  classificationTuples: [
+    {
+      publicKey: "2C4B7JzSakdQaRlnJPPlbksW9F04vYc5QFLy//nuIho",
+      eventId: "ab9306be-019f-40d9-990d-88826a15fde5"
+    },
+    {
+      publicKey: "2C4B7JzSakdQaRlnJPPlbksW9F04vYc5QFLy//nuIho",
+      eventId: "5ddb8781-b893-4187-9044-9ac229368aac"
+    }
+  ],
+  fieldsToReveal: {
+    // The proof will reveal the attendeeEmail entry
+    attendeeEmail: true
+  },
+  externalNullifier: {
+    type: "string",
+    value: "APP_SPECIFIC_NULLIFIER"
+  }
+});
+```
+
 In this case, the proof request will match any ticket which matches _either_ of the above pairs. If you provide more, then the ticket just needs to match any of the provided pairs.
 
 This underlines an important principle: when the proof is created, you might not know _which_ pair of values the user's ticket matches. This is by design, and is part of how ZK proofs provide privacy. If you only need to know that the user has a ticket matching a list of values, but don't need to know exactly which ticket the user has, then by default that information will not 
@@ -164,7 +189,7 @@ If you have specified pairs or triples of public key, event ID and (optionally) 
 
 However, you might want the proof to disclose more information about the ticket. There are two further types of information that a proof might reveal: a "nullifier hash", a unique value derived from the user's identity, and a subset of the ticket's entries.
 
-### Nullifier hashes and their uses
+### Nullifier hash
 
 A nullifier hash is a unique value which is derived from the user's identity, but which cannot be used to determine the user's identity. Typically this is used to pseudonymously identify a user: if the same user creates two proofs, both proofs will have the same nullifier hash, giving the user a consistent identity, but not one that can be used to determine their public key or other information.
 
@@ -172,7 +197,33 @@ The nullifier hash requires an "external nullifier", a value which your applicat
 
 ### Revealed entries
 
-Proofs can also directly reveal the values held in certain entries. 
+Proofs can also directly reveal the values held in certain entries, meaning that the `revealedClaims` object in the proof result will be populated with values from the ticket that the use selects when making the proof. In the Quick Start example above, the `attendeeEmail` entry is revealed, but you can reveal any of the ticket's entries by setting them in the `fieldsToReveal` parameter:
+
+```ts wrap=true title="src/main.ts" {10-13}
+const request = ticketProofRequest({
+  classificationTuples: [
+    // If you know the public key and event ID of a POD ticket, you can specify
+    // them here, otherwise delete the object below.
+    {
+      signerPublicKey: "PUBLIC_KEY",
+      eventId: "EVENT_ID"
+    }
+  ],
+  fieldsToReveal: {
+    // Reveal the unique ticket ID
+    ticketId: true,
+    // Reveal the attendee's name
+    attendeeName: true,
+    // Reveal if the ticket is checked in
+    isConsumed: true
+  },
+  externalNullifier: {
+    type: "string",
+    value: "APP_SPECIFIC_NULLIFIER"
+  }
+});
+```
+
 
 
 ## Watermark
