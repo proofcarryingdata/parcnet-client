@@ -14,6 +14,7 @@ export default tseslint.config(
     ignores: [
       "**/node_modules/*",
       "**/dist/",
+      "**/public/",
       "**/vitest.config.ts",
       "**/vite.config.ts",
       "**/tailwind.config.ts"
