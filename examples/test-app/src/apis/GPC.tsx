@@ -124,7 +124,7 @@ const request: PodspecProofRequest = {
   }
 };
 
-const gpcProof = await z.gpc.prove(request);
+const gpcProof = await z.gpc.prove({ request });
 
 `}
             </code>
@@ -277,7 +277,7 @@ const request = ticketProofRequest({
   }
 });
 
-const gpcProof = await z.gpc.prove(request);
+const gpcProof = await z.gpc.prove({ request: request.schema });
 
 `}
             </code>

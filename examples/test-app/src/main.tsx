@@ -16,11 +16,11 @@ import { getConnectionInfo } from "./utils";
 const zapp: Zapp = {
   name: "test-client",
   permissions: {
-    REQUEST_PROOF: { collections: ["Tickets", "Frogs"] },
+    REQUEST_PROOF: { collections: ["Apples", "Bananas"] },
     SIGN_POD: {},
-    READ_POD: { collections: ["Tickets", "Frogs"] },
-    INSERT_POD: { collections: ["Tickets", "Frogs"] },
-    DELETE_POD: { collections: ["Frogs"] },
+    READ_POD: { collections: ["Apples", "Bananas"] },
+    INSERT_POD: { collections: ["Apples", "Bananas"] },
+    DELETE_POD: { collections: ["Bananas"] },
     READ_PUBLIC_IDENTIFIERS: {}
   }
 };
