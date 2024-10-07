@@ -1,6 +1,6 @@
 {
   "name": "@parcnet-js/podspec",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "license": "GPL-3.0-or-later",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
@@ -32,7 +32,7 @@
     "lint": "eslint . --max-warnings 0",
     "build": "tsup 'src/**/*@(ts|tsx)' --format cjs,esm --clean --sourcemap",
     "prepublish": "tsup 'src/**/*@(ts|tsx)' --format cjs,esm --clean --sourcemap --dts",
-    "test": "vitest run"
+    "test": "vitest run --typecheck"
   },
   "files": ["dist", "./README.md", "./LICENSE"],
   "dependencies": {

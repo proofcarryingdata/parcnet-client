@@ -114,10 +114,23 @@ export class ParcnetGPCWrapper {
   async verify(
     proof: GPCProof,
     config: GPCBoundConfig,
+    revealedClaims: GPCRevealedClaims
+  ): Promise<boolean> {
+    return this.#api.gpc.verify(proof, config, revealedClaims);
+  }
+
+  async verifyWithProofRequest(
+    proof: GPCProof,
+    config: GPCBoundConfig,
     revealedClaims: GPCRevealedClaims,
     proofRequest: p.PodspecProofRequest
   ): Promise<boolean> {
-    return this.#api.gpc.verify(proof, config, revealedClaims, proofRequest);
+    return this.#api.gpc.verifyWithProofRequest(
+      proof,
+      config,
+      revealedClaims,
+      proofRequest
+    );
   }
 }
 

@@ -61,6 +61,19 @@ export class ParcnetGPCProcessor implements ParcnetGPCRPC {
   public async verify(
     proof: GPCProof,
     boundConfig: GPCBoundConfig,
+    revealedClaims: GPCRevealedClaims
+  ): Promise<boolean> {
+    return gpcVerify(
+      proof,
+      boundConfig,
+      revealedClaims,
+      new URL("/artifacts", window.location.origin).toString()
+    );
+  }
+
+  public async verifyWithProofRequest(
+    proof: GPCProof,
+    boundConfig: GPCBoundConfig,
     revealedClaims: GPCRevealedClaims,
     pr: PodspecProofRequest
   ): Promise<boolean> {

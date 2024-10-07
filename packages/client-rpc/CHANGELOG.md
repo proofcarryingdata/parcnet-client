@@ -1,5 +1,13 @@
 # @parcnet-js/client-rpc
 
+## 0.0.6
+
+### Patch Changes
+
+- Support for distinct verify and verifyWithProofRequest operations
+- Updated dependencies
+  - @parcnet-js/podspec@0.0.5
+
 ## 0.0.5
 
 ### Patch Changes
