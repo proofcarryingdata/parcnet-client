@@ -55,6 +55,11 @@ export class ParcnetPODCollectionWrapper {
     this.#api = api;
     this.#collectionId = collectionId;
     this.#subscriptionEmitters = new Map();
+    this.#api.on("subscription-update", (update) => {
+      this.#subscriptionEmitters
+        .get(update.subscriptionId)
+        ?.emit("update", update.update);
+    });
   }
 
   async query<E extends p.EntriesSchema>(

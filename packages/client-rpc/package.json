@@ -1,11 +1,7 @@
 {
   "name": "@parcnet-js/client-rpc",
   "type": "module",
-<<<<<<< HEAD
-  "version": "0.0.6",
-=======
   "version": "0.0.6-next.0",
->>>>>>> 260a079 (Bump package versions)
   "license": "GPL-3.0-or-later",
   "main": "dist/index.js",
   "module": "dist/index.js",

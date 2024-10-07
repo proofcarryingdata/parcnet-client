@@ -1,11 +1,7 @@
 {
   "name": "client-web",
   "private": true,
-<<<<<<< HEAD
   "version": "0.0.8",
-=======
-  "version": "0.0.8-next.0",
->>>>>>> 260a079 (Bump package versions)
   "type": "module",
   "scripts": {
     "dev": "vite",
