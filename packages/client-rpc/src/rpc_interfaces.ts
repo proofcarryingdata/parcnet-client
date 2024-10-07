@@ -40,6 +40,11 @@ export interface ParcnetGPCRPC {
   verify: (
     proof: GPCProof,
     boundConfig: GPCBoundConfig,
+    revealedClaims: GPCRevealedClaims
+  ) => Promise<boolean>;
+  verifyWithProofRequest: (
+    proof: GPCProof,
+    boundConfig: GPCBoundConfig,
     revealedClaims: GPCRevealedClaims,
     proofRequest: PodspecProofRequest
   ) => Promise<boolean>;

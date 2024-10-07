@@ -232,4 +232,11 @@ If you add a watermark to your proof request, you can check the watermark when l
 
 # Verifying a ticket proof
 
-TODO.
+Once a proof has been made, you can verify it.
+
+Typically, verification is done by a different person, computer, or program than the one that produced the proof. You don't really need to verify a proof that you just created on the same computer, but if you received a proof from someone else, or if you have an application which sends proofs between, say, a client and a server then you will want to verify any proofs that you receive.
+
+Verification covers a few important principles:
+- That, given a `revealedClaims` object which makes certain statements, a proof configuration, and a proof object, the proof object really does correspond to the configuration and revealed claims. If we didn't check this, then the `revealedClaims` might contain data for which there is no proof!
+- That the configuration really is the one that you expect it to be. This is important because a proof might really match a set of claims and a configuration, but if the configuration is not the one you expect then the claims might not be valid for your use-case.
+

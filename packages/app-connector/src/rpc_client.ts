@@ -175,13 +175,24 @@ export class ParcnetRPCConnector implements ParcnetRPC, ParcnetEvents {
       verify: async (
         proof: GPCProof,
         boundConfig: GPCBoundConfig,
+        revealedClaims: GPCRevealedClaims
+      ): Promise<boolean> => {
+        return this.#typedInvoke(
+          "gpc.verify",
+          [proof, boundConfig, revealedClaims],
+          ParcnetRPCSchema.gpc.verify
+        );
+      },
+      verifyWithProofRequest: async (
+        proof: GPCProof,
+        boundConfig: GPCBoundConfig,
         revealedClaims: GPCRevealedClaims,
         proofRequest: PodspecProofRequest
       ): Promise<boolean> => {
         return this.#typedInvoke(
-          "gpc.verify",
+          "gpc.verifyWithProofRequest",
           [proof, boundConfig, revealedClaims, proofRequest],
-          ParcnetRPCSchema.gpc.verify
+          ParcnetRPCSchema.gpc.verifyWithProofRequest
         );
       }
     };

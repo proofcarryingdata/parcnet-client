@@ -22,7 +22,7 @@
     "lint": "eslint . --max-warnings 0",
     "build": "tsup 'src/**/*@(ts|tsx)' --format cjs,esm --clean --sourcemap",
     "prepublish": "tsup 'src/**/*@(ts|tsx)' --format cjs,esm --clean --sourcemap --dts",
-    "test": "vitest run"
+    "test": "vitest run --typecheck"
   },
   "files": ["dist", "LICENSE"],
   "dependencies": {
