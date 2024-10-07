@@ -240,3 +240,65 @@ Verification covers a few important principles:
 - That, given a `revealedClaims` object which makes certain statements, a proof configuration, and a proof object, the proof object really does correspond to the configuration and revealed claims. If we didn't check this, then the `revealedClaims` might contain data for which there is no proof!
 - That the configuration really is the one that you expect it to be. This is important because a proof might really match a set of claims and a configuration, but if the configuration is not the one you expect then the claims might not be valid for your use-case.
 
+## Proof requests
+
+To make this easy to get right, we have a concept of "proof requests". When you call `ticketProofRequest` as described above, you're creating a proof request object which can be used to... request a proof. However, you can also use the proof request when _verifying_ a proof, to ensure that the proof was produced in response to the correct request.
+
+If you're verifying the proof in the browser using the Z API, you can do so like this:
+
+```ts wrap=true title="src/main.ts"
+import { ticketProofRequest } from "@parcnet-js/ticket-spec";
+
+const request = ticketProofRequest({
+  /**
+   * As per examples above
+   */
+});
+
+const { proof, boundConfig, revealedClaims } = await z.gpc.prove(request);
+
+const isVerified = await z.gpc.verifyWithProofRequest(proof, boundConfig, revealedClaims, proofRequest);
+```
+
+This performs both of the checks described above. Of course, since you're using the same proof request object in both cases, you already know that the proof matches the request!
+
+However, you can use a similar technique when verifying the same proof in another environment, such as on a server:
+
+```ts wrap=true title="src/server.ts"
+import { ticketProofRequest } from "@parcnet-js/ticket-spec";
+import { gpcVerify } from "@pcd/gpc";
+import isEqual from "lodash/isEqual";
+
+const request = ticketProofRequest({
+  /**
+   * This should be the same proof request that you use on the client.
+   * It would be a good idea to define your proof request in a shared module or
+   * package.
+   */
+});
+
+// Here we assume that some kind of web framework such as Express is being used
+// to receive these variables via a HTTP POST or similar.
+const { proof, boundConfig, revealedClaims } = httpRequest.body;
+
+const { proofConfig, membershipLists, externalNullifier, watermark } = request.getProofRequest();
+
+// This is necessary to satisfy the type of `GPCBoundConfig`
+proofConfig.circuitIdentifier = boundConfig.circuitIdentifier;
+
+// These changes ensure that the revealed claims say what they are supposed to
+revealedClaims.membershipLists = membershipLists;
+revealedClaims.watermark = watermark;
+if (revealedClaims.owner) {
+  revealedClaims.owner.externalNullifier = externalNullifier;
+}
+
+const isVerified = await gpcVerify(
+  proof,
+  proofConfig as GPCBoundConfig,
+  revealedClaims,
+  pathToGPCArtifacts // This may vary depending on your installation
+);
+```
+
+This ensures that our verified proof not only matches the claims that were sent, but that claims are those we expect them to be.
