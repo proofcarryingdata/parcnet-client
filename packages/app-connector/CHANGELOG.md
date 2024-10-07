@@ -1,5 +1,11 @@
 # @parcnet-js/app-connector
 
+## 0.0.9-next.1
+
+### Patch Changes
+
+- Subscription updates now work correctly
+
 ## 0.0.9-next.0
 
 ### Patch Changes
