@@ -1,6 +1,6 @@
 {
   "name": "@parcnet-js/ticket-spec",
-  "version": "0.0.5-alpha.0",
+  "version": "1.0.0-beta.1",
   "license": "GPL-3.0-or-later",
   "type": "module",
   "main": "dist/index.js",

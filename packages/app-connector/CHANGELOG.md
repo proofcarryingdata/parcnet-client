@@ -1,5 +1,24 @@
 # @parcnet-js/app-connector
 
+## 1.0.0-beta.1
+
+### Major Changes
+
+- 1.0.0 release
+
+  This release introduces two new features:
+
+  - Collections, which allow PODs to be stored in separate buckets with different access levels for different Zapps
+  - Permissions, which allow your Zapp to specify which features it requires access to
+
+  For documentation on these features, visit https://zappsdk.netlify.app or see the example code at `examples/test-app`.
+
+### Patch Changes
+
+- Updated dependencies
+  - @parcnet-js/client-rpc@1.0.0-beta.1
+  - @parcnet-js/podspec@1.0.0-beta.1
+
 ## 0.0.10-alpha.0
 
 ### Patch Changes
