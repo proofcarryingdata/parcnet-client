@@ -1,5 +1,12 @@
 # test-app
 
+## 1.0.11-beta.1
+
+### Patch Changes
+
+- Updated dependencies
+  - @parcnet-js/app-connector@1.0.0-beta.2
+
 ## 1.0.11-beta.0
 
 ### Patch Changes

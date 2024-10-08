@@ -1,5 +1,11 @@
 # @parcnet-js/app-connector
 
+## 1.0.0-beta.2
+
+### Patch Changes
+
+- Prevent multiple iframe load events in Safari
+
 ## 1.0.0-beta.1
 
 ### Major Changes
