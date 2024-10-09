@@ -1,0 +1,8 @@
+{
+  "extends": "@parcnet-js/typescript-config/base.json",
+  "compilerOptions": {
+    "outDir": "dist"
+  },
+  "include": ["src", "test"],
+  "exclude": ["node_modules", "dist"]
+}
