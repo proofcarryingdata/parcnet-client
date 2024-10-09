@@ -57,7 +57,7 @@ const request = ticketProofRequest({
   }
 });
 
-const gpcProof = await z.gpc.prove(request);
+const gpcProof = await z.gpc.prove({ request: request.schema });
 ```
 
 This will create a GPC proof which proves that the ticket has a given signer public key and event ID, and also reveals the `attendeeEmail` address for the ticket.
@@ -255,7 +255,7 @@ const request = ticketProofRequest({
    */
 });
 
-const { proof, boundConfig, revealedClaims } = await z.gpc.prove(request);
+const { proof, boundConfig, revealedClaims } = await z.gpc.prove({ request: request.schema });
 
 const isVerified = await z.gpc.verifyWithProofRequest(proof, boundConfig, revealedClaims, proofRequest);
 ```
@@ -302,3 +302,28 @@ const isVerified = await gpcVerify(
 ```
 
 This ensures that our verified proof not only matches the claims that were sent, but that claims are those we expect them to be.
+
+## Devcon Ticket Proofs
+
+Above we outlined a generic approach to making proofs about tickets. If you're looking to make a proof about ownership of a Devcon ticket specifically, you can use this configuration:
+
+```ts wrap=true title="src/main.ts" {4-5}
+const request = ticketProofRequest({
+  classificationTuples: [
+    {
+      signerPublicKey: "YwahfUdUYehkGMaWh0+q3F8itx2h8mybjPmt8CmTJSs",
+      eventId: "5074edf5-f079-4099-b036-22223c0c6995"
+    }
+  ],
+  fieldsToReveal: {
+    // Reveal the attendee's name
+    attendeeName: true,
+    // Reveal the attendee's email
+    attendeeEmail: true
+  },
+  externalNullifier: {
+    type: "string",
+    value: "APP_SPECIFIC_NULLIFIER"
+  }
+});
+```

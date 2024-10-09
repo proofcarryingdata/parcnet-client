@@ -150,7 +150,7 @@ const gpcProof = await z.gpc.prove({ request });
             Verify a GPC proof like this:
             <code className="block text-xs font-base rounded-md p-2 whitespace-pre-wrap">
               {`
-const verified = await z.gpc.verify(proof, config, revealedClaims, request);
+const verified = await z.gpc.verify(proof, config, revealedClaims);
             `}
             </code>
           </p>
@@ -166,8 +166,7 @@ const verified = await z.gpc.verify(proof, config, revealedClaims, request);
                       await z.gpc.verify(
                         proveResult.proof,
                         proveResult.boundConfig,
-                        proveResult.revealedClaims,
-                        request
+                        proveResult.revealedClaims
                       )
                     );
                   }
