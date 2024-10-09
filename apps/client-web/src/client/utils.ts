@@ -1,26 +1,46 @@
 import { POD } from "@pcd/pod";
 import { Identity } from "@semaphore-protocol/core";
+import * as v from "valibot";
+import { PODCollection } from "./pod_collection";
 
-export function loadPODsFromStorage(): POD[] {
-  let pods: POD[] = [];
-  const storedSerializedPODs = localStorage.getItem("pod_collection");
+export function loadPODsFromStorage(): Record<string, PODCollection> {
+  const result: Record<string, PODCollection> = {};
+  const storedSerializedPODs = localStorage.getItem("pod_collections");
   if (!storedSerializedPODs) {
-    return pods;
+    return result;
   }
   try {
-    const serializedPODs = JSON.parse(storedSerializedPODs) as string[];
-    pods = serializedPODs.map((str) => POD.deserialize(str));
+    const serializedCollections = JSON.parse(storedSerializedPODs) as unknown;
+    const parsed = v.parse(
+      v.record(v.string(), v.array(v.string())),
+      serializedCollections
+    );
+    for (const [collectionId, serializedPODs] of Object.entries(parsed)) {
+      result[collectionId] = new PODCollection(
+        serializedPODs.map((str) => POD.deserialize(str))
+      );
+    }
   } catch (e) {
     // JSON parsing failed or POD deserialization failed
     console.error(e);
   }
 
-  return pods;
+  return result;
 }
 
-export function savePODsToStorage(pods: POD[]): void {
-  const serializedPODs = pods.map((pod) => pod.serialize());
-  localStorage.setItem("pod_collection", JSON.stringify(serializedPODs));
+export function savePODsToStorage(
+  collections: Record<string, PODCollection>
+): void {
+  const serializedCollections = Object.fromEntries(
+    Object.entries(collections).map(([collectionId, collection]) => [
+      collectionId,
+      collection.getAll().map((pod) => pod.serialize())
+    ])
+  );
+  localStorage.setItem(
+    "pod_collections",
+    JSON.stringify(serializedCollections)
+  );
 }
 
 export function getIdentity(): Identity {

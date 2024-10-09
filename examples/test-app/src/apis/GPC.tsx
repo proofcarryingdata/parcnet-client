@@ -1,7 +1,6 @@
 import type { ProveResult } from "@parcnet-js/client-rpc";
-import type { PodspecProofRequest } from "@parcnet-js/podspec";
+import type { PODData, PodspecProofRequest } from "@parcnet-js/podspec";
 import { TicketSpec, ticketProofRequest } from "@parcnet-js/ticket-spec";
-import type { POD } from "@pcd/pod";
 import JSONBig from "json-bigint";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
@@ -60,7 +59,7 @@ export function GPC(): ReactNode {
   const [verified, setVerified] = useState<boolean | undefined>();
   const [identityV3, setIdentityV3] = useState<bigint | undefined>();
   const [publicKey, setPublicKey] = useState<string | undefined>();
-  const [ticket, setTicket] = useState<POD | undefined>();
+  const [ticket, setTicket] = useState<PODData | undefined>();
 
   useEffect(() => {
     void (async () => {
@@ -125,7 +124,7 @@ const request: PodspecProofRequest = {
   }
 };
 
-const gpcProof = await z.gpc.prove(request);
+const gpcProof = await z.gpc.prove({ request });
 
 `}
             </code>
@@ -133,7 +132,7 @@ const gpcProof = await z.gpc.prove(request);
           <TryIt
             onClick={async () => {
               try {
-                setProveResult(await z.gpc.prove(request));
+                setProveResult(await z.gpc.prove({ request }));
               } catch (e) {
                 console.log(e);
               }
@@ -242,7 +241,7 @@ await z.pod.insert(pod);
               });
 
               const pod = await z.pod.sign(entries);
-              await z.pod.insert(pod);
+              await z.pod.collection("Tickets").insert(pod);
               setTicket(pod);
             }}
             label="Generate Ticket"
@@ -278,7 +277,7 @@ const request = ticketProofRequest({
   }
 });
 
-const gpcProof = await z.gpc.prove(request);
+const gpcProof = await z.gpc.prove({ request: request.schema });
 
 `}
             </code>
@@ -301,7 +300,7 @@ const gpcProof = await z.gpc.prove(request);
                     value: "APP_SPECIFIC_NULLIFIER"
                   }
                 });
-                setProveResult(await z.gpc.prove(request.schema));
+                setProveResult(await z.gpc.prove({ request: request.schema }));
               } catch (e) {
                 console.log(e);
               }

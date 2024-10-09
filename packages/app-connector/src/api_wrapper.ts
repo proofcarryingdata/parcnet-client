@@ -1,4 +1,5 @@
 import type {
+  PODData,
   ParcnetIdentityRPC,
   ParcnetRPC,
   ProveResult
@@ -6,12 +7,11 @@ import type {
 import type * as p from "@parcnet-js/podspec";
 import type { GPCBoundConfig, GPCProof, GPCRevealedClaims } from "@pcd/gpc";
 import type { PODEntries } from "@pcd/pod";
-import { POD } from "@pcd/pod";
 import { type Emitter, createNanoEvents } from "nanoevents";
 import type { ParcnetRPCConnector } from "./rpc_client.js";
 
 type SubscriptionEvents = {
-  update: (result: POD[]) => void;
+  update: (result: PODData[]) => void;
 };
 
 /**
@@ -25,72 +25,84 @@ type SubscriptionEvents = {
 export class Subscription<E extends p.EntriesSchema> {
   #emitter: Emitter<SubscriptionEvents>;
   #query: p.PodSpec<E>;
-  #api: ParcnetPODWrapper;
+  #api: ParcnetPODCollectionWrapper;
 
   constructor(
     query: p.PodSpec<E>,
     emitter: Emitter<SubscriptionEvents>,
-    api: ParcnetPODWrapper
+    api: ParcnetPODCollectionWrapper
   ) {
     this.#emitter = emitter;
     this.#query = query;
     this.#api = api;
   }
 
-  async query(): Promise<POD[]> {
+  async query(): Promise<PODData[]> {
     return this.#api.query(this.#query);
   }
 
-  on(event: "update", callback: (result: POD[]) => void): () => void {
+  on(event: "update", callback: (result: PODData[]) => void): () => void {
     return this.#emitter.on(event, callback);
   }
 }
 
-export class ParcnetPODWrapper {
+export class ParcnetPODCollectionWrapper {
   #api: ParcnetRPCConnector;
+  #collectionId: string;
   #subscriptionEmitters: Map<string, Emitter<SubscriptionEvents>>;
 
-  constructor(api: ParcnetRPCConnector) {
+  constructor(api: ParcnetRPCConnector, collectionId: string) {
     this.#api = api;
+    this.#collectionId = collectionId;
     this.#subscriptionEmitters = new Map();
-    this.#api.on("subscription-update", (result) => {
-      const emitter = this.#subscriptionEmitters.get(result.subscriptionId);
-      if (emitter) {
-        emitter.emit(
-          "update",
-          result.update.map((pod) => POD.deserialize(pod))
-        );
-      }
+    this.#api.on("subscription-update", (update) => {
+      this.#subscriptionEmitters
+        .get(update.subscriptionId)
+        ?.emit("update", update.update);
     });
   }
 
-  async query<E extends p.EntriesSchema>(query: p.PodSpec<E>): Promise<POD[]> {
-    const pods = await this.#api.pod.query(query.schema);
-    return pods.map((pod) => POD.deserialize(pod));
+  async query<E extends p.EntriesSchema>(
+    query: p.PodSpec<E>
+  ): Promise<PODData[]> {
+    return this.#api.pod.query(this.#collectionId, query.schema);
   }
 
   async subscribe<E extends p.EntriesSchema>(
     query: p.PodSpec<E>
   ): Promise<Subscription<E>> {
-    const subscriptionId = await this.#api.pod.subscribe(query.schema);
+    const subscriptionId = await this.#api.pod.subscribe(
+      this.#collectionId,
+      query.schema
+    );
     const emitter = createNanoEvents<SubscriptionEvents>();
     const subscription = new Subscription(query, emitter, this);
     this.#subscriptionEmitters.set(subscriptionId, emitter);
     return subscription;
   }
 
-  async insert(pod: POD): Promise<void> {
-    const serialized = pod.serialize();
-    return this.#api.pod.insert(serialized);
+  async insert(podData: PODData): Promise<void> {
+    return this.#api.pod.insert(this.#collectionId, podData);
   }
 
   async delete(signature: string): Promise<void> {
-    return this.#api.pod.delete(signature);
+    return this.#api.pod.delete(this.#collectionId, signature);
+  }
+}
+
+export class ParcnetPODWrapper {
+  #api: ParcnetRPCConnector;
+
+  constructor(api: ParcnetRPCConnector) {
+    this.#api = api;
   }
 
-  async sign(entries: PODEntries): Promise<POD> {
-    const pod = await this.#api.pod.sign(entries);
-    return POD.deserialize(pod);
+  collection(collectionId: string): ParcnetPODCollectionWrapper {
+    return new ParcnetPODCollectionWrapper(this.#api, collectionId);
+  }
+
+  async sign(entries: PODEntries): Promise<PODData> {
+    return this.#api.pod.sign(entries);
   }
 }
 
@@ -104,11 +116,11 @@ export class ParcnetGPCWrapper {
     this.#api = api;
   }
 
-  // In a world with POD2, we would use new POD2 types rather than GPCPCD.
-  // The existing args system and GPC wrapper works well, so we can use that.
-  async prove(args: p.PodspecProofRequest): Promise<ProveResult> {
-    const result = await this.#api.gpc.prove(args);
-    return result;
+  async prove(args: {
+    request: p.PodspecProofRequest;
+    collectionIds?: string[];
+  }): Promise<ProveResult> {
+    return this.#api.gpc.prove(args);
   }
 
   async verify(

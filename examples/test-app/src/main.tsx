@@ -10,11 +10,19 @@ import {
   useParcnetClient
 } from "./hooks/useParcnetClient";
 import "./index.css";
+import type { Zapp } from "@parcnet-js/app-connector";
 import { getConnectionInfo } from "./utils";
 
-const zapp = {
+const zapp: Zapp = {
   name: "test-client",
-  permissions: ["read", "write"]
+  permissions: {
+    REQUEST_PROOF: { collections: ["Apples", "Bananas"] },
+    SIGN_POD: {},
+    READ_POD: { collections: ["Apples", "Bananas"] },
+    INSERT_POD: { collections: ["Apples", "Bananas"] },
+    DELETE_POD: { collections: ["Bananas"] },
+    READ_PUBLIC_IDENTIFIERS: {}
+  }
 };
 
 export default function Main(): ReactNode {

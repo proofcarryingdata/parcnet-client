@@ -11,7 +11,7 @@ procs:
     autostart: false
   docs:
     cwd: "apps/docs"
-    shell: pnpm dev
+    shell: "pnpm dev"
     autostart: false
 keymap_procs: # keymap when process list is focused
   <1>: { c: select-proc, index: 0 }

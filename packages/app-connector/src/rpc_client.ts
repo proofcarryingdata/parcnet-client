@@ -1,4 +1,5 @@
 import type {
+  PODData,
   PODQuery,
   ParcnetEvents,
   ParcnetGPCRPC,
@@ -114,31 +115,40 @@ export class ParcnetRPCConnector implements ParcnetRPC, ParcnetEvents {
     this.#dialogController = dialogController;
     this.#emitter = createNanoEvents<ParcnetEventSignatures>();
     this.pod = {
-      query: async (query: PODQuery): Promise<string[]> => {
+      query: async (
+        collectionId: string,
+        query: PODQuery
+      ): Promise<PODData[]> => {
         return this.#typedInvoke(
           "pod.query",
-          [query],
+          [collectionId, query],
           ParcnetRPCSchema.pod.query
         );
       },
-      insert: async (serializedPod: string): Promise<void> => {
+      insert: async (collectionId: string, podData: PODData): Promise<void> => {
         return this.#typedInvoke(
           "pod.insert",
-          [serializedPod],
+          [collectionId, podData],
           ParcnetRPCSchema.pod.insert
         );
       },
-      delete: async (serializedPod: string): Promise<void> => {
+      delete: async (
+        collectionId: string,
+        signature: string
+      ): Promise<void> => {
         return this.#typedInvoke(
           "pod.delete",
-          [serializedPod],
+          [collectionId, signature],
           ParcnetRPCSchema.pod.delete
         );
       },
-      subscribe: async (query: PODQuery): Promise<string> => {
+      subscribe: async (
+        collectionId: string,
+        query: PODQuery
+      ): Promise<string> => {
         return this.#typedInvoke(
           "pod.subscribe",
-          [query],
+          [collectionId, query],
           ParcnetRPCSchema.pod.subscribe
         );
       },
@@ -149,7 +159,7 @@ export class ParcnetRPCConnector implements ParcnetRPC, ParcnetEvents {
           ParcnetRPCSchema.pod.unsubscribe
         );
       },
-      sign: async (entries: PODEntries): Promise<string> => {
+      sign: async (entries: PODEntries): Promise<PODData> => {
         return this.#typedInvoke(
           "pod.sign",
           [entries],
@@ -158,17 +168,29 @@ export class ParcnetRPCConnector implements ParcnetRPC, ParcnetEvents {
       }
     };
     this.gpc = {
-      prove: async (request: PodspecProofRequest): Promise<ProveResult> => {
+      prove: async ({
+        request,
+        collectionIds
+      }: {
+        request: PodspecProofRequest;
+        collectionIds?: string[];
+      }): Promise<ProveResult> => {
         return this.#typedInvoke(
           "gpc.prove",
-          [request],
+          [{ collectionIds, request }],
           ParcnetRPCSchema.gpc.prove
         );
       },
-      canProve: async (request: PodspecProofRequest): Promise<boolean> => {
+      canProve: async ({
+        request,
+        collectionIds
+      }: {
+        request: PodspecProofRequest;
+        collectionIds?: string[];
+      }): Promise<boolean> => {
         return this.#typedInvoke(
           "gpc.canProve",
-          [request],
+          [{ collectionIds, request }],
           ParcnetRPCSchema.gpc.canProve
         );
       },
@@ -301,7 +323,7 @@ export class ParcnetRPCConnector implements ParcnetRPC, ParcnetEvents {
     return this.#emitter.on("subscription-update", callback);
   }
 
-  #emitSubscriptionUpdate(update: string[], subscriptionId: string): void {
+  #emitSubscriptionUpdate(update: PODData[], subscriptionId: string): void {
     this.#emitter.emit("subscription-update", { update, subscriptionId });
   }
 

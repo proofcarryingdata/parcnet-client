@@ -1,6 +1,6 @@
 {
   "name": "@parcnet-js/podspec",
-  "version": "0.0.5",
+  "version": "1.0.0",
   "license": "GPL-3.0-or-later",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
