@@ -11,6 +11,7 @@ import {
 } from "./hooks/useParcnetClient";
 import "./index.css";
 import type { Zapp } from "@parcnet-js/app-connector";
+import { ParcnetToolbarComponent } from "@parcnet-js/app-connector-react";
 import { getConnectionInfo } from "./utils";
 
 const zapp: Zapp = {
@@ -30,6 +31,7 @@ export default function Main(): ReactNode {
   return (
     <>
       <Navbar connecting={!connected} />
+      <ParcnetToolbarComponent />
       <div className="container mx-auto my-4 p-4">
         <p>Welcome to Parcnet!</p>
         <p>You can use this page to test the Parcnet API.</p>
