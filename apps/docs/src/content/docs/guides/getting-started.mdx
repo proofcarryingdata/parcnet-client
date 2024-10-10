@@ -237,12 +237,15 @@ This tells the client to drop the POD from the user's data store.
 To read PODs from the data store, you can define queries which describe certain criteria for PODs:
 
 ```ts wrap=true title="src/main.ts"
-const queryResult = await z.pod.collection("CollectionName").query({
+import * as p from "@parcnet-js/podspec";
+
+const query = p.pod({
   entries: {
     greeting: { type: "string" },
     magic_number: { type: "int" }
   }
 });
+const queryResult = await z.pod.collection("CollectionName").query();
 ```
 
 This will return any PODs which have entries matching the description. The result is an array of `POD` objects, which will be empty if no matching results are found.
@@ -250,6 +253,8 @@ This will return any PODs which have entries matching the description. The resul
 Queries can contain more advanced constraints:
 
 ```ts wrap=true title="src/main.ts"
+import * as p from "@parcnet-js/podspec";
+
 const validGreetings = [
   { type: "string", value: "Hello, world" },
   { type: "string", value: "Ahoy there!" },
@@ -258,12 +263,14 @@ const validGreetings = [
 
 const validNumberRange = { min: 1000n, max: 1500n };
 
-const queryResult = await z.pod.collection("CollectionName").query({
+const query = p.pod({
   entries: {
     greeting: { type: "string", isMemberOf: validGreetings },
     magic_number: { type: "int", inRange: validNumberRange }
   }
 });
+
+const queryResult = await z.pod.collection("CollectionName").query(query);
 ```
 
 This query provides a list of valid strings for the `greeting` entry, and a range of valid numbers for the `magic_number` entry. You can use these features to construct very specific queries for specific PODs.
