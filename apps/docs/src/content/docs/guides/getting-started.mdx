@@ -151,7 +151,10 @@ import { connect, Zapp } from "@parcnet-js/app-connector";
 
 // The details of our Zapp
 const myZapp: Zapp = {
-  name: "My Zapp Name"
+  name: "My Zapp Name",
+  permissions: {
+    READ_PUBLIC_IDENTIFIERS: {}
+  }
 }
 
 // The HTML element to host the <iframe>
