@@ -40,14 +40,7 @@ export function HostedZapp(): ReactNode {
         )
       );
     }
-  }, [
-    state.advice,
-    state.authorized,
-    state.pods,
-    state.identity,
-    dispatch,
-    state.zapp
-  ]);
+  }, [state.advice, state.pods, state.identity, dispatch, state.zapp]);
 
   const modalVisible = useMemo(() => {
     return state.proofInProgress !== undefined;

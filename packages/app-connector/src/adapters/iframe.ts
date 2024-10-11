@@ -4,8 +4,15 @@ import type {
   Zapp
 } from "@parcnet-js/client-rpc";
 import { InitializationMessageType } from "@parcnet-js/client-rpc";
+import { createNanoEvents } from "nanoevents";
 import { ParcnetAPI } from "../api_wrapper.js";
 import { ParcnetRPCConnector } from "../rpc_client.js";
+
+export type ModalEvents = {
+  close: () => void;
+};
+
+export type ModalEmitter = ReturnType<typeof createNanoEvents<ModalEvents>>;
 
 class DialogControllerImpl implements DialogController {
   #dialog: HTMLDialogElement;
@@ -44,6 +51,8 @@ export function connect(
   // Will throw if the URL is invalid
   const normalizedUrl = new URL(clientUrl);
 
+  const emitter = createNanoEvents<ModalEvents>();
+
   // Create a dialog to hold the client iframe
   const dialog = document.createElement("dialog");
   dialog.style.borderWidth = "0px";
@@ -64,6 +73,10 @@ export function connect(
     ) {
       dialog.close();
     }
+  });
+
+  dialog.addEventListener("close", () => {
+    emitter.emit("close");
   });
 
   // Add a backdrop to the dialog
@@ -119,7 +132,7 @@ export function connect(
         // See below for how the other port of the message channel is sent to
         // the client.
         client.start(() => {
-          resolve(new ParcnetAPI(client));
+          resolve(new ParcnetAPI(client, emitter));
         });
 
         if (iframe.contentWindow) {

@@ -11,7 +11,7 @@ import { ParcnetClientProcessor } from "./client/client";
 import { getIdentity } from "./client/utils";
 import { Layout } from "./components/Layout";
 import type { ClientAction, ClientState } from "./state";
-import { useAppState } from "./state";
+import { ConnectionState, useAppState } from "./state";
 
 function App() {
   const { state, dispatch } = useAppState();
@@ -25,13 +25,17 @@ function App() {
   }, [dispatch]);
 
   useEffect(() => {
-    if (state.advice && !state.loggedIn && !state.authorized) {
+    if (state.advice && state.connectionState === ConnectionState.CONNECTING) {
       state.advice.showClient();
     }
-  }, [state.advice, state.loggedIn, state.authorized]);
+  }, [state.advice, state.connectionState]);
 
   useEffect(() => {
-    if (state.advice && state.authorized && state.zapp) {
+    if (
+      state.advice &&
+      state.connectionState === ConnectionState.AUTHORIZED &&
+      state.zapp
+    ) {
       state.advice.hideClient();
       state.advice.ready(
         new ParcnetClientProcessor(
@@ -45,7 +49,7 @@ function App() {
     }
   }, [
     state.advice,
-    state.authorized,
+    state.connectionState,
     state.pods,
     state.identity,
     dispatch,
@@ -54,7 +58,7 @@ function App() {
 
   return (
     <Layout>
-      {!state.loggedIn && (
+      {state.connectionState === ConnectionState.CONNECTING && (
         <button
           className="border-2 font-semibold cursor-pointer border-white py-1 px-2 uppercase active:translate-x-[2px] active:translate-y-[2px]"
           onClick={() => dispatch({ type: "login", loggedIn: true })}
@@ -62,11 +66,10 @@ function App() {
           Connect
         </button>
       )}
-      {state.loggedIn && !state.authorized && state.zapp && (
+      {state.connectionState === ConnectionState.CONNECTED && state.zapp && (
         <Authorize zapp={state.zapp} dispatch={dispatch} />
       )}
-      {state.loggedIn &&
-        state.authorized &&
+      {state.connectionState === ConnectionState.AUTHORIZED &&
         state.zapp &&
         state.proofInProgress && (
           <Prove proveOperation={state.proofInProgress} dispatch={dispatch} />
@@ -377,6 +380,12 @@ function Authorize({
         onClick={() => dispatch({ type: "authorize", authorized: true })}
       >
         Authorize
+      </button>
+      <button
+        className="border-2 font-semibold cursor-pointer border-white py-1 px-2 uppercase active:translate-x-[2px] active:translate-y-[2px]"
+        onClick={() => dispatch({ type: "logout" })}
+      >
+        Cancel
       </button>
     </div>
   );
