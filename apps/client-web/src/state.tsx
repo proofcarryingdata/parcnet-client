@@ -15,6 +15,13 @@ import * as v from "valibot";
 import { PODCollectionManager } from "./client/pod_collection_manager";
 import { getIdentity } from "./client/utils";
 
+export enum ConnectionState {
+  DISCONNECTED,
+  CONNECTING,
+  CONNECTED,
+  AUTHORIZED
+}
+
 export const StateContext = createContext<
   | {
       state: ClientState;
@@ -26,11 +33,10 @@ export const StateContext = createContext<
 function initializeState(): ClientState {
   return {
     embeddedMode: !!window.parent,
-    loggedIn: false,
+    connectionState: ConnectionState.CONNECTING,
     advice: null,
     zapp: null,
     zappOrigin: null,
-    authorized: false,
     proofInProgress: undefined,
     identity: getIdentity(),
     pods: PODCollectionManager.loadFromStorage(),
@@ -65,8 +71,7 @@ export function useAppState(): {
 
 export type ClientState = {
   embeddedMode: boolean;
-  loggedIn: boolean;
-  authorized: boolean;
+  connectionState: ConnectionState;
   advice: ConnectorAdvice | null;
   zapp: Zapp | null;
   zappOrigin: string | null;
@@ -112,6 +117,9 @@ export type ClientAction =
     }
   | {
       type: "clear-proof-in-progress";
+    }
+  | {
+      type: "logout";
     };
 
 export function clientReducer(state: ClientState, action: ClientAction) {
@@ -149,7 +157,10 @@ export function clientReducer(state: ClientState, action: ClientAction) {
         encodePrivateKey(Buffer.from(state.identity.export(), "base64"))
       );
       state.pods.get("zapps").insert(zappPOD);
-      return { ...state, authorized: action.authorized };
+      return {
+        ...state,
+        connectionState: ConnectionState.AUTHORIZED
+      } satisfies ClientState;
     case "set-zapp":
       let authorized = false;
       const appPodSpec = p.pod({
@@ -190,8 +201,10 @@ export function clientReducer(state: ClientState, action: ClientAction) {
         ...state,
         zapp: action.zapp,
         zappOrigin: action.origin,
-        authorized
-      };
+        connectionState: authorized
+          ? ConnectionState.AUTHORIZED
+          : ConnectionState.CONNECTED
+      } satisfies ClientState;
     case "set-advice":
       return { ...state, advice: action.advice };
     case "set-proof-in-progress":
@@ -210,5 +223,7 @@ export function clientReducer(state: ClientState, action: ClientAction) {
         ...state,
         proofInProgress: undefined
       };
+    case "logout":
+      return initializeState();
   }
 }

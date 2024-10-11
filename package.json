@@ -10,7 +10,8 @@
     "knip": "knip --no-gitignore",
     "format": "biome format --write",
     "watch": "turbo watch build --filter='./packages/**'",
-    "prepare": "husky"
+    "prepare": "husky",
+    "check-all": "pnpm build && pnpm lint && pnpm test"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.1",

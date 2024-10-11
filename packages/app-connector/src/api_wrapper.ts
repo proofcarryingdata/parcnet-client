@@ -8,6 +8,8 @@ import type * as p from "@parcnet-js/podspec";
 import type { GPCBoundConfig, GPCProof, GPCRevealedClaims } from "@pcd/gpc";
 import type { PODEntries } from "@pcd/pod";
 import { type Emitter, createNanoEvents } from "nanoevents";
+import type { ModalEmitter } from "./adapters/iframe.js";
+import { UserClosedDialogError } from "./errors.js";
 import type { ParcnetRPCConnector } from "./rpc_client.js";
 
 type SubscriptionEvents = {
@@ -92,9 +94,10 @@ export class ParcnetPODCollectionWrapper {
 
 export class ParcnetPODWrapper {
   #api: ParcnetRPCConnector;
-
-  constructor(api: ParcnetRPCConnector) {
+  #modalEmitter: ModalEmitter;
+  constructor(api: ParcnetRPCConnector, modalEmitter: ModalEmitter) {
     this.#api = api;
+    this.#modalEmitter = modalEmitter;
   }
 
   collection(collectionId: string): ParcnetPODCollectionWrapper {
@@ -102,7 +105,16 @@ export class ParcnetPODWrapper {
   }
 
   async sign(entries: PODEntries): Promise<PODData> {
-    return this.#api.pod.sign(entries);
+    return new Promise((resolve, reject) => {
+      const unsub = this.#modalEmitter.on("close", () => {
+        unsub();
+        // The dialog could be closing because the operation succeeded, so we
+        // want to wait before rejecting the promise to allow for successful
+        // resolution.
+        window.setTimeout(() => reject(new UserClosedDialogError()), 500);
+      });
+      this.#api.pod.sign(entries).then(resolve).catch(reject);
+    });
   }
 }
 
@@ -111,16 +123,27 @@ export class ParcnetPODWrapper {
  */
 export class ParcnetGPCWrapper {
   #api: ParcnetRPC;
+  #modalEmitter: ModalEmitter;
 
-  constructor(api: ParcnetRPC) {
+  constructor(api: ParcnetRPC, modalEmitter: ModalEmitter) {
     this.#api = api;
+    this.#modalEmitter = modalEmitter;
   }
 
   async prove(args: {
     request: p.PodspecProofRequest;
     collectionIds?: string[];
   }): Promise<ProveResult> {
-    return this.#api.gpc.prove(args);
+    return new Promise((resolve, reject) => {
+      const unsub = this.#modalEmitter.on("close", () => {
+        unsub();
+        // The dialog could be closing because the operation succeeded, so we
+        // want to wait before rejecting the promise to allow for successful
+        // resolution.
+        window.setTimeout(() => reject(new UserClosedDialogError()), 500);
+      });
+      this.#api.gpc.prove(args).then(resolve).catch(reject);
+    });
   }
 
   async verify(
@@ -176,9 +199,9 @@ export class ParcnetAPI {
   public identity: ParcnetIdentityWrapper;
   public gpc: ParcnetGPCWrapper;
 
-  constructor(api: ParcnetRPCConnector) {
-    this.pod = new ParcnetPODWrapper(api);
+  constructor(api: ParcnetRPCConnector, modalEmitter: ModalEmitter) {
+    this.pod = new ParcnetPODWrapper(api, modalEmitter);
     this.identity = new ParcnetIdentityWrapper(api.identity);
-    this.gpc = new ParcnetGPCWrapper(api);
+    this.gpc = new ParcnetGPCWrapper(api, modalEmitter);
   }
 }
