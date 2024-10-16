@@ -4,6 +4,7 @@ description: First steps with the Zapp SDK
 ---
 
 import { PackageManagers } from "starlight-package-managers";
+import { Aside } from '@astrojs/starlight/components';
 
 The Zapp SDK lets you build JavaScript apps which connect to Zupass, giving you access to programmable cryptography tools which enable secure and private interaction with the user's personal data.
 
@@ -24,7 +25,7 @@ To get started with the Zapp SDK, you will need to install the `@parcnet-js/app-
 Next, import the connector package in your application code:
 
 ```ts wrap=true title="src/main.ts"
-import { connect } from "@parcnet-js/connector";
+import { connect } from "@parcnet-js/app-connector";
 ```
 
 ## Connect to Zupass
@@ -38,11 +39,79 @@ To define your Zapp:
 import { connect, Zapp } from "@parcnet-js/app-connector";
 
 const myZapp: Zapp = {
-  name: "My Zapp Name"
+  name: "My Zapp Name",
+  permissions: {
+    REQUEST_PROOF: { collections: ["Apples", "Bananas"] },
+    SIGN_POD: {},
+    READ_POD: { collections: ["Apples", "Bananas"] },
+    INSERT_POD: { collections: ["Apples", "Bananas"] },
+    DELETE_POD: { collections: ["Bananas"] },
+    READ_PUBLIC_IDENTIFIERS: {}
+  }
 }
 ```
 
 Try to give your Zapp a simple, memorable name that is clearly tied to its branding or domain name.
+
+#### Permissions
+
+When connecting for the first time, your Zapp will request permissions from Zupass. These permissions determine what the Zapp will be allowed to do with user data:
+
+<table>
+<tr>
+<th>Permission</th><th>Effects</th><th>Parameters</th>
+</tr>
+<tr>
+<td>READ_PUBLIC_IDENTIFIERS</td>
+<td>This permission allows your Zapp to read the user's public key and Semaphore commitments.</td>
+<td>
+_None._
+</td>
+</tr>
+<tr>
+<td>REQUEST_PROOF</td>
+<td>This permission allows your Zapp to request zero-knowledge proofs from the user.</td>
+<td>
+**collections**: The names of the collections that your Zapp requires access to.
+</td>
+</tr>
+<tr>
+<td>SIGN_POD</td>
+<td>This permission allows your Zapp to request the signing of a POD with the user's identity.</td>
+<td>
+_None._
+</td>
+</tr>
+<tr>
+<td>READ_POD</td>
+<td>This permission allows your Zapp to read any POD from the specified collections.</td>
+<td>
+**collections**: The names of the collections that your Zapp requires access to.
+</td>
+</tr>
+<tr>
+<td>INSERT_POD</td>
+<td>This permission allows your Zapp to insert PODs to the specified collections.</td>
+<td>
+**collections**: The names of the collections that your Zapp requires access to.
+</td>
+</tr>
+<tr>
+<td>DELETE_POD</td>
+<td>This permission allows your Zapp to delete any POD from the specified collections.</td>
+<td>
+**collections**: The names of the collections that your Zapp requires access to.
+</td>
+</tr>
+</table>
+
+"Collections" are distinct groups of PODs, and allow the user to grant different levels of access to different Zapps.
+
+<Aside type="tip" title="Built-in collections">
+Zupass has a built-in collection called "Tickets". Your Zapp can also specify a new collection which doesn't already exist, and create it by inserting PODs into it.
+
+The "Tickets" collection is special, and some tickets cannot be deleted even if your Zapp requests this permission.
+</Aside>
 
 ### Select an HTML element
 
@@ -82,7 +151,10 @@ import { connect, Zapp } from "@parcnet-js/app-connector";
 
 // The details of our Zapp
 const myZapp: Zapp = {
-  name: "My Zapp Name"
+  name: "My Zapp Name",
+  permissions: {
+    READ_PUBLIC_IDENTIFIERS: {}
+  }
 }
 
 // The HTML element to host the <iframe>
@@ -130,12 +202,14 @@ The POD's unique signature is the signed hash of the Merkle root, but you can tr
 Once you have a POD, you can insert it to the data store:
 
 ```ts wrap=true title="src/main.ts"
-await z.pod.insert(signedPOD);
+await z.pod.collection("CollectionName").insert(signedPOD);
 ```
 
 Zupass is responsible for saving the data and synchronizing it between devices, so your app doesn't need to worry about how this data is persisted.
 
-In this example, we're inserting the POD that we created by requesting a signature from the client, but your app could also have a back-end service which signs PODs using your own private key. Those PODs can be inserted using the `insert` API. For example:
+The collection name should be one of the collections that your Zapp requested permission to insert PODs to. Attempting to insert to a collection without permissions will fail.
+
+In the above example, we're inserting the POD that we created by requesting a signature from the client, but your app could also have a back-end service which signs PODs using your own private key. Those PODs can be inserted using the `insert` API. For example:
 
 ```ts wrap=true title="src/main.ts"
 // Fetch the serialized POD from the server
@@ -146,7 +220,7 @@ const serializedPOD = await response.text();
 const pod = POD.deserialize(serializedPOD);
 
 // Now you can insert the POD into the data store
-await z.pod.insert(pod);
+await z.pod.collection("CollectionName").insert(pod);
 ```
 
 The details of your backend may be different, but this approach works for PODs produced by any external source.
@@ -156,7 +230,7 @@ The details of your backend may be different, but this approach works for PODs p
 Your app can also delete PODs for which it knows the signature:
 
 ```ts wrap=true title="src/main.ts"
-await z.pod.delete(signature);
+await z.pod.collection("CollectionName").delete(signature);
 ```
 
 This tells the client to drop the POD from the user's data store.
@@ -166,12 +240,15 @@ This tells the client to drop the POD from the user's data store.
 To read PODs from the data store, you can define queries which describe certain criteria for PODs:
 
 ```ts wrap=true title="src/main.ts"
-const queryResult = await z.pod.query({
+import * as p from "@parcnet-js/podspec";
+
+const query = p.pod({
   entries: {
     greeting: { type: "string" },
     magic_number: { type: "int" }
   }
 });
+const queryResult = await z.pod.collection("CollectionName").query();
 ```
 
 This will return any PODs which have entries matching the description. The result is an array of `POD` objects, which will be empty if no matching results are found.
@@ -179,6 +256,8 @@ This will return any PODs which have entries matching the description. The resul
 Queries can contain more advanced constraints:
 
 ```ts wrap=true title="src/main.ts"
+import * as p from "@parcnet-js/podspec";
+
 const validGreetings = [
   { type: "string", value: "Hello, world" },
   { type: "string", value: "Ahoy there!" },
@@ -187,12 +266,14 @@ const validGreetings = [
 
 const validNumberRange = { min: 1000n, max: 1500n };
 
-const queryResult = await z.pod.query({
+const query = p.pod({
   entries: {
     greeting: { type: "string", isMemberOf: validGreetings },
     magic_number: { type: "int", inRange: validNumberRange }
   }
 });
+
+const queryResult = await z.pod.collection("CollectionName").query(query);
 ```
 
 This query provides a list of valid strings for the `greeting` entry, and a range of valid numbers for the `magic_number` entry. You can use these features to construct very specific queries for specific PODs.
@@ -220,19 +301,21 @@ const validGreetings = [
 
 const validNumberRange = { min: 1000n, max: 1500n };
 
-const result = await z.gpc.prove({
-  pods: {
-    pod1: {
-      pod: {
-        entries: {
-          greeting: { type: "string", isMemberOf: validGreetings },
-          magic_number: { type: "int", inRange: validNumberRange },
-          email_address: { type: "string" }
+const result = await z.gpc.prove({ 
+  request: {
+    pods: {
+      pod1: {
+        pod: {
+          entries: {
+            greeting: { type: "string", isMemberOf: validGreetings },
+            magic_number: { type: "int", inRange: validNumberRange },
+            email_address: { type: "string" }
+          }
         }
+      },
+      {
+        revealed: { email_address: true }
       }
-    },
-    {
-      revealed: { email_address: true }
     }
   }
 });

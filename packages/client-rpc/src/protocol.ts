@@ -1,5 +1,5 @@
 import * as v from "valibot";
-import { ParcnetRPCSchema } from "./schema.js";
+import { PODDataSchema, ParcnetRPCSchema } from "./schema.js";
 import { ZappSchema } from "./zapp.js";
 
 export enum InitializationMessageType {
@@ -36,7 +36,7 @@ export type ParcnetRPCMethodName =
   | `pod.${keyof typeof ParcnetRPCSchema.pod}`
   | `identity.${keyof typeof ParcnetRPCSchema.identity}`;
 
-export const RPCMessageSchema = v.union([
+export const RPCMessageSchema = v.variant("type", [
   v.object({
     type: v.literal(RPCMessageType.PARCNET_CLIENT_INVOKE),
     serial: v.number(),
@@ -51,7 +51,8 @@ export const RPCMessageSchema = v.union([
   v.object({
     type: v.literal(RPCMessageType.PARCNET_CLIENT_INVOKE_ERROR),
     error: v.string(),
-    serial: v.number()
+    serial: v.number(),
+    errorType: v.optional(v.union([v.literal("missing-permission")]))
   }),
   v.object({
     type: v.literal(RPCMessageType.PARCNET_CLIENT_READY)
@@ -64,13 +65,13 @@ export const RPCMessageSchema = v.union([
   }),
   v.object({
     type: v.literal(RPCMessageType.PARCNET_CLIENT_SUBSCRIPTION_UPDATE),
-    update: v.array(v.string()),
+    update: v.array(PODDataSchema),
     subscriptionId: v.string(),
     subscriptionSerial: v.number()
   })
 ]);
 
-export const InitializationMessageSchema = v.union([
+export const InitializationMessageSchema = v.variant("type", [
   v.object({
     type: v.literal(InitializationMessageType.PARCNET_CLIENT_CONNECT),
     zapp: ZappSchema

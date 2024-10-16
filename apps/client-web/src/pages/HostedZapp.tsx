@@ -20,26 +20,27 @@ export function HostedZapp(): ReactNode {
   useEffect(() => {
     void (async () => {
       if (window.parent) {
-        const { zapp, advice } = await listen();
-        dispatch({ type: "set-zapp", zapp });
+        const { zapp, advice, origin } = await listen();
+        dispatch({ type: "set-zapp", zapp, origin });
         dispatch({ type: "set-advice", advice });
       }
     })();
   }, [dispatch]);
 
   useEffect(() => {
-    if (state.advice) {
+    if (state.advice && state.zapp) {
       state.advice.hideClient();
       state.advice.ready(
         new ParcnetClientProcessor(
           state.advice,
           state.pods,
           dispatch,
-          state.identity
+          state.identity,
+          state.zapp
         )
       );
     }
-  }, [state.advice, state.authorized, state.pods, state.identity, dispatch]);
+  }, [state.advice, state.pods, state.identity, dispatch, state.zapp]);
 
   const modalVisible = useMemo(() => {
     return state.proofInProgress !== undefined;

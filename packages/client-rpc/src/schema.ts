@@ -1,131 +1,24 @@
-import type { GPCBoundConfig, GPCRevealedClaims } from "@pcd/gpc";
-import type { Groth16Proof } from "snarkjs";
 import * as v from "valibot";
 import type { ParcnetRPC } from "./rpc_interfaces.js";
+import {
+  PODEntriesSchema,
+  PODSchemaSchema,
+  PodspecProofRequestSchema,
+  ProveResultSchema
+} from "./schema_elements.js";
 
-const PODValueSchema = v.union([
-  v.object({
-    type: v.literal("string"),
-    value: v.string()
-  }),
-  v.object({
-    type: v.literal("int"),
-    value: v.bigint()
-  }),
-  v.object({
-    type: v.literal("cryptographic"),
-    value: v.bigint()
-  }),
-  v.object({
-    type: v.literal("eddsa_pubkey"),
-    value: v.string()
-  })
-]);
+const CollectionIdSchema = v.string();
 
-const PODEntriesSchema = v.record(v.string(), PODValueSchema);
-
-const DefinedEntrySchema = v.union([
-  v.object({
-    type: v.literal("string"),
-    isMemberOf: v.optional(v.array(PODValueSchema)),
-    isNotMemberOf: v.optional(v.array(PODValueSchema)),
-    isRevealed: v.optional(v.boolean()),
-    equalsEntry: v.optional(v.string())
-  }),
-  v.object({
-    type: v.literal("int"),
-    isMemberOf: v.optional(v.array(PODValueSchema)),
-    isNotMemberOf: v.optional(v.array(PODValueSchema)),
-    isRevealed: v.optional(v.boolean()),
-    equalsEntry: v.optional(v.string()),
-    inRange: v.optional(
-      v.object({
-        min: v.bigint(),
-        max: v.bigint()
-      })
-    )
-  }),
-  v.object({
-    type: v.literal("cryptographic"),
-    isMemberOf: v.optional(v.array(PODValueSchema)),
-    isNotMemberOf: v.optional(v.array(PODValueSchema)),
-    isRevealed: v.optional(v.boolean()),
-    equalsEntry: v.optional(v.string())
-  }),
-  v.object({
-    type: v.literal("eddsa_pubkey"),
-    isMemberOf: v.optional(v.array(PODValueSchema)),
-    isNotMemberOf: v.optional(v.array(PODValueSchema)),
-    isRevealed: v.optional(v.boolean()),
-    equalsEntry: v.optional(v.string())
-  })
-]);
-
-const OptionalEntrySchema = v.object({
-  type: v.literal("optional"),
-  innerType: DefinedEntrySchema
+const ProveArgsSchema = v.object({
+  request: PodspecProofRequestSchema,
+  collectionIds: v.optional(v.array(CollectionIdSchema))
 });
 
-const EntrySchema = v.union([DefinedEntrySchema, OptionalEntrySchema]);
-
-const PODTupleSchema = v.object({
-  entries: v.array(v.string()),
-  isMemberOf: v.optional(v.array(v.array(PODValueSchema))),
-  isNotMemberOf: v.optional(v.array(v.array(PODValueSchema)))
+export const PODDataSchema = v.object({
+  entries: PODEntriesSchema,
+  signature: v.string(),
+  signerPublicKey: v.string()
 });
-
-const SignerPublicKeySchema = v.object({
-  isMemberOf: v.optional(v.array(v.string())),
-  isNotMemberOf: v.optional(v.array(v.string()))
-});
-
-const SignatureSchema = v.object({
-  isMemberOf: v.optional(v.array(v.string())),
-  isNotMemberOf: v.optional(v.array(v.string()))
-});
-
-const PODSchemaSchema = v.object({
-  entries: v.record(v.string(), EntrySchema),
-  tuples: v.optional(v.array(PODTupleSchema)),
-  signerPublicKey: v.optional(SignerPublicKeySchema),
-  signature: v.optional(SignatureSchema),
-  meta: v.optional(
-    v.object({
-      labelEntry: v.string()
-    })
-  )
-});
-
-const ProofConfigPODSchemaSchema = v.object({
-  pod: PODSchemaSchema,
-  revealed: v.optional(v.record(v.string(), v.optional(v.boolean()))),
-  owner: v.optional(
-    v.object({
-      entry: v.string(),
-      protocol: v.union([v.literal("SemaphoreV3"), v.literal("SemaphoreV4")])
-    })
-  )
-});
-
-const PodspecProofRequestSchema = v.object({
-  pods: v.record(v.string(), ProofConfigPODSchemaSchema),
-  externalNullifier: v.optional(PODValueSchema),
-  watermark: v.optional(PODValueSchema)
-});
-
-const ProveResultSchema = v.union([
-  v.object({
-    success: v.literal(true),
-    // TODO: More specific schemas for these
-    proof: v.custom<Groth16Proof>(() => true),
-    boundConfig: v.custom<GPCBoundConfig>(() => true),
-    revealedClaims: v.custom<GPCRevealedClaims>(() => true)
-  }),
-  v.object({
-    success: v.literal(false),
-    error: v.string()
-  })
-]);
 
 export type RPCFunction<
   I extends v.TupleSchema<
@@ -158,18 +51,18 @@ type RPCSchema = Record<string, Record<string, RPCFunction>>;
 export const ParcnetRPCSchema = {
   gpc: {
     prove: {
-      input: v.tuple([PodspecProofRequestSchema] as [
-        proofRequest: typeof PodspecProofRequestSchema
-      ]),
+      input: v.tuple([ProveArgsSchema]),
       output: ProveResultSchema
     },
     canProve: {
-      input: v.tuple([PodspecProofRequestSchema] as [
-        proofRequest: typeof PodspecProofRequestSchema
-      ]),
+      input: v.tuple([ProveArgsSchema]),
       output: v.boolean()
     },
     verify: {
+      input: v.tuple([v.any(), v.any(), v.any()]),
+      output: v.boolean()
+    },
+    verifyWithProofRequest: {
       input: v.tuple([v.any(), v.any(), v.any(), v.any()]),
       output: v.boolean()
     }
@@ -190,21 +83,31 @@ export const ParcnetRPCSchema = {
   },
   pod: {
     query: {
-      input: v.tuple([PODSchemaSchema] as [query: typeof PODSchemaSchema]),
-      output: v.array(v.string())
+      input: v.tuple([v.string(), PODSchemaSchema] as [
+        collectionId: ReturnType<typeof v.string>,
+        query: typeof PODSchemaSchema
+      ]),
+      output: v.array(PODDataSchema)
     },
     insert: {
-      input: v.tuple([v.string()] as [
-        serializedPOD: ReturnType<typeof v.string>
+      input: v.tuple([v.string(), PODDataSchema] as [
+        collectionId: ReturnType<typeof v.string>,
+        podData: typeof PODDataSchema
       ]),
       output: v.void()
     },
     delete: {
-      input: v.tuple([v.string()] as [signature: ReturnType<typeof v.string>]),
+      input: v.tuple([v.string(), v.string()] as [
+        collectionId: ReturnType<typeof v.string>,
+        signature: ReturnType<typeof v.string>
+      ]),
       output: v.void()
     },
     subscribe: {
-      input: v.tuple([PODSchemaSchema] as [query: typeof PODSchemaSchema]),
+      input: v.tuple([v.string(), PODSchemaSchema] as [
+        collectionId: ReturnType<typeof v.string>,
+        query: typeof PODSchemaSchema
+      ]),
       output: v.string()
     },
     unsubscribe: {
@@ -215,7 +118,7 @@ export const ParcnetRPCSchema = {
     },
     sign: {
       input: v.tuple([PODEntriesSchema] as [entries: typeof PODEntriesSchema]),
-      output: v.string()
+      output: PODDataSchema
     }
   }
 } as const satisfies RPCSchema;
@@ -229,7 +132,7 @@ type InferredRPCSchema<T extends RPCSchema> = {
 };
 
 type InferredNewSchema = InferredRPCSchema<typeof ParcnetRPCSchema>;
-export const _schemaTypeCheck = {} as InferredNewSchema satisfies Omit<
+const _schemaTypeCheck = {} as InferredNewSchema satisfies Omit<
   ParcnetRPC,
   "_version"
 >;

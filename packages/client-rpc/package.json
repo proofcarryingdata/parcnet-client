@@ -1,15 +1,28 @@
 {
   "name": "@parcnet-js/client-rpc",
   "type": "module",
-  "version": "0.0.4",
+  "version": "1.0.0",
   "license": "GPL-3.0-or-later",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "src/index.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./src/index.ts",
+        "import": "./dist/index.js"
+      },
+      "require": {
+        "types": "./src/index.ts",
+        "require": "./dist/index.cjs"
+      }
+    }
+  },
   "scripts": {
     "lint": "eslint . --max-warnings 0",
     "build": "tsup 'src/**/*@(ts|tsx)' --format cjs,esm --clean --sourcemap",
-    "prepublish": "tsup 'src/**/*@(ts|tsx)' --format cjs,esm --clean --sourcemap --dts"
+    "prepublish": "tsup 'src/**/*@(ts|tsx)' --format cjs,esm --clean --sourcemap --dts",
+    "test": "vitest run --typecheck"
   },
   "files": ["dist", "LICENSE"],
   "dependencies": {
@@ -20,13 +33,28 @@
   },
   "devDependencies": {
     "@parcnet-js/eslint-config": "workspace:*",
+    "@parcnet-js/podspec": "workspace:*",
     "@parcnet-js/typescript-config": "workspace:*",
     "@types/snarkjs": "^0.7.8",
     "tsup": "^8.2.4",
-    "typescript": "^5.5"
+    "typescript": "^5.5",
+    "vitest": "^2.1.2"
   },
   "publishConfig": {
     "access": "public",
-    "types": "dist/index.d.ts"
-  }
+    "types": "dist/index.d.ts",
+    "exports": {
+      ".": {
+        "import": {
+          "types": "./dist/index.d.ts",
+          "import": "./dist/index.js"
+        },
+        "require": {
+          "types": "./dist/index.d.cts",
+          "require": "./dist/index.cjs"
+        }
+      }
+    }
+  },
+  "sideEffects": false
 }

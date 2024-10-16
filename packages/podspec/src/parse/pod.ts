@@ -22,6 +22,12 @@ import {
 import type { ParseResult } from "./parse_utils.js";
 import { FAILURE, SUCCESS, safeCheckTuple } from "./parse_utils.js";
 
+export interface PODData {
+  entries: PODEntries;
+  signature: string;
+  signerPublicKey: string;
+}
+
 /**
  * "Strong" PODContent is an extension of PODContent which extends the
  * `asEntries()` method to return a strongly-typed PODEntries.

@@ -25,7 +25,8 @@ export default defineConfig({
       title: "Zapp SDK",
       social: {
         github: "https://github.com/proofcarryingdata/parcnet-client",
-        "x.com": "https://twitter.com/zupassproject"
+        "x.com": "https://twitter.com/zupassproject",
+        telegram: "https://t.me/zupass"
       },
       components: {
         SiteTitle: "./src/components/starlight/SiteTitle.astro"
@@ -36,7 +37,11 @@ export default defineConfig({
           items: [
             // Each item here is one entry in the navigation menu.
             { label: "Introduction", slug: "guides/introduction" },
-            { label: "Getting Started", slug: "guides/getting-started" }
+            { label: "Getting Started", slug: "guides/getting-started" },
+            {
+              label: "Making Proofs about Ticket PODs",
+              slug: "guides/ticket-proofs"
+            }
           ]
         },
         typeDocSidebarGroup

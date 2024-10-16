@@ -1,5 +1,66 @@
 # @parcnet-js/client-rpc
 
+## 1.0.0
+
+### Major Changes
+
+- 2cc8bfc: 1.0.0 release
+
+  This release introduces two new features:
+
+  - Collections, which allow PODs to be stored in separate buckets with different access levels for different Zapps
+  - Permissions, which allow your Zapp to specify which features it requires access to
+
+  For documentation on these features, visit https://zappsdk.netlify.app or see the example code at `examples/test-app`.
+
+### Patch Changes
+
+- a1539a5: Support collection-based permissions and PODData type
+- Updated dependencies [2cc8bfc]
+- Updated dependencies [a1539a5]
+  - @parcnet-js/podspec@1.0.0
+
+## 1.0.0-beta.1
+
+### Major Changes
+
+- 1.0.0 release
+
+  This release introduces two new features:
+
+  - Collections, which allow PODs to be stored in separate buckets with different access levels for different Zapps
+  - Permissions, which allow your Zapp to specify which features it requires access to
+
+  For documentation on these features, visit https://zappsdk.netlify.app or see the example code at `examples/test-app`.
+
+### Patch Changes
+
+- Updated dependencies
+  - @parcnet-js/podspec@1.0.0-beta.1
+
+## 0.0.6-next.0
+
+### Patch Changes
+
+- Support collection-based permissions and PODData type
+- Updated dependencies
+  - @parcnet-js/podspec@0.0.6-alpha.0
+
+## 0.0.6
+
+### Patch Changes
+
+- Support for distinct verify and verifyWithProofRequest operations
+- Updated dependencies
+  - @parcnet-js/podspec@0.0.5
+
+## 0.0.5
+
+### Patch Changes
+
+- Updated dependencies [0cc537e]
+  - @parcnet-js/podspec@0.0.4
+
 ## 0.0.4
 
 ### Patch Changes

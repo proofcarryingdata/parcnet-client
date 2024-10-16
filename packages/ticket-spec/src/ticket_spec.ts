@@ -13,7 +13,10 @@ export const TicketSpec = p.pod({
     timestampConsumed: { type: "int" },
     timestampSigned: { type: "int" },
     // Semaphore v3
-    attendeeSemaphoreId: { type: "cryptographic" },
+    attendeeSemaphoreId: {
+      type: "optional",
+      innerType: { type: "cryptographic" }
+    },
     // Semaphore v4
     owner: { type: "eddsa_pubkey" },
     isConsumed: { type: "int" },

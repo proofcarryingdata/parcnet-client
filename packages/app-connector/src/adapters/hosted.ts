@@ -1,8 +1,9 @@
 import type { Zapp } from "@parcnet-js/client-rpc";
 import { InitializationMessageType } from "@parcnet-js/client-rpc";
+import { createNanoEvents } from "nanoevents";
 import { ParcnetAPI } from "../api_wrapper.js";
 import { ParcnetRPCConnector } from "../rpc_client.js";
-import type { DialogController } from "./iframe.js";
+import type { DialogController, ModalEvents } from "./iframe.js";
 import { postWindowMessage } from "./iframe.js";
 
 export function isHosted(): boolean {
@@ -25,6 +26,8 @@ export function connectToHost(zapp: Zapp): Promise<ParcnetAPI> {
     throw new Error("Zapp must be hosted inside an iframe");
   }
 
+  const emitter = createNanoEvents<ModalEvents>();
+
   return new Promise<ParcnetAPI>((resolve) => {
     // Create a new MessageChannel to communicate with the parent window
     const chan = new MessageChannel();
@@ -40,7 +43,7 @@ export function connectToHost(zapp: Zapp): Promise<ParcnetAPI> {
     // See below for how the other port of the message channel is sent to
     // the client.
     client.start(() => {
-      resolve(new ParcnetAPI(client));
+      resolve(new ParcnetAPI(client, emitter));
     });
 
     // Send the other port of the message channel to the client

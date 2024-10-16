@@ -4,8 +4,15 @@ import type {
   Zapp
 } from "@parcnet-js/client-rpc";
 import { InitializationMessageType } from "@parcnet-js/client-rpc";
+import { createNanoEvents } from "nanoevents";
 import { ParcnetAPI } from "../api_wrapper.js";
 import { ParcnetRPCConnector } from "../rpc_client.js";
+
+export type ModalEvents = {
+  close: () => void;
+};
+
+export type ModalEmitter = ReturnType<typeof createNanoEvents<ModalEvents>>;
 
 class DialogControllerImpl implements DialogController {
   #dialog: HTMLDialogElement;
@@ -44,6 +51,8 @@ export function connect(
   // Will throw if the URL is invalid
   const normalizedUrl = new URL(clientUrl);
 
+  const emitter = createNanoEvents<ModalEvents>();
+
   // Create a dialog to hold the client iframe
   const dialog = document.createElement("dialog");
   dialog.style.borderWidth = "0px";
@@ -64,6 +73,10 @@ export function connect(
     ) {
       dialog.close();
     }
+  });
+
+  dialog.addEventListener("close", () => {
+    emitter.emit("close");
   });
 
   // Add a backdrop to the dialog
@@ -102,53 +115,57 @@ export function connect(
   iframe.src = normalizedUrl.toString();
 
   return new Promise<ParcnetAPI>((resolve) => {
-    iframe.addEventListener("load", () => {
-      // Create a new MessageChannel to communicate with the iframe
-      const chan = new MessageChannel();
+    iframe.addEventListener(
+      "load",
+      () => {
+        // Create a new MessageChannel to communicate with the iframe
+        const chan = new MessageChannel();
 
-      // Create a new RPC client
-      const client = new ParcnetRPCConnector(
-        chan.port2,
-        new DialogControllerImpl(dialog)
-      );
-      // Tell the RPC client to start. It will call the function we pass in
-      // when the connection is ready, at which point we can resolve the
-      // promise and return the API wrapper to the caller.
-      // See below for how the other port of the message channel is sent to
-      // the client.
-      client.start(() => {
-        resolve(new ParcnetAPI(client));
-      });
+        // Create a new RPC client
+        const client = new ParcnetRPCConnector(
+          chan.port2,
+          new DialogControllerImpl(dialog)
+        );
+        // Tell the RPC client to start. It will call the function we pass in
+        // when the connection is ready, at which point we can resolve the
+        // promise and return the API wrapper to the caller.
+        // See below for how the other port of the message channel is sent to
+        // the client.
+        client.start(() => {
+          resolve(new ParcnetAPI(client, emitter));
+        });
 
-      if (iframe.contentWindow) {
-        const contentWindow = iframe.contentWindow;
-        // @todo Blink (and maybe Webkit) will discard messages if there's no
-        // handler yet, so we need to wait a bit and/or retry until the client is
-        // ready
-        // The client takes a few seconds to load, so waiting isn't a bad solution
-        new Promise<void>((resolve) => {
-          window.setTimeout(() => resolve(), 1000);
-        })
-          .then(() => {
-            // Send the other port of the message channel to the client
-            postWindowMessage(
-              contentWindow,
-              {
-                type: InitializationMessageType.PARCNET_CLIENT_CONNECT,
-                zapp: zapp
-              },
-              "*",
-              // Our RPC client has port2, send port1 to the client
-              [chan.port1]
-            );
+        if (iframe.contentWindow) {
+          const contentWindow = iframe.contentWindow;
+          // @todo Blink (and maybe Webkit) will discard messages if there's no
+          // handler yet, so we need to wait a bit and/or retry until the client is
+          // ready
+          // The client takes a few seconds to load, so waiting isn't a bad solution
+          new Promise<void>((resolve) => {
+            window.setTimeout(() => resolve(), 1000);
           })
-          .catch((err) => {
-            console.error("Error sending initialization message", err);
-          });
-      } else {
-        console.error("no iframe content window!");
-      }
-    });
+            .then(() => {
+              // Send the other port of the message channel to the client
+              postWindowMessage(
+                contentWindow,
+                {
+                  type: InitializationMessageType.PARCNET_CLIENT_CONNECT,
+                  zapp: zapp
+                },
+                "*",
+                // Our RPC client has port2, send port1 to the client
+                [chan.port1]
+              );
+            })
+            .catch((err) => {
+              console.error("Error sending initialization message", err);
+            });
+        } else {
+          console.error("no iframe content window!");
+        }
+      },
+      { once: true }
+    );
     shadow.appendChild(iframe);
   });
 }

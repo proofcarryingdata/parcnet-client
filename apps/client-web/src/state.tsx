@@ -1,11 +1,26 @@
 import type { ConnectorAdvice } from "@parcnet-js/client-helpers";
-import type { ProveResult, Zapp } from "@parcnet-js/client-rpc";
+import {
+  PermissionRequestSchema,
+  type ProveResult,
+  type Zapp
+} from "@parcnet-js/client-rpc";
 import type { PodspecProofRequest } from "@parcnet-js/podspec";
-import type { POD } from "@pcd/pod";
+import * as p from "@parcnet-js/podspec";
+import { $s } from "@parcnet-js/podspec/pod_value_utils";
+import { POD, encodePrivateKey, encodePublicKey } from "@pcd/pod";
 import type { Identity as IdentityV4 } from "@semaphore-protocol/core";
+import isEqual from "lodash/isEqual";
 import { createContext, useContext, useReducer } from "react";
-import { PODCollection } from "./client/pod_collection";
-import { getIdentity, loadPODsFromStorage } from "./client/utils";
+import * as v from "valibot";
+import { PODCollectionManager } from "./client/pod_collection_manager";
+import { getIdentity } from "./client/utils";
+
+export enum ConnectionState {
+  DISCONNECTED,
+  CONNECTING,
+  CONNECTED,
+  AUTHORIZED
+}
 
 export const StateContext = createContext<
   | {
@@ -18,13 +33,13 @@ export const StateContext = createContext<
 function initializeState(): ClientState {
   return {
     embeddedMode: !!window.parent,
-    loggedIn: false,
+    connectionState: ConnectionState.CONNECTING,
     advice: null,
     zapp: null,
-    authorized: false,
+    zappOrigin: null,
     proofInProgress: undefined,
     identity: getIdentity(),
-    pods: new PODCollection(loadPODsFromStorage()),
+    pods: PODCollectionManager.loadFromStorage(),
     zapps: new Map([["test-zapp", "http://localhost:3200"]])
   } satisfies ClientState;
 }
@@ -56,10 +71,10 @@ export function useAppState(): {
 
 export type ClientState = {
   embeddedMode: boolean;
-  loggedIn: boolean;
-  authorized: boolean;
+  connectionState: ConnectionState;
   advice: ConnectorAdvice | null;
   zapp: Zapp | null;
+  zappOrigin: string | null;
   proofInProgress:
     | {
         pods: Record<string, POD[]>;
@@ -70,7 +85,7 @@ export type ClientState = {
       }
     | undefined;
   identity: IdentityV4;
-  pods: PODCollection;
+  pods: PODCollectionManager;
   zapps: Map<string, string>;
 };
 
@@ -86,6 +101,7 @@ export type ClientAction =
   | {
       type: "set-zapp";
       zapp: Zapp;
+      origin: string;
     }
   | {
       type: "set-advice";
@@ -101,6 +117,9 @@ export type ClientAction =
     }
   | {
       type: "clear-proof-in-progress";
+    }
+  | {
+      type: "logout";
     };
 
 export function clientReducer(state: ClientState, action: ClientAction) {
@@ -108,9 +127,84 @@ export function clientReducer(state: ClientState, action: ClientAction) {
     case "login":
       return { ...state, loggedIn: action.loggedIn };
     case "authorize":
-      return { ...state, authorized: action.authorized };
+      if (!state.zapp || !state.zappOrigin) {
+        throw new Error("No zapp or zapp origin");
+      }
+      const existingZapps = state.pods.get("zapps").query({
+        entries: {
+          name: { type: "string", isMemberOf: [$s(state.zapp.name)] },
+          origin: { type: "string", isMemberOf: [$s(state.zappOrigin)] }
+        },
+        signerPublicKey: {
+          isMemberOf: [encodePublicKey(state.identity.publicKey)]
+        }
+      });
+      for (const match of existingZapps) {
+        state.pods.get("zapps").delete(match.signature);
+      }
+      const zappPOD = POD.sign(
+        {
+          name: { type: "string", value: state.zapp.name },
+          origin: {
+            type: "string",
+            value: state.zappOrigin
+          },
+          permissions: {
+            type: "string",
+            value: JSON.stringify(state.zapp.permissions)
+          }
+        },
+        encodePrivateKey(Buffer.from(state.identity.export(), "base64"))
+      );
+      state.pods.get("zapps").insert(zappPOD);
+      return {
+        ...state,
+        connectionState: ConnectionState.AUTHORIZED
+      } satisfies ClientState;
     case "set-zapp":
-      return { ...state, zapp: action.zapp };
+      let authorized = false;
+      const appPodSpec = p.pod({
+        entries: {
+          origin: {
+            type: "string",
+            isMemberOf: [$s(action.origin)]
+          },
+          name: {
+            type: "string",
+            isMemberOf: [$s(action.zapp.name)]
+          },
+          permissions: {
+            type: "string"
+          }
+        }
+      });
+
+      const existingPODQuery = appPodSpec.query(
+        state.pods.get("zapps").getAll()
+      );
+      if (existingPODQuery.matches.length === 1) {
+        try {
+          const existingPermissions = v.parse(
+            PermissionRequestSchema,
+            JSON.parse(
+              existingPODQuery.matches[0].content.asEntries().permissions.value
+            )
+          );
+          if (isEqual(existingPermissions, action.zapp.permissions)) {
+            authorized = true;
+          }
+        } catch (e) {
+          console.error("Error parsing permissions", e);
+        }
+      }
+      return {
+        ...state,
+        zapp: action.zapp,
+        zappOrigin: action.origin,
+        connectionState: authorized
+          ? ConnectionState.AUTHORIZED
+          : ConnectionState.CONNECTED
+      } satisfies ClientState;
     case "set-advice":
       return { ...state, advice: action.advice };
     case "set-proof-in-progress":
@@ -129,5 +223,7 @@ export function clientReducer(state: ClientState, action: ClientAction) {
         ...state,
         proofInProgress: undefined
       };
+    case "logout":
+      return initializeState();
   }
 }

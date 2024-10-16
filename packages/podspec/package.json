@@ -1,6 +1,6 @@
 {
   "name": "@parcnet-js/podspec",
-  "version": "0.0.3",
+  "version": "1.0.0",
   "license": "GPL-3.0-or-later",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
@@ -8,21 +8,31 @@
   "types": "src/index.ts",
   "exports": {
     ".": {
-      "types": "./src/index.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": {
+        "types": "./src/index.ts",
+        "import": "./dist/index.js"
+      },
+      "require": {
+        "types": "./src/index.ts",
+        "require": "./dist/index.cjs"
+      }
     },
     "./pod_value_utils": {
-      "types": "./src/pod_value_utils.ts",
-      "import": "./dist/pod_value_utils.js",
-      "require": "./dist/pod_value_utils.cjs"
+      "import": {
+        "types": "./src/pod_value_utils.ts",
+        "import": "./dist/pod_value_utils.js"
+      },
+      "require": {
+        "types": "./src/pod_value_utils.ts",
+        "require": "./dist/pod_value_utils.cjs"
+      }
     }
   },
   "scripts": {
     "lint": "eslint . --max-warnings 0",
     "build": "tsup 'src/**/*@(ts|tsx)' --format cjs,esm --clean --sourcemap",
     "prepublish": "tsup 'src/**/*@(ts|tsx)' --format cjs,esm --clean --sourcemap --dts",
-    "test": "vitest run"
+    "test": "vitest run --typecheck"
   },
   "files": ["dist", "./README.md", "./LICENSE"],
   "dependencies": {
@@ -46,15 +56,26 @@
     "types": "dist/index.d.ts",
     "exports": {
       ".": {
-        "types": "./dist/index.d.ts",
-        "import": "./dist/index.js",
-        "require": "./dist/index.cjs"
+        "import": {
+          "types": "./dist/index.d.ts",
+          "import": "./dist/index.js"
+        },
+        "require": {
+          "types": "./dist/index.d.cts",
+          "require": "./dist/index.cjs"
+        }
       },
       "./pod_value_utils": {
-        "types": "./dist/pod_value_utils.d.ts",
-        "import": "./dist/pod_value_utils.js",
-        "require": "./dist/pod_value_utils.cjs"
+        "import": {
+          "types": "./dist/pod_value_utils.d.ts",
+          "import": "./dist/pod_value_utils.js"
+        },
+        "require": {
+          "types": "./dist/pod_value_utils.d.cts",
+          "require": "./dist/pod_value_utils.cjs"
+        }
       }
     }
-  }
+  },
+  "sideEffects": false
 }

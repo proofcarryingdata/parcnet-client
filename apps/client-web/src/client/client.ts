@@ -3,7 +3,8 @@ import type {
   ParcnetGPCRPC,
   ParcnetIdentityRPC,
   ParcnetPODRPC,
-  ParcnetRPC
+  ParcnetRPC,
+  Zapp
 } from "@parcnet-js/client-rpc";
 import type { Identity } from "@semaphore-protocol/core";
 import type { Dispatch } from "react";
@@ -11,7 +12,7 @@ import type { ClientAction } from "../state.js";
 import { ParcnetGPCProcessor } from "./gpc.js";
 import { ParcnetIdentityProcessor } from "./identity.js";
 import { ParcnetPODProcessor } from "./pod.js";
-import type { PODCollection } from "./pod_collection.js";
+import type { PODCollectionManager } from "./pod_collection_manager.js";
 import { QuerySubscriptions } from "./query_subscriptions.js";
 
 export class ParcnetClientProcessor implements ParcnetRPC {
@@ -23,9 +24,10 @@ export class ParcnetClientProcessor implements ParcnetRPC {
 
   public constructor(
     public readonly clientChannel: ConnectorAdvice,
-    private readonly pods: PODCollection,
+    private readonly pods: PODCollectionManager,
     dispatch: Dispatch<ClientAction>,
-    userIdentity: Identity
+    userIdentity: Identity,
+    zapp: Zapp
   ) {
     this.subscriptions = new QuerySubscriptions(this.pods);
     this.subscriptions.onSubscriptionUpdated((update, serial) => {
@@ -34,9 +36,15 @@ export class ParcnetClientProcessor implements ParcnetRPC {
     this.pod = new ParcnetPODProcessor(
       this.pods,
       this.subscriptions,
-      userIdentity
+      userIdentity,
+      zapp
     );
-    this.identity = new ParcnetIdentityProcessor(userIdentity);
-    this.gpc = new ParcnetGPCProcessor(this.pods, dispatch, this.clientChannel);
+    this.identity = new ParcnetIdentityProcessor(userIdentity, zapp);
+    this.gpc = new ParcnetGPCProcessor(
+      this.pods,
+      dispatch,
+      this.clientChannel,
+      zapp
+    );
   }
 }
