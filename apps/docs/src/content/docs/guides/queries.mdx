@@ -1,0 +1,304 @@
+---
+title: Queries
+description: How to query for PODs
+---
+PODs are organized into collections, but often we want to find a specific set of PODs within a collection, or across multiple collections, based on the data the PODs contain. Queries allow us to describe the characteristics of a POD, and find those PODs which match our criteria.
+
+Here's an example query:
+
+```ts
+import * as p from "@parcnet-js/podspec";
+
+// Declare the query
+const query = p.pod({
+  entries: {
+    string_entry: { type: "string" },
+    int_entry: { type: "int", inRange: { min: 0n, max: 100n } },
+    optional_entry: { 
+      type: "optional",
+      innerType: {
+        type: "cryptographic"
+      }
+    }
+  }
+});
+
+// Run the query
+const result = await z.pod.collection("Apples").query(query);
+```
+
+Queries work by specifying constraints on some POD entries. For a POD to match the query, it must have all of the specified entries (except for those explicitly marked as `optional`), and those entries must satisfy the criteria provided.
+
+Queries can use the following criteria:
+
+## type
+
+If an entry is specified at all, it must have a type. Types can be the following:
+- `string`, for text entries
+- `int`, for integers, up to a maximum of 64 bits (signed), meaning 9,223,372,036,854,775,807 to -9,223,372,036,854,775,808
+- `cryptographic`, for larger numbers, typically used for hashes
+- `eddsa_pubkey`, for string-encoded EdDSA public keys
+
+Examples:
+```ts
+const query = p.pod({
+  entries: {
+    string_entry: { type: "string" },
+    int_entry: { type: "int" },
+    cryptographic_entry: { type: "cryptographic" },
+    eddsa_pubkey_entry: { type: "eddsa_pubkey" },
+    optional_entry: { 
+      type: "optional",
+      innerType: {
+        type: "cryptographic"
+      }
+    }
+  }
+});
+
+// Would match a POD with these entries:
+{
+  string_entry: { type: "string", value: "example" },
+  int_entry: { type: "int", value: 8388608n },
+  cryptographic_entry: { type: "cryptographic", value: 117649n },
+  eddsa_pubkey_entry: { type: "eddsa_pubkey", value: "2C4B7JzSakdQaRlnJPPlbksW9F04vYc5QFLy//nuIho" }
+  // Since `optional_entry` is optional, this POD matches
+}
+
+// Would also match:
+{
+  string_entry: { type: "string", value: "example" },
+  int_entry: { type: "int", value: 8388608n },
+  cryptographic_entry: { type: "cryptographic", value: 117649n },
+  eddsa_pubkey_entry: { type: "eddsa_pubkey", value: "2C4B7JzSakdQaRlnJPPlbksW9F04vYc5QFLy//nuIho" },
+  // If optional_entry is present, it must be a `cryptographic`, so this matches
+  optional_entry: { type: "cryptographic", value: 390625n }
+}
+
+// Would not match:
+{
+  string_entry: { type: "string", value: "example" },
+  cryptographic_entry: { type: "cryptographic", value: 117649n },
+  eddsa_pubkey_entry: { type: "eddsa_pubkey", value: "2C4B7JzSakdQaRlnJPPlbksW9F04vYc5QFLy//nuIho" }
+  // int_entry is missing, so this doesn't match
+}
+
+// Would not match
+{
+  string_entry: { type: "string", value: "example" },
+  // int_entry has a different type compared to the query, so this doesn't match
+  int_entry: { type: "string", value: "i'm a string now" },
+  cryptographic_entry: { type: "cryptographic", value: 117649n },
+  eddsa_pubkey_entry: { type: "eddsa_pubkey", value: "2C4B7JzSakdQaRlnJPPlbksW9F04vYc5QFLy//nuIho" }
+}
+```
+
+The type `optional` is also available. `optional` entries can be missing. However, they have an `innerType` value, which can contain filter criteria to apply to the entry if it exists, which can include the real type:
+```ts
+const query = p.pod({
+  entries: {
+    optional_entry: { 
+      type: "optional",
+      innerType: {
+        type: "int",
+        inRange: { min: 500n, max: 5000n }
+      }
+    }
+  }
+});
+```
+
+## isMemberOf/isNotMemberOf
+
+These filters allow us to specify lists of values, and check that the entries for a POD either match (with `isMemberOf`) or do _not_ match (with `isNotMemberOf`) the list that we provide.
+
+For example:
+
+```ts
+const query = p.pod({
+  entries: {
+    animal_type: {
+      type: "string",
+      isMemberOf: [
+        { type: "string", value: "Fox" },
+        { type: "string", value: "Rabbit" },
+        { type: "string", value: "Camel" }
+      ]
+    }
+  }
+})
+```
+
+This example would match any POD with an `animal_type` entry, so long as that entry is a `string`, and it has a value of `"Fox"`, `"Rabbit"`, or `"Camel"`.
+
+## inRange
+
+For `int` values, we can check if they lie with in a minimum and maximum range.
+
+For example:
+```ts
+const query = p.pod({
+  entries: {
+    age: {
+      type: "int",
+      min: 25n,
+      max: 1500n
+    }
+  }
+})
+```
+
+This query would match any POD with an `age` entry, so long as that entry is an `int` with a value between 25 and 1500, inclusive.
+
+## Tuples
+
+Tuples work similar to `isMemberOf` and `isNotMemberOf`, but allow us to compare against a set of entries at the same time.
+
+For example, say a POD represents data about songs. The POD has entries for `"artist"`, and `"year_published"`. If we want to find every song by Beyoncé, we could write a query like this:
+
+```ts
+const query = p.pod({
+  entries: {
+    artist: { 
+      type: "string",
+      isMemberOf: [
+        { type: "string", value: "Beyoncé"}
+      ]
+    }  
+  }
+})
+```
+
+If we want to find every song by _either_ Beyoncé or Taylor Swift, we could write a query like this:
+
+```ts
+const query = p.pod({
+  entries: {
+    artist: { 
+      type: "string",
+      isMemberOf: [
+        { type: "string", value: "Beyoncé"},
+        { type: "string", value: "Taylor Swift" }
+      ]
+    }  
+  }
+})
+```
+
+If we wanted to find every song by either Beyoncé or Taylor Swift that was published in 2016, we could do this:
+
+```ts
+const query = p.pod({
+  entries: {
+    artist: { 
+      type: "string",
+      isMemberOf: [
+        { type: "string", value: "Beyoncé"},
+        { type: "string", value: "Taylor Swift" }
+      ]
+    },
+    year_published: {
+      type: "int",
+      isMemberOf: [
+        { type: "int", value: 2016n }
+      ]
+    }
+  }
+})
+```
+
+But what if we want to find _either_ songs by Beyoncé from 2016, _or_ songs by Taylor Swift from 2020? For this, we need tuples!
+
+We could write a query like this:
+
+```ts
+const query = p.pod({
+  entries: {
+    artist: { 
+      type: "string"
+    },
+    year_published: {
+      type: "int"
+    }
+  },
+  tuples: [
+    {
+      entries: ["artist", "year_published"],
+      isMemberOf: [
+        [
+          { type: "string", value: "Beyoncé" },
+          { type: "int", value: 2016n }
+        ],
+        [
+          { type: "string", value: "Taylor Swift" },
+          { type: "int", value: 2020n }
+        ]
+      ]
+    }
+  ]
+})
+```
+
+Note that the query has to declare the types of the entries to match on, and then later refers to those entries in the `tuples` object.
+
+## Non-entry values
+
+In addition to matching on the POD's entries, we can also match on the POD's `signerPublicKey` and `signature`.
+
+For example:
+```ts
+const query = p.pod({
+  entries: {
+    name: { type: "string" }
+  },
+  signerPublicKey: {
+    isMemberOf: [
+      "MolS1FubqfCmFB8lHOSTo1smf8hPgTPal6FgpajFiYY",
+      "YwahfUdUYehkGMaWh0+q3F8itx2h8mybjPmt8CmTJSs"
+    ]
+  },
+  signature: {
+    isMemberOf: [
+      "rcjfuTtbn8cQ3wnBDR1GLN5WLl3TJRCvIBtnWsn0ZqB2QS5336v/7+xwi+RHRu8/wDJ1VDCgHFDDmlBZL1kVBA"
+    ]
+  }
+})
+```
+
+This example is a bit contrived, but shows how it is possible to query for a POD by either the public key of the signer, or by the signature of the POD. Querying by signature is not particularly useful, since signatures are hard to guess, but if you happen to know a POD's signature then you could query to see if the user has it.
+
+Querying by signer public key is more useful: if you know the public key of a signer, such as the organizer of an event or the operator of a game, you can query for PODs signed by them.
+
+## Virtual entries in tuples
+
+The signer public key can also be used as a "virtual" entry in a tuple. For example, if you are playing a game in which magical items are signed by different wizards, you might want to use a tuple like this:
+
+```ts
+const gandalfPublicKey = "MolS1FubqfCmFB8lHOSTo1smf8hPgTPal6FgpajFiYY";
+const sarumanPublicKey = "YwahfUdUYehkGMaWh0+q3F8itx2h8mybjPmt8CmTJSs";
+
+const query = p.pod({
+  entries: {
+    item_type: {
+      type: "string"
+    }
+  },
+  tuples: [
+    {
+      entries: ["item_type", "$signerPublicKey"],
+      isMemberOf: [
+        [
+          { type: "string", value: "Staff" },
+          { type: "eddsa_pubkey", value: gandalfPublicKey }
+        ],
+        [
+          { type: "string", value: "Palantir" },
+          { type: "eddsa_pubkey", value: sarumanPublicKey }
+        ]
+      ]
+    }
+  ]
+})
+```
+
+This query will match on either a POD with an `item_type` entry of `"Staff"` signed by Gandalf's public key, or a POD with an `item_type` entry of `"Palantir"`, signed by Saruman's public key. Note that unlike matching directly on the public key, here we represent the public key as though it were an entry in the POD, meaning that we use `{ type: "eddsa_pubkey", value: "MolS1FubqfCmFB8lHOSTo1smf8hPgTPal6FgpajFiYY" }` rather than the string `"MolS1FubqfCmFB8lHOSTo1smf8hPgTPal6FgpajFiYY"` directly.

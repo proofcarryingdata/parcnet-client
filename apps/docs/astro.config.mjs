@@ -38,6 +38,7 @@ export default defineConfig({
             // Each item here is one entry in the navigation menu.
             { label: "Introduction", slug: "guides/introduction" },
             { label: "Getting Started", slug: "guides/getting-started" },
+            { label: "Queries", slug: "guides/queries" },
             {
               label: "Making Proofs about Ticket PODs",
               slug: "guides/ticket-proofs"
