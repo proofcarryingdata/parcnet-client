@@ -153,7 +153,7 @@ describe("podspec should work", function () {
           type: "int",
           value: POD_INT_MAX + 1n
         },
-        reason: `Invalid value for entry ${"bar"}.       Value ${
+        reason: `Invalid value for entry ${"bar"}.  Value ${
           POD_INT_MAX + 1n
         } is outside supported bounds: (min ${POD_INT_MIN}, max ${POD_INT_MAX}).`,
         path: ["bar"]

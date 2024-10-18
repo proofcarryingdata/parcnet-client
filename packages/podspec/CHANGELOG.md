@@ -1,5 +1,11 @@
 # @parcnet-js/podspec
 
+## 1.1.0
+
+### Minor Changes
+
+- aad9a9a: Upgrade @pcd/pod dependency to 0.3.0
+
 ## 1.0.0
 
 ### Major Changes

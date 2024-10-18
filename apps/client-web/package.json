@@ -1,7 +1,7 @@
 {
   "name": "client-web",
   "private": true,
-  "version": "0.0.9",
+  "version": "0.0.10",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -13,8 +13,8 @@
     "@parcnet-js/client-helpers": "workspace:*",
     "@parcnet-js/client-rpc": "workspace:*",
     "@parcnet-js/podspec": "workspace:*",
-    "@pcd/gpc": "0.0.8",
-    "@pcd/pod": "0.1.7",
+    "@pcd/gpc": "0.2.0",
+    "@pcd/pod": "0.3.0",
     "@pcd/proto-pod-gpc-artifacts": "^0.9.0",
     "@radix-ui/react-dialog": "^1.1.1",
     "@semaphore-protocol/core": "^4.0.3",

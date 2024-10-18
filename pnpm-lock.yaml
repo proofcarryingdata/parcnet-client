@@ -46,11 +46,11 @@ importers:
         specifier: workspace:*
         version: link:../../packages/podspec
       '@pcd/gpc':
-        specifier: 0.0.8
-        version: 0.0.8
+        specifier: 0.2.0
+        version: 0.2.0
       '@pcd/pod':
-        specifier: 0.1.7
-        version: 0.1.7
+        specifier: 0.3.0
+        version: 0.3.0
       '@pcd/proto-pod-gpc-artifacts':
         specifier: ^0.9.0
         version: 0.9.0
@@ -270,11 +270,11 @@ importers:
         specifier: workspace:*
         version: link:../podspec
       '@pcd/gpc':
-        specifier: ^0.0.8
-        version: 0.0.8
+        specifier: ^0.2.0
+        version: 0.2.0
       '@pcd/pod':
-        specifier: ^0.1.7
-        version: 0.1.7
+        specifier: ^0.3.0
+        version: 0.3.0
       nanoevents:
         specifier: ^9.0.0
         version: 9.0.0
@@ -332,11 +332,11 @@ importers:
         specifier: workspace:*
         version: link:../podspec
       '@pcd/gpc':
-        specifier: ^0.0.8
-        version: 0.0.8
+        specifier: ^0.2.0
+        version: 0.2.0
       '@pcd/pod':
-        specifier: ^0.1.7
-        version: 0.1.7
+        specifier: ^0.3.0
+        version: 0.3.0
       valibot:
         specifier: ^0.42.0
         version: 0.42.0(typescript@5.5.4)
@@ -402,11 +402,11 @@ importers:
   packages/podspec:
     dependencies:
       '@pcd/gpc':
-        specifier: 0.0.8
-        version: 0.0.8
+        specifier: 0.2.0
+        version: 0.2.0
       '@pcd/pod':
-        specifier: 0.1.7
-        version: 0.1.7
+        specifier: 0.3.0
+        version: 0.3.0
     devDependencies:
       '@parcnet-js/eslint-config':
         specifier: workspace:*
@@ -415,8 +415,8 @@ importers:
         specifier: workspace:*
         version: link:../typescript-config
       '@pcd/proto-pod-gpc-artifacts':
-        specifier: ^0.9.0
-        version: 0.9.0
+        specifier: ^0.11.0
+        version: 0.11.0
       '@semaphore-protocol/identity':
         specifier: ^3.15.2
         version: 3.15.2
@@ -455,11 +455,11 @@ importers:
         specifier: workspace:*
         version: link:../typescript-config
       '@pcd/gpc':
-        specifier: 0.0.8
-        version: 0.0.8
+        specifier: 0.2.0
+        version: 0.2.0
       '@pcd/pod':
-        specifier: 0.1.7
-        version: 0.1.7
+        specifier: 0.3.0
+        version: 0.3.0
       '@pcd/proto-pod-gpc-artifacts':
         specifier: ^0.9.0
         version: 0.9.0
@@ -1365,20 +1365,29 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@pcd/gpc@0.0.8':
-    resolution: {integrity: sha512-rsQZJuOB/fsq2JWZcQZv6hmr2lIX60oFlInAW6JeXyKVcro6AoOGcKHepDpHeRTG7SEze3/98jJ22X/8tMeGsw==}
+  '@pcd/gpc@0.2.0':
+    resolution: {integrity: sha512-1PIQdYzU4Dz9nT+F1CyS2Ygaa+tXN3jMiTO1OYUTLppgPYRaYsPjQOd/4lI8yABu2A5l9uhec2DctO7M2Q1vvQ==}
 
-  '@pcd/gpcircuits@0.1.7':
-    resolution: {integrity: sha512-7D7KfXHD6BlTyXzg1fJ8HQOW7Kz+AzHYGiAENQxQySelgo7idgxoC/nh5o5/ZLTvU3tLyWV4Wnixyr0WZI4Zpg==}
+  '@pcd/gpcircuits@0.3.0':
+    resolution: {integrity: sha512-BZn+Cr6fp0lVXfLIJxYcG3PQN1Jio5DrPBRSugSMQNBU/Q8lOPwqGysICL+kIG2k7uZ4qp7wJ8ERGOsgQypp1g==}
 
   '@pcd/pod@0.1.7':
     resolution: {integrity: sha512-y8wPXLw36VPsTBYR05TkURyb5v1S40kQmDwL26sEDxX90ZwAv6vTIjRpC4pmxk5gIFGtxTgxMembfrH2vZDOkA==}
+
+  '@pcd/pod@0.3.0':
+    resolution: {integrity: sha512-7bWchkdMn1z+cZcNdNMl9t7WhFfhmbT3xVKojZWDxKW/cB60t/ohZ+SIgzf0/6TnY4NqRK+udsI3pn2D2wszmA==}
+
+  '@pcd/proto-pod-gpc-artifacts@0.11.0':
+    resolution: {integrity: sha512-k/lASCefq1vUyqRirHUAc+yiZAMhSfTJx51qnyImXl6ArW8LtNWRyeoTql2BjY9u3BM/mWN279S5+NtghwnsDw==}
 
   '@pcd/proto-pod-gpc-artifacts@0.9.0':
     resolution: {integrity: sha512-DipHMqcwpwCGy0/4hpENYjhKPcxVDEM4Koe13L1QpDYlOVVlUfsV9Y5ObpjtZELH4Q8jLWEW2tnMW9vR+c388w==}
 
   '@pcd/util@0.5.4':
     resolution: {integrity: sha512-BkG3PxujAOE3K9odBJqMUzhvK97tzJwVrMTbqSqhGqHnKLVQNuzhURkbdjoNfVRSp8BwaxP516ocjyY1KrxpuA==}
+
+  '@pcd/util@0.7.0':
+    resolution: {integrity: sha512-LVSNKvTppLhqNvjwFyXm1eVPuIh8NglsFx4epy6/LiMtr6GfrFDou6+R7kT33CAfACDsyVf/vw15ugRCnN6h9A==}
 
   '@pkgjs/parseargs@0.11.0':
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
@@ -2008,6 +2017,9 @@ packages:
 
   '@zk-kit/lean-imt@2.1.0':
     resolution: {integrity: sha512-RbG6QmTrurken7HzrJQouKiXKyGTpcoD+czQ1jvExRIA83k9w+SEsRdB7anPE8WoMKWAandDe09BzDCk6AirSw==}
+
+  '@zk-kit/lean-imt@2.2.1':
+    resolution: {integrity: sha512-Zq5yunUYu+ztp9RR5nuqiG1GpK1wjUoAjC0+x/MB95sI/Ns7zCxpzxo/Om9E0gme74Y3jO9KM5UUh3f9tqU++w==}
 
   '@zk-kit/utils@1.0.0':
     resolution: {integrity: sha512-v5UjrZiaRNAN2UJmTFHvlMktaA2Efc2qN1Mwd4060ExX12yRhY8ZhzdlDODhnuHkvW5zPukuBHgQhHMScNP3Pg==}
@@ -4282,6 +4294,9 @@ packages:
 
   poseidon-lite@0.2.1:
     resolution: {integrity: sha512-xIr+G6HeYfOhCuswdqcFpSX47SPhm0EpisWJ6h7fHlWwaVIvH3dLnejpatrtw6Xc6HaLrpq05y7VRfvDmDGIog==}
+
+  poseidon-lite@0.3.0:
+    resolution: {integrity: sha512-ilJj4MIve4uBEG7SrtPqUUNkvpJ/pLVbndxa0WvebcQqeIhe+h72JR4g0EvwchUzm9sOQDlOjiDNmRAgxNZl4A==}
 
   possible-typed-array-names@1.0.0:
     resolution: {integrity: sha512-d7Uw+eZoloe0EHDIYoe+bQ5WXnGMOpmiZFTuMWCwpjzzkL2nTjcKiAk4hh8TjnGye2TwWOk3UXucZ+3rbmBa8Q==}
@@ -6708,24 +6723,21 @@ snapshots:
   '@pagefind/windows-x64@1.1.1':
     optional: true
 
-  '@pcd/gpc@0.0.8':
+  '@pcd/gpc@0.2.0':
     dependencies:
-      '@pcd/gpcircuits': 0.1.7
-      '@pcd/pod': 0.1.7
-      '@pcd/util': 0.5.4
-      '@semaphore-protocol/core': 4.0.3
+      '@pcd/gpcircuits': 0.3.0
+      '@pcd/pod': 0.3.0
+      '@pcd/util': 0.7.0
       '@semaphore-protocol/identity': 3.15.2
-      '@types/lodash': 4.17.9
       json-bigint: 1.0.0
+      lodash: 4.17.21
+      semaphore-identity-v4: '@semaphore-protocol/identity@4.0.3'
       snarkjs: 0.7.4
       url-join: 4.0.1
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
 
-  '@pcd/gpcircuits@0.1.7':
+  '@pcd/gpcircuits@0.3.0':
     dependencies:
-      '@pcd/pod': 0.1.7
+      '@pcd/pod': 0.3.0
       fastfile: 0.0.20
       snarkjs: 0.7.4
       url-join: 4.0.1
@@ -6741,9 +6753,29 @@ snapshots:
       json-bigint: 1.0.0
       poseidon-lite: 0.2.1
 
+  '@pcd/pod@0.3.0':
+    dependencies:
+      '@pcd/util': 0.7.0
+      '@zk-kit/eddsa-poseidon': 1.0.3
+      '@zk-kit/lean-imt': 2.2.1
+      '@zk-kit/utils': 1.2.1
+      js-sha256: 0.10.1
+      json-bigint: 1.0.0
+      poseidon-lite: 0.3.0
+
+  '@pcd/proto-pod-gpc-artifacts@0.11.0': {}
+
   '@pcd/proto-pod-gpc-artifacts@0.9.0': {}
 
   '@pcd/util@0.5.4':
+    dependencies:
+      buffer: 6.0.3
+      email-validator: 2.0.4
+      js-sha256: 0.10.1
+      secure-random: 1.1.2
+      uuid: 9.0.1
+
+  '@pcd/util@0.7.0':
     dependencies:
       buffer: 6.0.3
       email-validator: 2.0.4
@@ -7471,6 +7503,10 @@ snapshots:
   '@zk-kit/lean-imt@2.1.0':
     dependencies:
       '@zk-kit/utils': 1.2.0
+
+  '@zk-kit/lean-imt@2.2.1':
+    dependencies:
+      '@zk-kit/utils': 1.2.1
 
   '@zk-kit/utils@1.0.0':
     dependencies:
@@ -10398,6 +10434,8 @@ snapshots:
   poseidon-lite@0.2.0: {}
 
   poseidon-lite@0.2.1: {}
+
+  poseidon-lite@0.3.0: {}
 
   possible-typed-array-names@1.0.0: {}
 
