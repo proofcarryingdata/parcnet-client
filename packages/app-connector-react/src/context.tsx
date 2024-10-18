@@ -1,17 +1,6 @@
-import {
-  type ParcnetAPI,
-  type Zapp,
-  connect,
-  connectToHost,
-  isHosted
-} from "@parcnet-js/app-connector";
+import { type ParcnetAPI, type Zapp, connect } from "@parcnet-js/app-connector";
 import type { ReactNode } from "react";
-import { createContext, useEffect, useRef, useState } from "react";
-
-export type ClientConnectionInfo = {
-  url: string;
-  type: "iframe";
-};
+import { createContext, useCallback, useRef, useState } from "react";
 
 export enum ClientConnectionState {
   DISCONNECTED = "DISCONNECTED",
@@ -20,95 +9,120 @@ export enum ClientConnectionState {
   ERROR = "ERROR"
 }
 
-type ClientIframeState =
-  | {
-      state: ClientConnectionState.DISCONNECTED;
-      ref: React.RefObject<HTMLDivElement> | null;
-    }
-  | {
-      state: ClientConnectionState.CONNECTING;
-      ref: React.RefObject<HTMLDivElement>;
-    }
-  | {
-      state: ClientConnectionState.CONNECTED;
-      z: ParcnetAPI;
-      ref: React.RefObject<HTMLDivElement>;
-    };
+export const ParcnetClientContext = createContext<
+  ParcnetClientContextType | undefined
+>(undefined);
 
-type ClientState = ClientIframeState;
+type ParcnetContextBase = {
+  zapp: Zapp;
+  connect: (url?: string) => Promise<void>;
+  disconnect: () => Promise<void>;
+};
 
-export const ParcnetClientContext = createContext<ClientState>({
-  state: ClientConnectionState.DISCONNECTED,
-  ref: null
-});
+type ParcnetClientContextType = ParcnetContextBase &
+  (
+    | {
+        z: ParcnetAPI;
+        connectionState: ClientConnectionState.CONNECTED;
+      }
+    | {
+        connectionState: ClientConnectionState.DISCONNECTED;
+      }
+    | {
+        connectionState: ClientConnectionState.CONNECTING;
+      }
+    | {
+        connectionState: ClientConnectionState.ERROR;
+        error: Error;
+      }
+  );
+
+type ParcnetClientProviderProps = {
+  zapp: Zapp;
+  children: React.ReactNode;
+};
 
 export function ParcnetClientProvider({
   zapp,
-  connectionInfo,
   children
-}: {
-  zapp: Zapp;
-  connectionInfo: ClientConnectionInfo;
-  children: React.ReactNode;
-}): ReactNode {
-  return (
-    <ParcnetIframeProvider zapp={zapp} url={connectionInfo.url}>
-      {children}
-    </ParcnetIframeProvider>
-  );
+}: ParcnetClientProviderProps): ReactNode {
+  return <ParcnetIframeProvider zapp={zapp}>{children}</ParcnetIframeProvider>;
 }
 
 export function ParcnetIframeProvider({
   zapp,
-  url,
   children
 }: {
   zapp: Zapp;
-  url: string;
   children: React.ReactNode;
 }): ReactNode {
   const ref = useRef<HTMLDivElement>(null);
-  const isMounted = useRef(false);
 
-  const [value, setValue] = useState<ClientState>({
-    state: ClientConnectionState.CONNECTING,
-    ref
-  });
+  const [connectionState, setConnectionState] = useState(
+    ClientConnectionState.DISCONNECTED
+  );
+  const [z, setZ] = useState<ParcnetAPI | null>(null);
+  const [error, setError] = useState<Error | null>(null);
+  const [url, setUrl] = useState<string>("https://zupass.org");
 
-  useEffect(() => {
-    if (!isMounted.current) {
-      isMounted.current = true;
-      return;
-    }
-    if (!isHosted()) {
-      if (ref.current) {
-        void connect(zapp, ref.current, url).then((zupass) => {
-          setValue({
-            state: ClientConnectionState.CONNECTED,
-            z: zupass,
-            ref
-          });
-        });
+  const connectCallback = useCallback(
+    async (connectUrl?: string) => {
+      if (!connectUrl) {
+        connectUrl = "https://zupass.org";
       }
-    } else {
-      void connectToHost(zapp).then((zupass) => {
-        setValue({
-          state: ClientConnectionState.CONNECTED,
-          z: zupass,
-          ref
-        });
-      });
-    }
+      if (!ref.current) {
+        return;
+      }
+      if (
+        url !== connectUrl ||
+        connectionState === ClientConnectionState.DISCONNECTED
+      ) {
+        setUrl(connectUrl);
+        setConnectionState(ClientConnectionState.CONNECTING);
+        try {
+          const zupass = await connect(zapp, ref.current, connectUrl);
+          setZ(zupass);
+          setConnectionState(ClientConnectionState.CONNECTED);
+        } catch (error) {
+          setError(error as Error);
+          setConnectionState(ClientConnectionState.ERROR);
+        }
+      }
+    },
+    [zapp, connectionState, url]
+  );
 
-    return () => {
-      isMounted.current = false;
-    };
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  const disconnectCallback = useCallback(async () => {
+    setConnectionState(ClientConnectionState.DISCONNECTED);
   }, []);
 
   return (
-    <ParcnetClientContext.Provider value={value}>
+    <ParcnetClientContext.Provider
+      value={
+        connectionState === ClientConnectionState.CONNECTED
+          ? {
+              connectionState,
+              z: z!,
+              zapp,
+              connect: connectCallback,
+              disconnect: disconnectCallback
+            }
+          : connectionState === ClientConnectionState.ERROR
+            ? {
+                connectionState,
+                error: error!,
+                zapp,
+                connect: connectCallback,
+                disconnect: disconnectCallback
+              }
+            : {
+                connectionState,
+                zapp,
+                connect: connectCallback,
+                disconnect: disconnectCallback
+              }
+      }
+    >
       <div ref={ref}></div>
       {children}
     </ParcnetClientContext.Provider>

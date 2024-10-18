@@ -1,56 +1,48 @@
-import { connect, type ParcnetAPI, type Zapp } from "@parcnet-js/app-connector";
+import type { ParcnetAPI } from "@parcnet-js/app-connector";
 import { useContext } from "react";
 import { ClientConnectionState } from "./context.js";
 import { ParcnetClientContext } from "./context.js";
 
-class ParcnetConnector implements IParcnetConnector {
-  public constructor(private readonly context: ClientState) {}
-
-  public connect(zapp: Zapp) {
-    connect(zapp);
-  }
-}
-
-interface IParcnetConnector {
-  connect: (zapp: Zapp) => void;
+interface ParcnetConnector {
+  connect: (connectUrl?: string) => Promise<void>;
 }
 
 type UseParcnetClient =
   | {
-      connected: true;
       connectionState: ClientConnectionState.CONNECTED;
       z: ParcnetAPI;
     }
   | {
-      connected: false;
       connectionState: ClientConnectionState.CONNECTING;
       z: ParcnetConnector;
     }
   | {
-      connected: false;
       connectionState: ClientConnectionState.DISCONNECTED;
       z: ParcnetConnector;
     }
   | {
-      connected: false;
       connectionState: ClientConnectionState.ERROR;
       z: ParcnetConnector;
     };
 
 export function useParcnetClient(): UseParcnetClient {
   const context = useContext(ParcnetClientContext);
-  return context.state === ClientConnectionState.CONNECTED
+  if (!context) {
+    throw new Error(
+      "useParcnetClient must be used within a ParcnetClientProvider"
+    );
+  }
+
+  return context.connectionState === ClientConnectionState.CONNECTED
     ? {
-        connected: true,
-        connectionState: ClientConnectionState.CONNECTED,
+        connectionState: context.connectionState,
         z: context.z
       }
     : {
-        connected: false,
-        connectionState: context.state,
+        connectionState: context.connectionState,
         z: {
-          connect: (zapp: Zapp) => {
-            context.connect(zapp);
+          connect: async (connectUrl?: string) => {
+            await context.connect(connectUrl);
           }
         }
       };
