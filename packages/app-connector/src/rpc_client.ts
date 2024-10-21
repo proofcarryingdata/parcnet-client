@@ -165,6 +165,13 @@ export class ParcnetRPCConnector implements ParcnetRPC, ParcnetEvents {
           [entries],
           ParcnetRPCSchema.pod.sign
         );
+      },
+      signPrefixed: async (entries: PODEntries): Promise<PODData> => {
+        return this.#typedInvoke(
+          "pod.signPrefixed",
+          [entries],
+          ParcnetRPCSchema.pod.signPrefixed
+        );
       }
     };
     this.gpc = {
