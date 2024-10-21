@@ -9,6 +9,7 @@ import type { Zapp } from "@parcnet-js/app-connector";
 import {
   ClientConnectionState,
   ParcnetClientProvider,
+  Toolbar,
   useParcnetClient
 } from "@parcnet-js/app-connector-react";
 
@@ -35,6 +36,7 @@ export default function Main(): ReactNode {
   return (
     <>
       <div className="container mx-auto my-4 p-4">
+        <Toolbar />
         <p>Welcome to Parcnet!</p>
         <p>You can use this page to test the Parcnet API.</p>
         <div className="flex flex-col gap-4 my-4">

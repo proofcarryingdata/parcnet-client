@@ -20,14 +20,14 @@
   },
   "scripts": {
     "lint": "eslint . --max-warnings 0",
-    "build": "tsup 'src/**/*@(ts|tsx)' --format cjs,esm --clean --sourcemap",
-    "prepublish": "tsup 'src/**/*@(ts|tsx)' --format cjs,esm --clean --sourcemap --dts",
+    "build": "tsup 'src/**/*@(ts|tsx)' --format esm,cjs --clean --sourcemap",
+    "prepublish": "tsup 'src/**/*@(ts|tsx)' --format esm,cjs --clean --sourcemap --dts",
     "test": "vitest run --typecheck"
   },
   "files": ["dist", "LICENSE"],
   "dependencies": {
-    "@lit/react": "^1.0.6",
-    "@parcnet-js/app-connector": "workspace:*"
+    "@parcnet-js/app-connector": "workspace:*",
+    "react-shadow": "^20.5.0"
   },
   "devDependencies": {
     "@parcnet-js/eslint-config": "workspace:*",
