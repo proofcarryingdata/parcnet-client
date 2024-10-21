@@ -110,9 +110,14 @@ const pods = await z.pod.collection("${selectedCollection}").query(q);
               signature: p.signature,
               signerPublicKey: p.signerPublicKey
             })),
-            (key, value) =>
+            (key, value) => {
+              if (typeof value === "bigint") {
+                return value.toString();
+              }
               // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-              typeof value === "bigint" ? value.toString() : value
+              return value;
+            },
+            2
           )}
         </pre>
       )}
@@ -704,9 +709,14 @@ const sub = await z.pod.collection("${selectedCollection}").subscribe(q);
                 signature: p.signature,
                 signerPublicKey: p.signerPublicKey
               })),
-              (key, value) =>
+              (key, value) => {
+                if (typeof value === "bigint") {
+                  return value.toString();
+                }
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-                typeof value === "bigint" ? value.toString() : value
+                return value;
+              },
+              2
             )}
           </pre>
         </div>

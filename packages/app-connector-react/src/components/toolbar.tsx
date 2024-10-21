@@ -9,7 +9,7 @@ export function Toolbar() {
   if (!ctx) {
     throw new Error("Toolbar must be used within a ParcnetClientProvider");
   }
-  const { connectionState } = ctx;
+  const { connectionState, connect } = ctx;
   return (
     <RootDiv>
       <style>{`
@@ -19,12 +19,20 @@ export function Toolbar() {
           border-radius: 200px;
           background-color: #0077ff;
           color: white;
+          cursor: pointer;
         }
       `}</style>
-      <div className={""}>
+      <div
+        className={""}
+        onClick={() => {
+          void connect();
+        }}
+      >
         {connectionState === ClientConnectionState.CONNECTED
           ? "Connected"
-          : "Disconnected"}
+          : connectionState === ClientConnectionState.CONNECTING
+            ? "Connecting..."
+            : "Connect PODs"}
       </div>
     </RootDiv>
   );

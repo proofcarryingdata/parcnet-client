@@ -143,9 +143,16 @@ const gpcProof = await z.gpc.prove({ request });
           />
           {proveResult && (
             <pre className="whitespace-pre-wrap">
-              {JSON.stringify(proveResult, (key, value) =>
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-                typeof value === "bigint" ? value.toString() : value
+              {JSON.stringify(
+                proveResult,
+                (key, value) => {
+                  if (typeof value === "bigint") {
+                    return value.toString();
+                  }
+                  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+                  return value;
+                },
+                2
               )}
             </pre>
           )}
@@ -313,9 +320,16 @@ const gpcProof = await z.gpc.prove({ request: request.schema });
           />
           {proveResult && (
             <pre className="whitespace-pre-wrap">
-              {JSON.stringify(proveResult, (key, value) =>
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-                typeof value === "bigint" ? value.toString() : value
+              {JSON.stringify(
+                proveResult,
+                (key, value) => {
+                  if (typeof value === "bigint") {
+                    return value.toString();
+                  }
+                  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+                  return value;
+                },
+                2
               )}
             </pre>
           )}
