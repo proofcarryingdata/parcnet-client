@@ -71,7 +71,8 @@ export default tseslint.config(
       "import/no-extraneous-dependencies": "error",
       "@typescript-eslint/consistent-type-imports": "error",
       "@typescript-eslint/no-import-type-side-effects": "error",
-      "no-unexpected-multiline": "off"
+      "no-unexpected-multiline": "off",
+      "no-restricted-globals": ["error", "origin"]
     }
   }
 );

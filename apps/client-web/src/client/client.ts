@@ -27,7 +27,8 @@ export class ParcnetClientProcessor implements ParcnetRPC {
     private readonly pods: PODCollectionManager,
     dispatch: Dispatch<ClientAction>,
     userIdentity: Identity,
-    zapp: Zapp
+    zapp: Zapp,
+    zappOrigin: string
   ) {
     this.subscriptions = new QuerySubscriptions(this.pods);
     this.subscriptions.onSubscriptionUpdated((update, serial) => {
@@ -37,7 +38,8 @@ export class ParcnetClientProcessor implements ParcnetRPC {
       this.pods,
       this.subscriptions,
       userIdentity,
-      zapp
+      zapp,
+      zappOrigin
     );
     this.identity = new ParcnetIdentityProcessor(userIdentity, zapp);
     this.gpc = new ParcnetGPCProcessor(

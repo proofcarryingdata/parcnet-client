@@ -78,6 +78,7 @@ export interface ParcnetPODRPC {
   unsubscribe: (subscriptionId: string) => Promise<void>;
   // Returns serialized POD
   sign: (entries: PODEntries) => Promise<PODData>;
+  signPrefixed: (entries: PODEntries) => Promise<PODData>;
 }
 
 export interface ParcnetRPC {

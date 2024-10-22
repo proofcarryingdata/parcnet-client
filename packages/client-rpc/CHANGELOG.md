@@ -1,5 +1,11 @@
 # @parcnet-js/client-rpc
 
+## 1.1.1
+
+### Patch Changes
+
+- Support 'signPrefixed' for unsafely-signed PODs
+
 ## 1.1.0
 
 ### Minor Changes

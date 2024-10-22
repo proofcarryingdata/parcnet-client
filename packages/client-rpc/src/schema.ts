@@ -119,6 +119,10 @@ export const ParcnetRPCSchema = {
     sign: {
       input: v.tuple([PODEntriesSchema] as [entries: typeof PODEntriesSchema]),
       output: PODDataSchema
+    },
+    signPrefixed: {
+      input: v.tuple([PODEntriesSchema] as [entries: typeof PODEntriesSchema]),
+      output: PODDataSchema
     }
   }
 } as const satisfies RPCSchema;

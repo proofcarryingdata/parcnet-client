@@ -1,5 +1,13 @@
 # @parcnet-js/app-connector
 
+## 1.1.1
+
+### Patch Changes
+
+- Support 'signPrefixed' for unsafely-signed PODs
+- Updated dependencies
+  - @parcnet-js/client-rpc@1.1.1
+
 ## 1.1.0
 
 ### Minor Changes

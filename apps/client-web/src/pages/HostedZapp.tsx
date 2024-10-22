@@ -28,7 +28,7 @@ export function HostedZapp(): ReactNode {
   }, [dispatch]);
 
   useEffect(() => {
-    if (state.advice && state.zapp) {
+    if (state.advice && state.zapp && state.zappOrigin) {
       state.advice.hideClient();
       state.advice.ready(
         new ParcnetClientProcessor(
@@ -36,11 +36,19 @@ export function HostedZapp(): ReactNode {
           state.pods,
           dispatch,
           state.identity,
-          state.zapp
+          state.zapp,
+          state.zappOrigin
         )
       );
     }
-  }, [state.advice, state.pods, state.identity, dispatch, state.zapp]);
+  }, [
+    state.advice,
+    state.pods,
+    state.identity,
+    dispatch,
+    state.zapp,
+    state.zappOrigin
+  ]);
 
   const modalVisible = useMemo(() => {
     return state.proofInProgress !== undefined;
