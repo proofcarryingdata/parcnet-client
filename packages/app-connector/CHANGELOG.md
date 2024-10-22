@@ -1,5 +1,14 @@
 # @parcnet-js/app-connector
 
+## 1.1.3
+
+### Patch Changes
+
+- c02d469: Support adding a circuit identifier to GPC proof requests
+- Updated dependencies [c02d469]
+  - @parcnet-js/client-rpc@1.1.2
+  - @parcnet-js/podspec@1.1.1
+
 ## 1.1.2
 
 ### Patch Changes
