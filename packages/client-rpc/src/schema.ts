@@ -1,3 +1,4 @@
+import type { GPCIdentifier } from "@pcd/gpc";
 import * as v from "valibot";
 import type { ParcnetRPC } from "./rpc_interfaces.js";
 import {
@@ -9,8 +10,17 @@ import {
 
 const CollectionIdSchema = v.string();
 
+const CircuitIdentifierSchema = v.pipe(
+  v.string(),
+  v.check((s): s is GPCIdentifier => {
+    return s.includes("_") && s.split("_").length === 2;
+  }),
+  v.transform<string, GPCIdentifier>((s) => s as GPCIdentifier)
+);
+
 const ProveArgsSchema = v.object({
   request: PodspecProofRequestSchema,
+  circuitIdentifier: v.optional(CircuitIdentifierSchema),
   collectionIds: v.optional(v.array(CollectionIdSchema))
 });
 
