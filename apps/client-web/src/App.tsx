@@ -290,17 +290,26 @@ export function Prove({
               const prs = proofRequest(
                 proveOperation.proofRequest
               ).getProofRequest();
+              const inputs = {
+                pods: proveOperation.selectedPods as Record<string, POD>,
+                membershipLists: prs.membershipLists,
+                watermark: prs.watermark,
+                owner: {
+                  semaphoreV4: getIdentity(),
+                  externalNullifier: prs.externalNullifier
+                }
+              };
+              console.log(inputs);
               gpcProve(
-                prs.proofConfig,
                 {
-                  pods: proveOperation.selectedPods as Record<string, POD>,
-                  membershipLists: prs.membershipLists,
-                  watermark: prs.watermark,
-                  owner: {
-                    semaphoreV4: getIdentity(),
-                    externalNullifier: prs.externalNullifier
-                  }
+                  ...prs.proofConfig,
+                  ...(proveOperation.circuitIdentifier
+                    ? {
+                        circuitIdentifier: proveOperation.circuitIdentifier
+                      }
+                    : {})
                 },
+                inputs,
                 new URL("/artifacts", window.location.origin).toString()
               )
                 .then((proof) => {
