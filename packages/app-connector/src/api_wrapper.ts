@@ -52,11 +52,17 @@ export class ParcnetPODCollectionWrapper {
   #api: ParcnetRPCConnector;
   #collectionId: string;
   #subscriptionEmitters: Map<string, Emitter<SubscriptionEvents>>;
+  #unloadProtector: MutationUnloadProtector;
 
-  constructor(api: ParcnetRPCConnector, collectionId: string) {
+  constructor(
+    api: ParcnetRPCConnector,
+    collectionId: string,
+    unloadProtector: MutationUnloadProtector
+  ) {
     this.#api = api;
     this.#collectionId = collectionId;
     this.#subscriptionEmitters = new Map();
+    this.#unloadProtector = unloadProtector;
     this.#api.on("subscription-update", (update) => {
       this.#subscriptionEmitters
         .get(update.subscriptionId)
@@ -84,24 +90,58 @@ export class ParcnetPODCollectionWrapper {
   }
 
   async insert(podData: PODData): Promise<void> {
-    return this.#api.pod.insert(this.#collectionId, podData);
+    return this.#unloadProtector.add(
+      this.#api.pod.insert(this.#collectionId, podData)
+    );
   }
 
   async delete(signature: string): Promise<void> {
-    return this.#api.pod.delete(this.#collectionId, signature);
+    return this.#unloadProtector.add(
+      this.#api.pod.delete(this.#collectionId, signature)
+    );
+  }
+}
+
+/**
+ * This class is used to prevent the page from being unloaded while there are
+ * pending mutations.
+ */
+class MutationUnloadProtector {
+  #mutations = new Set<Promise<unknown>>();
+
+  public constructor() {
+    window.addEventListener("beforeunload", (event: BeforeUnloadEvent) => {
+      if (this.#mutations.size > 0) {
+        event.preventDefault();
+      }
+    });
+  }
+
+  public add<T>(mutation: Promise<T>): Promise<T> {
+    this.#mutations.add(mutation);
+    void mutation.finally(() => {
+      this.#mutations.delete(mutation);
+    });
+    return mutation;
   }
 }
 
 export class ParcnetPODWrapper {
   #api: ParcnetRPCConnector;
   #modalEmitter: ModalEmitter;
+  #unloadProtector: MutationUnloadProtector = new MutationUnloadProtector();
+
   constructor(api: ParcnetRPCConnector, modalEmitter: ModalEmitter) {
     this.#api = api;
     this.#modalEmitter = modalEmitter;
   }
 
   collection(collectionId: string): ParcnetPODCollectionWrapper {
-    return new ParcnetPODCollectionWrapper(this.#api, collectionId);
+    return new ParcnetPODCollectionWrapper(
+      this.#api,
+      collectionId,
+      this.#unloadProtector
+    );
   }
 
   async sign(entries: PODEntries): Promise<PODData> {
