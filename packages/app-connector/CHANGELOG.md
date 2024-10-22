@@ -1,5 +1,11 @@
 # @parcnet-js/app-connector
 
+## 1.1.2
+
+### Patch Changes
+
+- Allow user to cancel page unload while mutating operation in progress
+
 ## 1.1.1
 
 ### Patch Changes
