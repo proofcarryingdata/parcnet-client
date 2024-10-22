@@ -34,7 +34,8 @@ function App() {
     if (
       state.advice &&
       state.connectionState === ConnectionState.AUTHORIZED &&
-      state.zapp
+      state.zapp &&
+      state.zappOrigin
     ) {
       state.advice.hideClient();
       state.advice.ready(
@@ -43,7 +44,8 @@ function App() {
           state.pods,
           dispatch,
           state.identity,
-          state.zapp
+          state.zapp,
+          state.zappOrigin
         )
       );
     }
@@ -53,7 +55,8 @@ function App() {
     state.pods,
     state.identity,
     dispatch,
-    state.zapp
+    state.zapp,
+    state.zappOrigin
   ]);
 
   return (

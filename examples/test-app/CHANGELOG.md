@@ -1,5 +1,14 @@
 # test-app
 
+## 1.0.13
+
+### Patch Changes
+
+- Updated dependencies
+  - @parcnet-js/app-connector@1.1.1
+  - @parcnet-js/client-rpc@1.1.1
+  - @parcnet-js/ticket-spec@1.1.1
+
 ## 1.0.12
 
 ### Patch Changes

@@ -116,6 +116,10 @@ export class ParcnetPODWrapper {
       this.#api.pod.sign(entries).then(resolve).catch(reject);
     });
   }
+
+  async signPrefixed(entries: PODEntries): Promise<PODData> {
+    return this.#api.pod.signPrefixed(entries);
+  }
 }
 
 /**

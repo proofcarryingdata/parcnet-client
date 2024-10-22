@@ -16,7 +16,8 @@ export class ParcnetPODProcessor implements ParcnetPODRPC {
     private readonly pods: PODCollectionManager,
     private readonly subscriptions: QuerySubscriptions,
     private readonly identity: Identity,
-    private readonly zapp: Zapp
+    private readonly zapp: Zapp,
+    private readonly zappOrigin: string
   ) {}
 
   public async query(
@@ -87,6 +88,32 @@ export class ParcnetPODProcessor implements ParcnetPODRPC {
     if (!permission) {
       throw new MissingPermissionError("SIGN_POD", "pod.sign");
     }
+
+    const pod = POD.sign(
+      entries,
+      encodePrivateKey(Buffer.from(this.identity.export(), "base64"))
+    );
+    return podToPODData(pod);
+  }
+
+  public async signPrefixed(entries: PODEntries): Promise<PODData> {
+    const permission = this.zapp.permissions.SIGN_POD;
+    if (!permission) {
+      throw new MissingPermissionError("SIGN_POD", "pod.signPrefixed");
+    }
+
+    for (const name of Object.keys(entries)) {
+      if (!name.startsWith("_UNSAFE_")) {
+        throw new Error(
+          "PODs signed with signPrefixed must have a prefix of _UNSAFE_"
+        );
+      }
+    }
+
+    entries.UNSAFE_META_ORIGIN = {
+      type: "string",
+      value: this.zappOrigin
+    };
 
     const pod = POD.sign(
       entries,
