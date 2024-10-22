@@ -7,6 +7,7 @@ import {
 import type { PodspecProofRequest } from "@parcnet-js/podspec";
 import * as p from "@parcnet-js/podspec";
 import { $s } from "@parcnet-js/podspec/pod_value_utils";
+import type { GPCIdentifier } from "@pcd/gpc";
 import { POD, encodePrivateKey, encodePublicKey } from "@pcd/pod";
 import type { Identity as IdentityV4 } from "@semaphore-protocol/core";
 import isEqual from "lodash/isEqual";
@@ -81,6 +82,7 @@ export type ClientState = {
         selectedPods: Record<string, POD | undefined>;
         proofRequest: PodspecProofRequest;
         proving: boolean;
+        circuitIdentifier?: GPCIdentifier;
         resolve?: (result: ProveResult) => void;
       }
     | undefined;
@@ -112,6 +114,7 @@ export type ClientAction =
       pods: Record<string, POD[]>;
       selectedPods: Record<string, POD | undefined>;
       proofRequest: PodspecProofRequest;
+      circuitIdentifier?: GPCIdentifier;
       proving: boolean;
       resolve?: (result: ProveResult) => void;
     }
@@ -215,6 +218,7 @@ export function clientReducer(state: ClientState, action: ClientAction) {
           selectedPods: action.selectedPods,
           proofRequest: action.proofRequest,
           proving: action.proving,
+          circuitIdentifier: action.circuitIdentifier,
           resolve: action.resolve
         }
       };

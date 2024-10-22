@@ -5,7 +5,12 @@ import type {
   ProveResult
 } from "@parcnet-js/client-rpc";
 import type * as p from "@parcnet-js/podspec";
-import type { GPCBoundConfig, GPCProof, GPCRevealedClaims } from "@pcd/gpc";
+import type {
+  GPCBoundConfig,
+  GPCIdentifier,
+  GPCProof,
+  GPCRevealedClaims
+} from "@pcd/gpc";
 import type { PODEntries } from "@pcd/pod";
 import { type Emitter, createNanoEvents } from "nanoevents";
 import type { ModalEmitter } from "./adapters/iframe.js";
@@ -176,6 +181,7 @@ export class ParcnetGPCWrapper {
 
   async prove(args: {
     request: p.PodspecProofRequest;
+    circuitIdentifier: GPCIdentifier;
     collectionIds?: string[];
   }): Promise<ProveResult> {
     return new Promise((resolve, reject) => {

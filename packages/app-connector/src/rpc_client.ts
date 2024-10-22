@@ -18,7 +18,12 @@ import {
   RPCMessageType
 } from "@parcnet-js/client-rpc";
 import type { PodspecProofRequest } from "@parcnet-js/podspec";
-import type { GPCBoundConfig, GPCProof, GPCRevealedClaims } from "@pcd/gpc";
+import type {
+  GPCBoundConfig,
+  GPCIdentifier,
+  GPCProof,
+  GPCRevealedClaims
+} from "@pcd/gpc";
 import type { PODEntries } from "@pcd/pod";
 import { type Emitter, createNanoEvents } from "nanoevents";
 import * as v from "valibot";
@@ -177,14 +182,16 @@ export class ParcnetRPCConnector implements ParcnetRPC, ParcnetEvents {
     this.gpc = {
       prove: async ({
         request,
-        collectionIds
+        collectionIds,
+        circuitIdentifier
       }: {
         request: PodspecProofRequest;
         collectionIds?: string[];
+        circuitIdentifier?: GPCIdentifier;
       }): Promise<ProveResult> => {
         return this.#typedInvoke(
           "gpc.prove",
-          [{ collectionIds, request }],
+          [{ collectionIds, request, circuitIdentifier }],
           ParcnetRPCSchema.gpc.prove
         );
       },

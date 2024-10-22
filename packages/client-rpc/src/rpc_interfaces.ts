@@ -3,7 +3,12 @@ import type {
   PODSchema,
   PodspecProofRequest
 } from "@parcnet-js/podspec";
-import type { GPCBoundConfig, GPCProof, GPCRevealedClaims } from "@pcd/gpc";
+import type {
+  GPCBoundConfig,
+  GPCIdentifier,
+  GPCProof,
+  GPCRevealedClaims
+} from "@pcd/gpc";
 import type { PODEntries } from "@pcd/pod";
 import type { PODData } from "./pod_data.js";
 
@@ -41,13 +46,16 @@ export interface ParcnetGPCRPC {
     collectionIds
   }: {
     request: PodspecProofRequest;
+    circuitIdentifier?: GPCIdentifier;
     collectionIds?: string[];
   }) => Promise<ProveResult>;
   canProve: ({
     request,
+    circuitIdentifier,
     collectionIds
   }: {
     request: PodspecProofRequest;
+    circuitIdentifier: GPCIdentifier;
     collectionIds?: string[];
   }) => Promise<boolean>;
   verify: (

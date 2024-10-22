@@ -1,6 +1,6 @@
 {
   "name": "@parcnet-js/podspec",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "license": "GPL-3.0-or-later",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
@@ -36,8 +36,8 @@
   },
   "files": ["dist", "./README.md", "./LICENSE"],
   "dependencies": {
-    "@pcd/gpc": "0.2.0",
-    "@pcd/pod": "0.3.0"
+    "@pcd/gpc": "^0.2.0",
+    "@pcd/pod": "^0.3.0"
   },
   "devDependencies": {
     "@parcnet-js/eslint-config": "workspace:*",

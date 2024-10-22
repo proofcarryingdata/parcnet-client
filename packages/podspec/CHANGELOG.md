@@ -1,5 +1,11 @@
 # @parcnet-js/podspec
 
+## 1.1.1
+
+### Patch Changes
+
+- c02d469: Support adding a circuit identifier to GPC proof requests
+
 ## 1.1.0
 
 ### Minor Changes

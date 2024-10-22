@@ -8,7 +8,12 @@ import {
 } from "@parcnet-js/client-rpc";
 import type { PodspecProofRequest } from "@parcnet-js/podspec";
 import { proofRequest } from "@parcnet-js/podspec";
-import type { GPCBoundConfig, GPCProof, GPCRevealedClaims } from "@pcd/gpc";
+import type {
+  GPCBoundConfig,
+  GPCIdentifier,
+  GPCProof,
+  GPCRevealedClaims
+} from "@pcd/gpc";
 import { gpcVerify } from "@pcd/gpc";
 import type { Dispatch } from "react";
 import type { ClientAction } from "../state";
@@ -68,10 +73,12 @@ export class ParcnetGPCProcessor implements ParcnetGPCRPC {
 
   public async prove({
     request,
-    collectionIds
+    collectionIds,
+    circuitIdentifier
   }: {
     request: PodspecProofRequest;
     collectionIds?: string[];
+    circuitIdentifier?: GPCIdentifier;
   }): Promise<ProveResult> {
     const pods = this.getPODsIfPermitted(collectionIds, "gpc.prove");
     const prs = proofRequest(request);
@@ -94,6 +101,7 @@ export class ParcnetGPCProcessor implements ParcnetGPCRPC {
         proofRequest: request,
         pods: inputPods,
         selectedPods: {},
+        circuitIdentifier,
         proving: false,
         resolve: (result) => {
           advice.hideClient();
