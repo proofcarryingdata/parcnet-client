@@ -1,7 +1,7 @@
 import type {
   InitializationMessage,
   RPCMessage,
-  Zapp,
+  Zapp
 } from "@parcnet-js/client-rpc";
 import { InitializationMessageType } from "@parcnet-js/client-rpc";
 import { createNanoEvents } from "nanoevents";
@@ -46,7 +46,7 @@ export interface DialogController {
 export function connect(
   zapp: Zapp,
   element: HTMLElement,
-  clientUrl = "https://zupass.org",
+  clientUrl = "https://zupass.org"
 ): Promise<ParcnetAPI> {
   // Will throw if the URL is invalid
   const normalizedUrl = new URL(clientUrl);
@@ -128,7 +128,7 @@ export function connect(
         // Create a new RPC client
         const client = new ParcnetRPCConnector(
           chan.port2,
-          new DialogControllerImpl(dialog),
+          new DialogControllerImpl(dialog)
         );
         // Tell the RPC client to start. It will call the function we pass in
         // when the connection is ready, at which point we can resolve the
@@ -154,11 +154,11 @@ export function connect(
                 contentWindow,
                 {
                   type: InitializationMessageType.PARCNET_CLIENT_CONNECT,
-                  zapp: zapp,
+                  zapp: zapp
                 },
                 "*",
                 // Our RPC client has port2, send port1 to the client
-                [chan.port1],
+                [chan.port1]
               );
             })
             .catch((err) => {
@@ -168,7 +168,7 @@ export function connect(
           console.error("no iframe content window!");
         }
       },
-      { once: true },
+      { once: true }
     );
     shadow.appendChild(iframe);
   });
@@ -178,7 +178,7 @@ export function postWindowMessage(
   window: Window,
   message: InitializationMessage,
   targetOrigin: string,
-  transfer: Transferable[] = [],
+  transfer: Transferable[] = []
 ): void {
   window.postMessage(message, targetOrigin, transfer);
 }
