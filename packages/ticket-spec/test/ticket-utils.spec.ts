@@ -21,6 +21,7 @@ describe("ticket-utils", () => {
       timestampConsumed: 1714857600,
       timestampSigned: 1714857600,
       attendeeSemaphoreId: identityV3.getCommitment(),
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       owner: encodePublicKey(identityV4.publicKey),
       isConsumed: 0,
       isRevoked: 0,
