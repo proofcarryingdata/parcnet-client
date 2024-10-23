@@ -58,7 +58,8 @@ export function connect(
   dialog.style.borderWidth = "0px";
   dialog.style.borderRadius = "16px";
   dialog.style.padding = "0px";
-  dialog.style.backgroundColor = "#19473f";
+  dialog.style.backgroundColor = "white";
+  dialog.style.overflow = "hidden";
   dialog.style.width = "90vw";
   dialog.style.maxWidth = "600px";
   dialog.style.height = "90vh";
@@ -106,6 +107,9 @@ export function connect(
   // Create the iframe that will host the client
   const iframe = document.createElement("iframe");
   const sandboxAttr = document.createAttribute("sandbox");
+  const scrollingAttr = document.createAttribute("scrolling");
+  scrollingAttr.value = "no";
+
   sandboxAttr.value =
     "allow-same-origin allow-scripts allow-popups allow-modals allow-forms allow-storage-access-by-user-activation allow-popups-to-escape-sandbox";
   iframe.attributes.setNamedItem(sandboxAttr);

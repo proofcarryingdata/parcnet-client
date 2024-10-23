@@ -1,5 +1,11 @@
 # @parcnet-js/podspec
 
+## 1.1.2
+
+### Patch Changes
+
+- Bump PCD and GPC dependencies to latest versions
+
 ## 1.1.1
 
 ### Patch Changes

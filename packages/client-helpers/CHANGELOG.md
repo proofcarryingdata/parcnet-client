@@ -1,5 +1,12 @@
 # @parcnet-js/client-helpers
 
+## 1.0.5
+
+### Patch Changes
+
+- Updated dependencies
+  - @parcnet-js/client-rpc@1.1.4
+
 ## 1.0.4
 
 ### Patch Changes

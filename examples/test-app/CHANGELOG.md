@@ -1,5 +1,16 @@
 # test-app
 
+## 1.0.17
+
+### Patch Changes
+
+- Bump PCD and GPC dependencies to latest versions
+- Updated dependencies
+  - @parcnet-js/app-connector@1.1.5
+  - @parcnet-js/client-rpc@1.1.4
+  - @parcnet-js/podspec@1.1.2
+  - @parcnet-js/ticket-spec@1.1.4
+
 ## 1.0.16
 
 ### Patch Changes

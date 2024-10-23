@@ -17,7 +17,8 @@ export function loadPODsFromStorage(): Record<string, PODCollection> {
     );
     for (const [collectionId, serializedPODs] of Object.entries(parsed)) {
       result[collectionId] = new PODCollection(
-        serializedPODs.map((str) => POD.deserialize(str))
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        serializedPODs.map((str) => POD.fromJSON(JSON.parse(str)))
       );
     }
   } catch (e) {
@@ -34,7 +35,7 @@ export function savePODsToStorage(
   const serializedCollections = Object.fromEntries(
     Object.entries(collections).map(([collectionId, collection]) => [
       collectionId,
-      collection.getAll().map((pod) => pod.serialize())
+      collection.getAll().map((pod) => pod.toJSON())
     ])
   );
   localStorage.setItem(

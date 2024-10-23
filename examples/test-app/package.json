@@ -1,6 +1,6 @@
 {
   "name": "test-app",
-  "version": "1.0.16",
+  "version": "1.0.17",
   "private": true,
   "type": "module",
   "scripts": {
@@ -14,7 +14,7 @@
     "@parcnet-js/client-rpc": "workspace:*",
     "@parcnet-js/podspec": "workspace:*",
     "@parcnet-js/ticket-spec": "workspace:*",
-    "@pcd/pod": "^0.3.0",
+    "@pcd/pod": "^0.4.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-icons": "^5.0.1",
