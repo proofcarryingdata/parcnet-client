@@ -1,5 +1,15 @@
 # client-web
 
+## 0.0.14
+
+### Patch Changes
+
+- Bump PCD and GPC dependencies to latest versions
+- Updated dependencies
+  - @parcnet-js/client-rpc@1.1.4
+  - @parcnet-js/podspec@1.1.2
+  - @parcnet-js/client-helpers@1.0.5
+
 ## 0.0.13
 
 ### Patch Changes
