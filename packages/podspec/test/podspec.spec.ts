@@ -1,7 +1,8 @@
 import path from "path";
 import type { GPCBoundConfig } from "@pcd/gpc";
 import { gpcProve, gpcVerify } from "@pcd/gpc";
-import { POD, POD_INT_MAX, POD_INT_MIN } from "@pcd/pod";
+import { POD } from "@pcd/pod";
+import { POD_INT_MAX, POD_INT_MIN } from "@pcd/pod/podTypes";
 import { v4 as uuidv4 } from "uuid";
 import { assert, describe, expect, it } from "vitest";
 import type {

@@ -2,8 +2,7 @@ import type { ParcnetAPI, Subscription } from "@parcnet-js/app-connector";
 import * as p from "@parcnet-js/podspec";
 import type { PODData } from "@parcnet-js/podspec";
 import type { PODEntries, PODValue } from "@pcd/pod";
-import { POD_INT_MAX, POD_INT_MIN } from "@pcd/pod";
-import JSONBig from "json-bigint";
+import { POD_INT_MAX, POD_INT_MIN } from "@pcd/pod/podTypes";
 import type { Dispatch, ReactNode, SetStateAction } from "react";
 import { useReducer, useState } from "react";
 import { Button } from "../components/Button";
@@ -102,14 +101,15 @@ const pods = await z.pod.collection("${selectedCollection}").query(q);
       />
       {pods !== undefined && (
         <pre className="whitespace-pre-wrap">
-          {JSONBig.stringify(
+          {JSON.stringify(
             pods.map((p) => ({
               entries: p.entries,
               signature: p.signature,
               signerPublicKey: p.signerPublicKey
             })),
-            null,
-            2
+            (key, value) =>
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+              typeof value === "bigint" ? value.toString() : value
           )}
         </pre>
       )}
@@ -695,14 +695,15 @@ const sub = await z.pod.collection("${selectedCollection}").subscribe(q);
       {pods.length > 0 && subscription !== null && (
         <div>
           <pre className="whitespace-pre-wrap">
-            {JSONBig.stringify(
+            {JSON.stringify(
               pods.map((p) => ({
                 entries: p.entries,
                 signature: p.signature,
                 signerPublicKey: p.signerPublicKey
               })),
-              null,
-              2
+              (key, value) =>
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+                typeof value === "bigint" ? value.toString() : value
             )}
           </pre>
         </div>

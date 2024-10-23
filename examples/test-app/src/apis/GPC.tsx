@@ -1,7 +1,6 @@
 import type { ProveResult } from "@parcnet-js/client-rpc";
 import type { PODData, PodspecProofRequest } from "@parcnet-js/podspec";
 import { TicketSpec, ticketProofRequest } from "@parcnet-js/ticket-spec";
-import JSONBig from "json-bigint";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { TryIt } from "../components/TryIt";
@@ -141,7 +140,10 @@ const gpcProof = await z.gpc.prove({ request });
           />
           {proveResult && (
             <pre className="whitespace-pre-wrap">
-              {JSONBig.stringify(proveResult, null, 2)}
+              {JSON.stringify(proveResult, (key, value) =>
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+                typeof value === "bigint" ? value.toString() : value
+              )}
             </pre>
           )}
         </div>
@@ -308,7 +310,10 @@ const gpcProof = await z.gpc.prove({ request: request.schema });
           />
           {proveResult && (
             <pre className="whitespace-pre-wrap">
-              {JSONBig.stringify(proveResult, null, 2)}
+              {JSON.stringify(proveResult, (key, value) =>
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+                typeof value === "bigint" ? value.toString() : value
+              )}
             </pre>
           )}
         </div>

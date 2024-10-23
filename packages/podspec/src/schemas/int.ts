@@ -1,5 +1,5 @@
 import type { PODIntValue, PODName } from "@pcd/pod";
-import { POD_INT_MAX, POD_INT_MIN } from "@pcd/pod";
+import { POD_INT_MAX, POD_INT_MIN } from "@pcd/pod/podTypes";
 import type { PodspecInvalidTypeIssue } from "../error.js";
 import { IssueCode } from "../error.js";
 import type { ParseResult } from "../parse/parse_utils.js";

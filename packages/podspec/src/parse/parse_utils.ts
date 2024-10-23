@@ -9,7 +9,7 @@ import {
   checkBigintBounds,
   checkPODValue,
   checkPublicKeyFormat
-} from "@pcd/pod";
+} from "@pcd/pod/podChecks";
 import type {
   PodspecBaseIssue,
   PodspecExcludedByListIssue,

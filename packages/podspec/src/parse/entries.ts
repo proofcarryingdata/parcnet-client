@@ -1,5 +1,5 @@
 import type { PODEntries, PODValue } from "@pcd/pod";
-import { checkPODName } from "@pcd/pod";
+import { checkPODName } from "@pcd/pod/podChecks";
 import type {
   PodspecBaseIssue,
   PodspecInvalidEntryNameIssue,
