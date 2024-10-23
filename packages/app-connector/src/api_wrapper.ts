@@ -181,7 +181,7 @@ export class ParcnetGPCWrapper {
 
   async prove(args: {
     request: p.PodspecProofRequest;
-    circuitIdentifier: GPCIdentifier;
+    circuitIdentifier?: GPCIdentifier;
     collectionIds?: string[];
   }): Promise<ProveResult> {
     return new Promise((resolve, reject) => {

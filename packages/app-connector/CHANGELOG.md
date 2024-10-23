@@ -1,5 +1,13 @@
 # @parcnet-js/app-connector
 
+## 1.1.4
+
+### Patch Changes
+
+- Make circuitIdentifier always optional
+- Updated dependencies
+  - @parcnet-js/client-rpc@1.1.3
+
 ## 1.1.3
 
 ### Patch Changes

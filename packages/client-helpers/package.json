@@ -1,6 +1,6 @@
 {
   "name": "@parcnet-js/client-helpers",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "license": "GPL-3.0-or-later",
   "type": "module",
   "main": "dist/index.js",

@@ -1,5 +1,11 @@
 # @parcnet-js/client-rpc
 
+## 1.1.3
+
+### Patch Changes
+
+- Make circuitIdentifier always optional
+
 ## 1.1.2
 
 ### Patch Changes

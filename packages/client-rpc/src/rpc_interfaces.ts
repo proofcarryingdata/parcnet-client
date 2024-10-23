@@ -55,7 +55,7 @@ export interface ParcnetGPCRPC {
     collectionIds
   }: {
     request: PodspecProofRequest;
-    circuitIdentifier: GPCIdentifier;
+    circuitIdentifier?: GPCIdentifier;
     collectionIds?: string[];
   }) => Promise<boolean>;
   verify: (
