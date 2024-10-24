@@ -1,5 +1,11 @@
 # @parcnet-js/app-connector
 
+## 1.1.7
+
+### Patch Changes
+
+- Distinguish between dialog closed by client and by user interaction
+
 ## 1.1.6
 
 ### Patch Changes

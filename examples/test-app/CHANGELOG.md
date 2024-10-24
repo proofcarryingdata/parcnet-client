@@ -1,5 +1,13 @@
 # test-app
 
+## 1.0.19
+
+### Patch Changes
+
+- Updated dependencies
+  - @parcnet-js/app-connector@1.1.7
+  - @parcnet-js/app-connector-react@1.0.2
+
 ## 1.0.18
 
 ### Patch Changes
