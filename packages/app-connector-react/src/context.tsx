@@ -1,6 +1,12 @@
 import { type ParcnetAPI, type Zapp, connect } from "@parcnet-js/app-connector";
 import type { ReactNode } from "react";
-import { createContext, useCallback, useRef, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useRef,
+  useState
+} from "react";
 
 export enum ClientConnectionState {
   DISCONNECTED = "DISCONNECTED",
@@ -12,6 +18,16 @@ export enum ClientConnectionState {
 export const ParcnetClientContext = createContext<
   ParcnetClientContextType | undefined
 >(undefined);
+
+export const useParcnetClientContext = (): ParcnetClientContextType => {
+  const context = useContext(ParcnetClientContext);
+  if (!context) {
+    throw new Error(
+      "useParcnetClientContext must be used within a ParcnetClientProvider"
+    );
+  }
+  return context;
+};
 
 type ParcnetContextBase = {
   zapp: Zapp;
@@ -79,7 +95,8 @@ export function ParcnetIframeProvider({
     }
     if (
       url !== connectUrl ||
-      connectionState === ClientConnectionState.DISCONNECTED
+      connectionState === ClientConnectionState.DISCONNECTED ||
+      connectionState === ClientConnectionState.ERROR
     ) {
       setConnectionState(ClientConnectionState.CONNECTING);
       try {
