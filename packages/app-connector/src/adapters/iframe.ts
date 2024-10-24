@@ -27,7 +27,7 @@ class DialogControllerImpl implements DialogController {
   }
 
   public close(): void {
-    this.#dialog.close();
+    this.#dialog.close("REMOTELY_CLOSED");
   }
 }
 
@@ -77,8 +77,10 @@ export function connect(
     }
   });
 
-  dialog.addEventListener("close", () => {
-    emitter.emit("close");
+  dialog.addEventListener("close", (ev: Event) => {
+    if ((ev.target as HTMLDialogElement)?.returnValue !== "REMOTELY_CLOSED") {
+      emitter.emit("close");
+    }
   });
 
   // Add a backdrop to the dialog
