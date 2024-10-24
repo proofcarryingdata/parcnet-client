@@ -114,12 +114,15 @@ export class ParcnetPODCollectionWrapper {
 class MutationUnloadProtector {
   #mutations = new Set<Promise<unknown>>();
 
+  #unloadHandler: (event: BeforeUnloadEvent) => void;
+
   public constructor() {
-    window.addEventListener("beforeunload", (event: BeforeUnloadEvent) => {
+    this.#unloadHandler = (event: BeforeUnloadEvent) => {
       if (this.#mutations.size > 0) {
         event.preventDefault();
       }
-    });
+    };
+    window.addEventListener("beforeunload", this.#unloadHandler);
   }
 
   public add<T>(mutation: Promise<T>): Promise<T> {
@@ -129,16 +132,26 @@ class MutationUnloadProtector {
     });
     return mutation;
   }
+
+  public clear(): void {
+    window.removeEventListener("beforeunload", this.#unloadHandler);
+    this.#mutations.clear();
+  }
 }
 
 export class ParcnetPODWrapper {
   #api: ParcnetRPCConnector;
   #modalEmitter: ModalEmitter;
-  #unloadProtector: MutationUnloadProtector = new MutationUnloadProtector();
+  #unloadProtector: MutationUnloadProtector;
 
-  constructor(api: ParcnetRPCConnector, modalEmitter: ModalEmitter) {
+  constructor(
+    api: ParcnetRPCConnector,
+    modalEmitter: ModalEmitter,
+    unloadProtector: MutationUnloadProtector
+  ) {
     this.#api = api;
     this.#modalEmitter = modalEmitter;
+    this.#unloadProtector = unloadProtector;
   }
 
   collection(collectionId: string): ParcnetPODCollectionWrapper {
@@ -248,9 +261,17 @@ export class ParcnetAPI {
   public pod: ParcnetPODWrapper;
   public identity: ParcnetIdentityWrapper;
   public gpc: ParcnetGPCWrapper;
+  #unloadProtector: MutationUnloadProtector = new MutationUnloadProtector();
+  #api: ParcnetRPCConnector;
+
+  public async disconnect(): Promise<void> {
+    this.#unloadProtector.clear();
+    this.#api.disconnect();
+  }
 
   constructor(api: ParcnetRPCConnector, modalEmitter: ModalEmitter) {
-    this.pod = new ParcnetPODWrapper(api, modalEmitter);
+    this.#api = api;
+    this.pod = new ParcnetPODWrapper(api, modalEmitter, this.#unloadProtector);
     this.identity = new ParcnetIdentityWrapper(api.identity);
     this.gpc = new ParcnetGPCWrapper(api, modalEmitter);
   }

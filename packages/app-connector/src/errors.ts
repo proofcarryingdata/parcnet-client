@@ -9,3 +9,9 @@ export class UserClosedDialogError extends Error {
     super("User closed dialog");
   }
 }
+
+export class ClientDisconnectedError extends Error {
+  constructor() {
+    super("Client disconnected");
+  }
+}
