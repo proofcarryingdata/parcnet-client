@@ -28,6 +28,7 @@ import type { PODEntries } from "@pcd/pod";
 import { type Emitter, createNanoEvents } from "nanoevents";
 import * as v from "valibot";
 import type { DialogController } from "./adapters/iframe.js";
+import { ClientDisconnectedError } from "./errors.js";
 
 interface ParcnetEventSignatures {
   "subscription-update": (result: SubscriptionUpdateResult) => void;
@@ -280,6 +281,18 @@ export class ParcnetRPCConnector implements ParcnetRPC, ParcnetEvents {
       }
     });
     this.#port.start();
+  }
+
+  /**
+   * Disconnect the client.
+   *
+   * This will reject all pending API invocations with an error.
+   */
+  public disconnect(): void {
+    for (const [_, promise] of this.#pending) {
+      promise.reject(new ClientDisconnectedError());
+    }
+    this.#port.close();
   }
 
   /**

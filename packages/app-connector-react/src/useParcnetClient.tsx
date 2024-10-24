@@ -41,8 +41,8 @@ export function useParcnetClient(): UseParcnetClient {
     : {
         connectionState: context.connectionState,
         z: {
-          connect: async (connectUrl?: string) => {
-            await context.connect(connectUrl);
+          connect: async () => {
+            await context.connect();
           }
         }
       };
