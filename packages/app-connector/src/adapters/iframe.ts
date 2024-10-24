@@ -6,6 +6,7 @@ import type {
 import { InitializationMessageType } from "@parcnet-js/client-rpc";
 import { createNanoEvents } from "nanoevents";
 import { ParcnetAPI } from "../api_wrapper.js";
+import { UserCancelledConnectionError } from "../errors.js";
 import { ParcnetRPCConnector } from "../rpc_client.js";
 
 export type ModalEvents = {
@@ -118,7 +119,10 @@ export function connect(
   iframe.style.height = "100%";
   iframe.src = normalizedUrl.toString();
 
-  return new Promise<ParcnetAPI>((resolve) => {
+  return new Promise<ParcnetAPI>((resolve, reject) => {
+    const unsubscribeCloseEvent = emitter.on("close", () => {
+      reject(new UserCancelledConnectionError());
+    });
     iframe.addEventListener(
       "load",
       () => {
@@ -132,12 +136,21 @@ export function connect(
         );
         // Tell the RPC client to start. It will call the function we pass in
         // when the connection is ready, at which point we can resolve the
-        // promise and return the API wrapper to the caller.
+        // promise and return the API wrapper to the caller. Alternatively,
+        // the user can cancel the connection, in which case we reject the
+        // promise.
         // See below for how the other port of the message channel is sent to
         // the client.
-        client.start(() => {
-          resolve(new ParcnetAPI(client, emitter));
-        });
+        client.start(
+          () => {
+            unsubscribeCloseEvent();
+            resolve(new ParcnetAPI(client, emitter));
+          },
+          () => {
+            unsubscribeCloseEvent();
+            reject(new UserCancelledConnectionError());
+          }
+        );
 
         if (iframe.contentWindow) {
           const contentWindow = iframe.contentWindow;

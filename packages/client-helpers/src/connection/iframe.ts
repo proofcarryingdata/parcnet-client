@@ -50,6 +50,12 @@ export class AdviceChannel implements ConnectorAdvice {
     });
   }
 
+  public cancel(): void {
+    this.port.postMessage({
+      type: RPCMessageType.PARCNET_CLIENT_CANCEL
+    });
+  }
+
   public subscriptionUpdate(
     { update, subscriptionId }: SubscriptionUpdateResult,
     subscriptionSerial: number

@@ -17,10 +17,10 @@ import { PODCollectionManager } from "./client/pod_collection_manager";
 import { getIdentity } from "./client/utils";
 
 export enum ConnectionState {
-  DISCONNECTED,
-  CONNECTING,
-  CONNECTED,
-  AUTHORIZED
+  DISCONNECTED = "DISCONNECTED",
+  CONNECTING = "CONNECTING",
+  CONNECTED = "CONNECTED",
+  AUTHORIZED = "AUTHORIZED"
 }
 
 export const StateContext = createContext<
@@ -93,8 +93,7 @@ export type ClientState = {
 
 export type ClientAction =
   | {
-      type: "login";
-      loggedIn: boolean;
+      type: "connect";
     }
   | {
       type: "authorize";
@@ -122,13 +121,13 @@ export type ClientAction =
       type: "clear-proof-in-progress";
     }
   | {
-      type: "logout";
+      type: "cancel-connection";
     };
 
 export function clientReducer(state: ClientState, action: ClientAction) {
   switch (action.type) {
-    case "login":
-      return { ...state, loggedIn: action.loggedIn };
+    case "connect":
+      return { ...state, connectionState: ConnectionState.CONNECTED };
     case "authorize":
       if (!state.zapp || !state.zappOrigin) {
         throw new Error("No zapp or zapp origin");
@@ -227,7 +226,7 @@ export function clientReducer(state: ClientState, action: ClientAction) {
         ...state,
         proofInProgress: undefined
       };
-    case "logout":
+    case "cancel-connection":
       return initializeState();
   }
 }

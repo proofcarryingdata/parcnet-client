@@ -13,6 +13,7 @@ export enum RPCMessageType {
   PARCNET_CLIENT_INVOKE_RESULT = "zupass-client-invoke-result",
   PARCNET_CLIENT_INVOKE_ERROR = "zupass-client-invoke-error",
   PARCNET_CLIENT_READY = "zupass-client-ready",
+  PARCNET_CLIENT_CANCEL = "zupass-client-cancel",
   PARCNET_CLIENT_SHOW = "zupass-client-show",
   PARCNET_CLIENT_HIDE = "zupass-client-hide",
   PARCNET_CLIENT_SUBSCRIPTION_UPDATE = "zupass-client-subscription-update"
@@ -56,6 +57,9 @@ export const RPCMessageSchema = v.variant("type", [
   }),
   v.object({
     type: v.literal(RPCMessageType.PARCNET_CLIENT_READY)
+  }),
+  v.object({
+    type: v.literal(RPCMessageType.PARCNET_CLIENT_CANCEL)
   }),
   v.object({
     type: v.literal(RPCMessageType.PARCNET_CLIENT_SHOW)

@@ -266,8 +266,8 @@ export class ParcnetRPCConnector implements ParcnetRPC, ParcnetEvents {
    *
    * @param onConnect - Callback to call when the client is ready.
    */
-  public start(onConnect: () => void): void {
-    const eventLoop = this.main(onConnect);
+  public start(onConnect: () => void, onCancel: () => void): void {
+    const eventLoop = this.main(onConnect, onCancel);
     eventLoop.next();
 
     // Set up a listener for messages from the client
@@ -304,7 +304,10 @@ export class ParcnetRPCConnector implements ParcnetRPC, ParcnetEvents {
    *
    * @param onConnect - Callback to call when the client is ready.
    */
-  private *main(onConnect: () => void): Generator<undefined, void, RPCMessage> {
+  private *main(
+    onConnect: () => void,
+    onCancel: () => void
+  ): Generator<undefined, void, RPCMessage> {
     // Loop indefinitely until we get a PARCNET_CLIENT_READY message
     // In the meantime, we will handle PARCNET_CLIENT_SHOW and
     // PARCNET_CLIENT_HIDE, as these may be necessary for the client to allow
@@ -321,6 +324,9 @@ export class ParcnetRPCConnector implements ParcnetRPC, ParcnetEvents {
         this.#dialogController.show();
       } else if (event.type === RPCMessageType.PARCNET_CLIENT_HIDE) {
         this.#dialogController.close();
+      } else if (event.type === RPCMessageType.PARCNET_CLIENT_CANCEL) {
+        onCancel();
+        return;
       }
     }
 
