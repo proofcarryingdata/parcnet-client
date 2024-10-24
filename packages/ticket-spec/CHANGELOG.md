@@ -1,5 +1,12 @@
 # @parcnet-js/ticket-spec
 
+## 1.1.5
+
+### Patch Changes
+
+- Updated dependencies
+  - @parcnet-js/client-rpc@1.1.5
+
 ## 1.1.4
 
 ### Patch Changes

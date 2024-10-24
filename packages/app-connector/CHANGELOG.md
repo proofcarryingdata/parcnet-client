@@ -1,5 +1,13 @@
 # @parcnet-js/app-connector
 
+## 1.1.6
+
+### Patch Changes
+
+- More explicit management of connection workflow
+- Updated dependencies
+  - @parcnet-js/client-rpc@1.1.5
+
 ## 1.1.5
 
 ### Patch Changes

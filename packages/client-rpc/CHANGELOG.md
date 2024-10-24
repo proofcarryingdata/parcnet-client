@@ -1,5 +1,11 @@
 # @parcnet-js/client-rpc
 
+## 1.1.5
+
+### Patch Changes
+
+- More explicit management of connection workflow
+
 ## 1.1.4
 
 ### Patch Changes

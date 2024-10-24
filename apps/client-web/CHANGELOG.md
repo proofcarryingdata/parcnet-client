@@ -1,5 +1,13 @@
 # client-web
 
+## 0.0.15
+
+### Patch Changes
+
+- Updated dependencies
+  - @parcnet-js/client-helpers@1.0.6
+  - @parcnet-js/client-rpc@1.1.5
+
 ## 0.0.14
 
 ### Patch Changes
