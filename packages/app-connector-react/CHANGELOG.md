@@ -1,5 +1,12 @@
 # @parcnet-js/app-connector-react
 
+## 1.0.2
+
+### Patch Changes
+
+- Updated dependencies
+  - @parcnet-js/app-connector@1.1.7
+
 ## 1.0.1
 
 ### Patch Changes
