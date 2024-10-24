@@ -21,8 +21,7 @@
   "scripts": {
     "lint": "eslint . --max-warnings 0",
     "build": "tsup 'src/**/*@(ts|tsx)' --format esm,cjs --clean --sourcemap",
-    "prepublish": "tsup 'src/**/*@(ts|tsx)' --format esm,cjs --clean --sourcemap --dts",
-    "test": "vitest run --typecheck"
+    "prepublish": "tsup 'src/**/*@(ts|tsx)' --format esm,cjs --clean --sourcemap --dts"
   },
   "files": ["dist", "LICENSE"],
   "dependencies": {
