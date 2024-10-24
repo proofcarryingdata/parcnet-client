@@ -21,4 +21,5 @@ export interface ConnectorAdvice {
     result: SubscriptionUpdateResult,
     subscriptionSerial: number
   ): void;
+  cancel(): void;
 }

@@ -25,7 +25,11 @@ function App() {
   }, [dispatch]);
 
   useEffect(() => {
-    if (state.advice && state.connectionState === ConnectionState.CONNECTING) {
+    if (
+      state.advice &&
+      (state.connectionState === ConnectionState.CONNECTED ||
+        state.connectionState === ConnectionState.CONNECTING)
+    ) {
       state.advice.showClient();
     }
   }, [state.advice, state.connectionState]);
@@ -64,7 +68,7 @@ function App() {
       {state.connectionState === ConnectionState.CONNECTING && (
         <button
           className="border-2 font-semibold cursor-pointer border-white py-1 px-2 uppercase active:translate-x-[2px] active:translate-y-[2px]"
-          onClick={() => dispatch({ type: "login", loggedIn: true })}
+          onClick={() => dispatch({ type: "connect" })}
         >
           Connect
         </button>
@@ -395,7 +399,7 @@ function Authorize({
       </button>
       <button
         className="border-2 font-semibold cursor-pointer border-white py-1 px-2 uppercase active:translate-x-[2px] active:translate-y-[2px]"
-        onClick={() => dispatch({ type: "logout" })}
+        onClick={() => dispatch({ type: "cancel-connection" })}
       >
         Cancel
       </button>

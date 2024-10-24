@@ -12,13 +12,13 @@ export function loadPODsFromStorage(): Record<string, PODCollection> {
   try {
     const serializedCollections = JSON.parse(storedSerializedPODs) as unknown;
     const parsed = v.parse(
-      v.record(v.string(), v.array(v.string())),
+      v.record(v.string(), v.array(v.any())),
       serializedCollections
     );
     for (const [collectionId, serializedPODs] of Object.entries(parsed)) {
       result[collectionId] = new PODCollection(
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        serializedPODs.map((str) => POD.fromJSON(JSON.parse(str)))
+        serializedPODs.map((obj) => POD.fromJSON(obj))
       );
     }
   } catch (e) {

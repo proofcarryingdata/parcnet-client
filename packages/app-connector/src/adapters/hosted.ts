@@ -2,6 +2,7 @@ import type { Zapp } from "@parcnet-js/client-rpc";
 import { InitializationMessageType } from "@parcnet-js/client-rpc";
 import { createNanoEvents } from "nanoevents";
 import { ParcnetAPI } from "../api_wrapper.js";
+import { UserCancelledConnectionError } from "../errors.js";
 import { ParcnetRPCConnector } from "../rpc_client.js";
 import type { DialogController, ModalEvents } from "./iframe.js";
 import { postWindowMessage } from "./iframe.js";
@@ -28,7 +29,7 @@ export function connectToHost(zapp: Zapp): Promise<ParcnetAPI> {
 
   const emitter = createNanoEvents<ModalEvents>();
 
-  return new Promise<ParcnetAPI>((resolve) => {
+  return new Promise<ParcnetAPI>((resolve, reject) => {
     // Create a new MessageChannel to communicate with the parent window
     const chan = new MessageChannel();
 
@@ -42,9 +43,14 @@ export function connectToHost(zapp: Zapp): Promise<ParcnetAPI> {
     // promise and return the API wrapper to the caller.
     // See below for how the other port of the message channel is sent to
     // the client.
-    client.start(() => {
-      resolve(new ParcnetAPI(client, emitter));
-    });
+    client.start(
+      () => {
+        resolve(new ParcnetAPI(client, emitter));
+      },
+      () => {
+        reject(new UserCancelledConnectionError());
+      }
+    );
 
     // Send the other port of the message channel to the client
     postWindowMessage(

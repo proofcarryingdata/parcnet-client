@@ -15,3 +15,9 @@ export class ClientDisconnectedError extends Error {
     super("Client disconnected");
   }
 }
+
+export class UserCancelledConnectionError extends Error {
+  constructor() {
+    super("User cancelled connection");
+  }
+}
