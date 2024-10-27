@@ -15,6 +15,7 @@ export type PODSchema<E extends EntriesSchema> = {
     isNotMemberOf?: PODValue[][];
   }[];
   signerPublicKey?: {
+    isRevealed?: boolean;
     isMemberOf?: string[];
     isNotMemberOf?: string[];
   };

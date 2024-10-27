@@ -9,6 +9,7 @@ import type {
 } from "@pcd/gpc";
 import type { POD, PODName, PODValue } from "@pcd/pod";
 import { PodSpec } from "../parse/pod.js";
+import { $e } from "../pod_value_utils.js";
 import type { EntriesSchema } from "../schemas/entries.js";
 import type { PODSchema } from "../schemas/pod.js";
 
@@ -183,9 +184,9 @@ function makeProofRequest<P extends NamedPODs>(
     }
 
     for (const entriesTupleSchema of podSchema.tuples ?? []) {
-      const tupleName = `tuple_${podName}_entries_${entriesTupleSchema.entries.join(
-        "_"
-      )}`;
+      const tupleName = `tuple_${podName}_entries_${entriesTupleSchema.entries
+        .map((entryName) => entryName.replace("$", "_"))
+        .join("_")}`;
       tuples[tupleName] = {
         entries: entriesTupleSchema.entries.map(
           (entryName) => `${podName}.${entryName}` satisfies PODEntryIdentifier
@@ -217,6 +218,26 @@ function makeProofRequest<P extends NamedPODs>(
             isRevealed: false
           };
         }
+      }
+    }
+
+    if (podSchema.signerPublicKey) {
+      podConfig.signerPublicKey = {
+        isRevealed: podSchema.signerPublicKey.isRevealed ?? false
+      };
+      if (podSchema.signerPublicKey.isMemberOf) {
+        // Double underscore to avoid collision with entry names.
+        membershipLists[`allowlist_${podName}__signerPublicKey`] = $e(
+          podSchema.signerPublicKey.isMemberOf
+        );
+        podConfig.signerPublicKey.isMemberOf = `allowlist_${podName}__signerPublicKey`;
+      }
+      if (podSchema.signerPublicKey.isNotMemberOf) {
+        // Double underscore to avoid collision with entry names.
+        membershipLists[`blocklist_${podName}__signerPublicKey`] = $e(
+          podSchema.signerPublicKey.isNotMemberOf
+        );
+        podConfig.signerPublicKey.isNotMemberOf = `blocklist_${podName}__signerPublicKey`;
       }
     }
 
