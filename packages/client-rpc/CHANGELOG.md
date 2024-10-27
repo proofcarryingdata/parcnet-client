@@ -1,5 +1,12 @@
 # @parcnet-js/client-rpc
 
+## 1.1.6
+
+### Patch Changes
+
+- Updated dependencies
+  - @parcnet-js/podspec@1.1.3
+
 ## 1.1.5
 
 ### Patch Changes

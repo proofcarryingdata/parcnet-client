@@ -1,5 +1,13 @@
 # @parcnet-js/app-connector
 
+## 1.1.8
+
+### Patch Changes
+
+- Updated dependencies
+  - @parcnet-js/podspec@1.1.3
+  - @parcnet-js/client-rpc@1.1.6
+
 ## 1.1.7
 
 ### Patch Changes
