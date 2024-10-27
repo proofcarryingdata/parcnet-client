@@ -1,5 +1,11 @@
 # @parcnet-js/podspec
 
+## 1.1.3
+
+### Patch Changes
+
+- Fix compatibility with POD serialization restrictions on membership list names
+
 ## 1.1.2
 
 ### Patch Changes

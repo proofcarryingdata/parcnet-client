@@ -35,10 +35,16 @@ describe("parcnet-client should work", function () {
     const client = new ParcnetRPCConnector(chan.port2, mockDialog);
     expect(client.isConnected()).to.be.false;
 
-    client.start(() => {
-      // This is called when the connection is established
-      expect(client.isConnected()).to.be.true;
-    });
+    client.start(
+      () => {
+        // This is called when the connection is established
+        expect(client.isConnected()).to.be.true;
+      },
+      () => {
+        // This is called if the connection fails. We should never get here.
+        assert(false);
+      }
+    );
 
     postRPCMessage(chan.port1, {
       type: RPCMessageType.PARCNET_CLIENT_READY

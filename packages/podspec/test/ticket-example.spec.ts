@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import { assert, describe, expect, it } from "vitest";
 import * as p from "../src/index.js";
 import { $s } from "../src/pod_value_utils.js";
-import { GPC_NPM_ARTIFACTS_PATH } from "./podspec.spec.js";
+import { GPC_NPM_ARTIFACTS_PATH } from "./constants.js";
 import { generateKeyPair } from "./utils.js";
 
 /**

@@ -1,8 +1,6 @@
-import path from "path";
 import type { GPCBoundConfig } from "@pcd/gpc";
 import { gpcProve, gpcVerify } from "@pcd/gpc";
-import { POD } from "@pcd/pod";
-import { POD_INT_MAX, POD_INT_MIN } from "@pcd/pod/podTypes";
+import { POD, POD_INT_MAX, POD_INT_MIN } from "@pcd/pod";
 import { v4 as uuidv4 } from "uuid";
 import { assert, describe, expect, it } from "vitest";
 import type {
@@ -14,12 +12,8 @@ import { IssueCode } from "../src/error.js";
 import * as p from "../src/index.js";
 import { $c, $i, $s } from "../src/pod_value_utils.js";
 import type { EntriesTupleSchema } from "../src/schemas/entries.js";
+import { GPC_NPM_ARTIFACTS_PATH } from "./constants.js";
 import { generateKeyPair, generateRandomHex } from "./utils.js";
-
-export const GPC_NPM_ARTIFACTS_PATH = path.join(
-  __dirname,
-  "../node_modules/@pcd/proto-pod-gpc-artifacts"
-);
 
 describe("podspec should work", function () {
   it("should validate POD entries", () => {
