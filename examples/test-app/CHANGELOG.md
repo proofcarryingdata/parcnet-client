@@ -1,5 +1,12 @@
 # test-app
 
+## 1.0.21
+
+### Patch Changes
+
+- Updated dependencies
+  - @parcnet-js/ticket-spec@1.1.7
+
 ## 1.0.20
 
 ### Patch Changes

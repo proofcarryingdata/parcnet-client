@@ -1,5 +1,11 @@
 # @parcnet-js/ticket-spec
 
+## 1.1.7
+
+### Patch Changes
+
+- Bump POD/GPC dependencies
+
 ## 1.1.6
 
 ### Patch Changes
