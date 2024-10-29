@@ -477,11 +477,11 @@ importers:
         specifier: workspace:*
         version: link:../typescript-config
       '@pcd/gpc':
-        specifier: ^0.2.0
-        version: 0.2.0
-      '@pcd/pod':
         specifier: ^0.3.0
-        version: 0.3.0
+        version: 0.3.0(typescript@5.6.2)
+      '@pcd/pod':
+        specifier: ^0.4.0
+        version: 0.4.0
       '@pcd/proto-pod-gpc-artifacts':
         specifier: ^0.9.0
         version: 0.9.0
@@ -1460,20 +1460,11 @@ packages:
     resolution: {integrity: sha512-HNjmfLQEVRZmHRET336f20H/8kOozUGwk7yajvsonjNxbj2wBTK1WsQuHkD5yYh9RxFGL2EyDHryOihOwUoKDA==}
     engines: {node: '>= 10.0.0'}
 
-  '@pcd/gpc@0.2.0':
-    resolution: {integrity: sha512-1PIQdYzU4Dz9nT+F1CyS2Ygaa+tXN3jMiTO1OYUTLppgPYRaYsPjQOd/4lI8yABu2A5l9uhec2DctO7M2Q1vvQ==}
-
   '@pcd/gpc@0.3.0':
     resolution: {integrity: sha512-gaDwb76PYYm+qJUZu+gYWbpJKjbEAI+UPO+yaPYCURLPK+8iUMB3xIv6F3CCJNICQdpcwOVMpnWOu+5wzzwqhA==}
 
-  '@pcd/gpcircuits@0.3.0':
-    resolution: {integrity: sha512-BZn+Cr6fp0lVXfLIJxYcG3PQN1Jio5DrPBRSugSMQNBU/Q8lOPwqGysICL+kIG2k7uZ4qp7wJ8ERGOsgQypp1g==}
-
   '@pcd/gpcircuits@0.4.0':
     resolution: {integrity: sha512-rn1pkRTQit/maD80bqB2fb84yN22iTWvZWIjgOV6Y84jAZ1uyU4hfbEUJ4q6pdgb4vENiFu9g3pHGge7My9ZTQ==}
-
-  '@pcd/pod@0.3.0':
-    resolution: {integrity: sha512-7bWchkdMn1z+cZcNdNMl9t7WhFfhmbT3xVKojZWDxKW/cB60t/ohZ+SIgzf0/6TnY4NqRK+udsI3pn2D2wszmA==}
 
   '@pcd/pod@0.4.0':
     resolution: {integrity: sha512-A90GK1cv/t3pxB9YiiLIXDsJldp3YcmCJchRSbVvFfA9Q2pleumNRpFadwmweLqGf5Er9n1C7AWtiEt07K3rIw==}
@@ -1483,9 +1474,6 @@ packages:
 
   '@pcd/proto-pod-gpc-artifacts@0.9.0':
     resolution: {integrity: sha512-DipHMqcwpwCGy0/4hpENYjhKPcxVDEM4Koe13L1QpDYlOVVlUfsV9Y5ObpjtZELH4Q8jLWEW2tnMW9vR+c388w==}
-
-  '@pcd/util@0.7.0':
-    resolution: {integrity: sha512-LVSNKvTppLhqNvjwFyXm1eVPuIh8NglsFx4epy6/LiMtr6GfrFDou6+R7kT33CAfACDsyVf/vw15ugRCnN6h9A==}
 
   '@pcd/util@0.8.0':
     resolution: {integrity: sha512-KG1V8O+o8Awr9iHH9I1eVeqHGlm3F6zqzvOJzXKe/bViE8A31DuiZoeHCVPFRA5+03d+qY4tWQJKOxYGQL6Kww==}
@@ -6944,18 +6932,6 @@ snapshots:
       '@parcel/watcher-win32-x64': 2.4.1
     optional: true
 
-  '@pcd/gpc@0.2.0':
-    dependencies:
-      '@pcd/gpcircuits': 0.3.0
-      '@pcd/pod': 0.3.0
-      '@pcd/util': 0.7.0
-      '@semaphore-protocol/identity': 3.15.2
-      json-bigint: 1.0.0
-      lodash: 4.17.21
-      semaphore-identity-v4: '@semaphore-protocol/identity@4.4.1'
-      snarkjs: 0.7.4
-      url-join: 4.0.1
-
   '@pcd/gpc@0.3.0(typescript@5.5.4)':
     dependencies:
       '@pcd/gpcircuits': 0.4.0
@@ -6971,12 +6947,20 @@ snapshots:
     transitivePeerDependencies:
       - typescript
 
-  '@pcd/gpcircuits@0.3.0':
+  '@pcd/gpc@0.3.0(typescript@5.6.2)':
     dependencies:
-      '@pcd/pod': 0.3.0
-      fastfile: 0.0.20
+      '@pcd/gpcircuits': 0.4.0
+      '@pcd/pod': 0.4.0
+      '@pcd/util': 0.8.0
+      '@semaphore-protocol/identity': 3.15.2
+      json-bigint: 1.0.0
+      lodash: 4.17.21
+      semaphore-identity-v4: '@semaphore-protocol/identity@4.4.1'
       snarkjs: 0.7.4
       url-join: 4.0.1
+      valibot: 0.42.1(typescript@5.6.2)
+    transitivePeerDependencies:
+      - typescript
 
   '@pcd/gpcircuits@0.4.0':
     dependencies:
@@ -6984,16 +6968,6 @@ snapshots:
       fastfile: 0.0.20
       snarkjs: 0.7.4
       url-join: 4.0.1
-
-  '@pcd/pod@0.3.0':
-    dependencies:
-      '@pcd/util': 0.7.0
-      '@zk-kit/eddsa-poseidon': 1.0.3
-      '@zk-kit/lean-imt': 2.2.1
-      '@zk-kit/utils': 1.2.1
-      js-sha256: 0.10.1
-      json-bigint: 1.0.0
-      poseidon-lite: 0.3.0
 
   '@pcd/pod@0.4.0':
     dependencies:
@@ -7007,14 +6981,6 @@ snapshots:
   '@pcd/proto-pod-gpc-artifacts@0.11.0': {}
 
   '@pcd/proto-pod-gpc-artifacts@0.9.0': {}
-
-  '@pcd/util@0.7.0':
-    dependencies:
-      buffer: 6.0.3
-      email-validator: 2.0.4
-      js-sha256: 0.10.1
-      secure-random: 1.1.2
-      uuid: 9.0.1
 
   '@pcd/util@0.8.0':
     dependencies:
@@ -12131,6 +12097,10 @@ snapshots:
   valibot@0.42.1(typescript@5.5.4):
     optionalDependencies:
       typescript: 5.5.4
+
+  valibot@0.42.1(typescript@5.6.2):
+    optionalDependencies:
+      typescript: 5.6.2
 
   vfile-location@5.0.3:
     dependencies:
