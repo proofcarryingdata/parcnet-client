@@ -1,5 +1,11 @@
 # @parcnet-js/ticket-spec
 
+## 1.1.8
+
+### Patch Changes
+
+- Support owner as 'FieldToReveal' and allow other unknown entries to be revealed
+
 ## 1.1.7
 
 ### Patch Changes

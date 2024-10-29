@@ -18,12 +18,12 @@ interface FieldsToReveal {
   ticketSecret: boolean;
   timestampConsumed: boolean;
   timestampSigned: boolean;
-  attendeeSemaphoreId: boolean;
   isConsumed: boolean;
   isRevoked: boolean;
   ticketCategory: boolean;
   attendeeName: boolean;
   attendeeEmail: boolean;
+  owner: boolean;
 }
 
 /**
@@ -49,7 +49,7 @@ export type TicketClassificationTuples =
 
 export interface TicketProofRequest {
   classificationTuples: TicketClassificationTuples;
-  fieldsToReveal: Partial<FieldsToReveal>;
+  fieldsToReveal: Partial<FieldsToReveal> & Record<string, boolean>;
   externalNullifier?: PODValue;
   watermark?: PODValue;
 }
