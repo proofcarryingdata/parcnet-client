@@ -1,5 +1,7 @@
 import type {
+  PODBytesValue,
   PODCryptographicValue,
+  PODDateValue,
   PODEdDSAPublicKeyValue,
   PODIntValue,
   PODStringValue,
@@ -152,7 +154,28 @@ export function safeCheckPublicKeyFormat(
  * @returns True if the values are equal, false otherwise.
  */
 export function isEqualPODValue(a: PODValue, b: PODValue): boolean {
-  return a.type === b.type && a.value === b.value;
+  if (a.type !== b.type) {
+    return false;
+  }
+
+  switch (a.type) {
+    case "string":
+    case "int":
+    case "cryptographic":
+    case "eddsa_pubkey":
+    case "boolean":
+    case "null":
+      return a.value === b.value;
+    case "date":
+      return a.value.getTime() === (b as PODDateValue).value.getTime();
+    case "bytes":
+      return (
+        a.value.length === (b as PODBytesValue).value.length &&
+        a.value.every(
+          (byte, index) => byte === (b as PODBytesValue).value[index]
+        )
+      );
+  }
 }
 
 /**

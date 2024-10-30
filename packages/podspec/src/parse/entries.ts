@@ -8,10 +8,13 @@ import type {
   PodspecUnexpectedInputEntryIssue
 } from "../error.js";
 import { IssueCode, PodspecError } from "../error.js";
+import { booleanCoercer } from "../schemas/boolean.js";
+import { bytesCoercer } from "../schemas/bytes.js";
 import {
   checkPODCryptographicValue,
   cryptographicCoercer
 } from "../schemas/cryptographic.js";
+import { dateCoercer } from "../schemas/dates.js";
 import {
   checkPODEdDSAPublicKeyValue,
   eddsaPublicKeyCoercer
@@ -19,6 +22,7 @@ import {
 import type { EntriesSchema, EntriesTupleSchema } from "../schemas/entries.js";
 import type { EntrySchema } from "../schemas/entry.js";
 import { checkPODIntValue, intCoercer } from "../schemas/int.js";
+import { nullCoercer } from "../schemas/null.js";
 import { checkPODStringValue, stringCoercer } from "../schemas/string.js";
 import type { EntriesOutputType } from "../type_inference.js";
 import { deepFreeze } from "../utils.js";
@@ -30,7 +34,11 @@ const COERCERS: Record<PODValue["type"], (data: unknown) => unknown> = {
   string: stringCoercer,
   int: intCoercer,
   eddsa_pubkey: eddsaPublicKeyCoercer,
-  cryptographic: cryptographicCoercer
+  cryptographic: cryptographicCoercer,
+  boolean: booleanCoercer,
+  bytes: bytesCoercer,
+  date: dateCoercer,
+  null: nullCoercer
 };
 
 const TYPE_VALIDATORS = {
