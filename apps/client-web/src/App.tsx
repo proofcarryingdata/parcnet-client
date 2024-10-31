@@ -2,7 +2,7 @@ import { listen } from "@parcnet-js/client-helpers/connection/iframe";
 import type { Zapp } from "@parcnet-js/client-rpc";
 import type { EntriesSchema, ProofConfigPODSchema } from "@parcnet-js/podspec";
 import { proofRequest } from "@parcnet-js/podspec";
-import { gpcProve } from "@pcd/gpc";
+import { type GPCProofInputs, gpcProve } from "@pcd/gpc";
 import type { POD } from "@pcd/pod";
 import { POD_INT_MAX, POD_INT_MIN } from "@pcd/pod";
 import type { Dispatch, ReactNode } from "react";
@@ -130,9 +130,10 @@ function ProvePODInfo({
     })
     .filter(
       ([_, entry]) =>
-        !!entry.isMemberOf ||
-        !!entry.isNotMemberOf ||
-        !!(entry.type === "int" && entry.inRange)
+        entry.type !== "null" &&
+        (!!entry.isMemberOf ||
+          !!entry.isNotMemberOf ||
+          !!(entry.type === "int" && entry.inRange))
     );
 
   return (
@@ -155,7 +156,7 @@ function ProvePODInfo({
                 {schema.pod.meta?.labelEntry
                   ? pod.content
                       .asEntries()
-                      [schema.pod.meta.labelEntry].value.toString()
+                      [schema.pod.meta.labelEntry].value?.toString()
                   : pod.signature.substring(0, 16)}
               </option>
             );
@@ -171,7 +172,7 @@ function ProvePODInfo({
             <Fragment key={`${name}-${entryName}`}>
               <div>{entryName}</div>
               <div>
-                {selectedPODEntries?.[entryName].value.toString() ?? "-"}
+                {selectedPODEntries?.[entryName].value?.toString() ?? "-"}
               </div>
             </Fragment>
           );
@@ -183,7 +184,7 @@ function ProvePODInfo({
           {entriesWithConstraints.map(([entryName, entry]) => {
             return (
               <div key={`${name}-${entryName}-constraints`} className="my-1">
-                {entry.isMemberOf && (
+                {entry.type !== "null" && entry.isMemberOf && (
                   <div>
                     <span className="font-semibold">{entryName}</span> is member
                     of list:{" "}
@@ -196,7 +197,7 @@ function ProvePODInfo({
                     </Reveal>
                   </div>
                 )}
-                {entry.isNotMemberOf && (
+                {entry.type !== "null" && entry.isNotMemberOf && (
                   <div>
                     <span className="font-semibold">{entryName}</span> is not
                     member of list:{" "}
@@ -294,7 +295,7 @@ export function Prove({
               const prs = proofRequest(
                 proveOperation.proofRequest
               ).getProofRequest();
-              const inputs = {
+              const inputs: GPCProofInputs = {
                 pods: proveOperation.selectedPods as Record<string, POD>,
                 membershipLists: prs.membershipLists,
                 watermark: prs.watermark,
@@ -303,7 +304,6 @@ export function Prove({
                   externalNullifier: prs.externalNullifier
                 }
               };
-              console.log(inputs);
               gpcProve(
                 {
                   ...prs.proofConfig,
