@@ -6,6 +6,9 @@ export function deepFreeze<T extends object>(obj: T): T {
   Object.freeze(obj);
 
   Object.values(obj).forEach((value) => {
+    if (value instanceof Uint8Array) {
+      return;
+    }
     deepFreeze(value);
   });
 

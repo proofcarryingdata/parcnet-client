@@ -1,7 +1,11 @@
 import type {
+  PODBooleanValue,
+  PODBytesValue,
   PODCryptographicValue,
+  PODDateValue,
   PODEdDSAPublicKeyValue,
   PODIntValue,
+  PODNullValue,
   PODStringValue
 } from "@pcd/pod";
 
@@ -54,5 +58,49 @@ export function $c(
     return { type: "cryptographic", value: BigInt(value) };
   } else {
     return value.map((s) => ({ type: "cryptographic", value: BigInt(s) }));
+  }
+}
+
+export function $b(value: boolean): PODBooleanValue;
+export function $b(value: boolean[]): PODBooleanValue[];
+export function $b(
+  value: boolean | boolean[]
+): PODBooleanValue | PODBooleanValue[] {
+  if (typeof value === "boolean") {
+    return { type: "boolean", value };
+  } else {
+    return value.map((b) => ({ type: "boolean", value: b }));
+  }
+}
+
+export function $n(value: null): PODNullValue;
+export function $n(value: null[]): PODNullValue[];
+export function $n(value: null | null[]): PODNullValue | PODNullValue[] {
+  if (value === null) {
+    return { type: "null", value: null };
+  } else {
+    return value.map(() => ({ type: "null", value: null }));
+  }
+}
+
+export function $d(value: Date): PODDateValue;
+export function $d(value: Date[]): PODDateValue[];
+export function $d(value: Date | Date[]): PODDateValue | PODDateValue[] {
+  if (value instanceof Date) {
+    return { type: "date", value };
+  } else {
+    return value.map((d) => ({ type: "date", value: d }));
+  }
+}
+
+export function $bs(value: Uint8Array): PODBytesValue;
+export function $bs(value: Uint8Array[]): PODBytesValue[];
+export function $bs(
+  value: Uint8Array | Uint8Array[]
+): PODBytesValue | PODBytesValue[] {
+  if (value instanceof Uint8Array) {
+    return { type: "bytes", value };
+  } else {
+    return value.map((b) => ({ type: "bytes", value: b }));
   }
 }

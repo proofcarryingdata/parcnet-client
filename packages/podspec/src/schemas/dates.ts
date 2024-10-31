@@ -12,6 +12,7 @@ export interface DateSchema {
   type: "date";
   isMemberOf?: PODDateValue[];
   isNotMemberOf?: PODDateValue[];
+  inRange?: { min: bigint; max: bigint };
 }
 
 /**
