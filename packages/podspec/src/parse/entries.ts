@@ -8,10 +8,13 @@ import type {
   PodspecUnexpectedInputEntryIssue
 } from "../error.js";
 import { IssueCode, PodspecError } from "../error.js";
+import { booleanCoercer, checkPODBooleanValue } from "../schemas/boolean.js";
+import { bytesCoercer, checkPODBytesValue } from "../schemas/bytes.js";
 import {
   checkPODCryptographicValue,
   cryptographicCoercer
 } from "../schemas/cryptographic.js";
+import { checkPODDateValue, dateCoercer } from "../schemas/dates.js";
 import {
   checkPODEdDSAPublicKeyValue,
   eddsaPublicKeyCoercer
@@ -19,6 +22,7 @@ import {
 import type { EntriesSchema, EntriesTupleSchema } from "../schemas/entries.js";
 import type { EntrySchema } from "../schemas/entry.js";
 import { checkPODIntValue, intCoercer } from "../schemas/int.js";
+import { checkPODNullValue, nullCoercer } from "../schemas/null.js";
 import { checkPODStringValue, stringCoercer } from "../schemas/string.js";
 import type { EntriesOutputType } from "../type_inference.js";
 import { deepFreeze } from "../utils.js";
@@ -30,14 +34,22 @@ const COERCERS: Record<PODValue["type"], (data: unknown) => unknown> = {
   string: stringCoercer,
   int: intCoercer,
   eddsa_pubkey: eddsaPublicKeyCoercer,
-  cryptographic: cryptographicCoercer
+  cryptographic: cryptographicCoercer,
+  boolean: booleanCoercer,
+  bytes: bytesCoercer,
+  date: dateCoercer,
+  null: nullCoercer
 };
 
 const TYPE_VALIDATORS = {
   string: checkPODStringValue,
   int: checkPODIntValue,
   eddsa_pubkey: checkPODEdDSAPublicKeyValue,
-  cryptographic: checkPODCryptographicValue
+  cryptographic: checkPODCryptographicValue,
+  boolean: checkPODBooleanValue,
+  bytes: checkPODBytesValue,
+  date: checkPODDateValue,
+  null: checkPODNullValue
 };
 
 /**
@@ -61,6 +73,10 @@ const VALID_ENTRY_SCHEMA_TYPES = [
   "string",
   "cryptographic",
   "eddsa_pubkey",
+  "boolean",
+  "bytes",
+  "date",
+  "null",
   "optional"
 ] as const;
 
@@ -118,7 +134,10 @@ export class EntriesSpec<const E extends EntriesSchema> {
    * @returns A ParseResult containing either a valid result or list of issues.
    */
   public safeParse(
-    input: Record<string, PODValue | string | bigint | number>,
+    input: Record<
+      string,
+      PODValue | string | bigint | number | boolean | Uint8Array | null | Date
+    >,
     options: EntriesParseOptions<E> = DEFAULT_ENTRIES_PARSE_OPTIONS,
     path: string[] = []
   ): ParseResult<EntriesOutputType<E>> {
@@ -129,7 +148,10 @@ export class EntriesSpec<const E extends EntriesSchema> {
    * As {@link safeParse} but will throw an exception if errors are encountered.
    */
   public parse(
-    input: Record<string, PODValue | string | bigint | number>,
+    input: Record<
+      string,
+      PODValue | string | bigint | number | boolean | Uint8Array | null | Date
+    >,
     options: EntriesParseOptions<E> = DEFAULT_ENTRIES_PARSE_OPTIONS,
     path: string[] = []
   ): EntriesOutputType<E> {
@@ -191,7 +213,10 @@ export const DEFAULT_ENTRIES_PARSE_OPTIONS: EntriesParseOptions<EntriesSchema> =
  */
 export function safeParseEntries<E extends EntriesSchema>(
   schema: E,
-  input: Record<string, PODValue | string | bigint | number>,
+  input: Record<
+    string,
+    PODValue | string | bigint | number | boolean | Uint8Array | null | Date
+  >,
   options: EntriesParseOptions<E> = DEFAULT_ENTRIES_PARSE_OPTIONS,
   path: string[] = []
 ): ParseResult<EntriesOutputType<E>> {

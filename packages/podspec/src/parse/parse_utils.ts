@@ -1,7 +1,11 @@
 import type {
+  PODBooleanValue,
+  PODBytesValue,
   PODCryptographicValue,
+  PODDateValue,
   PODEdDSAPublicKeyValue,
   PODIntValue,
+  PODNullValue,
   PODStringValue,
   PODValue
 } from "@pcd/pod";
@@ -22,6 +26,7 @@ import type {
 import { IssueCode } from "../error.js";
 import type { EntriesSchema } from "../schemas/entries.js";
 import type { DefinedEntrySchema } from "../schemas/entry.js";
+import type { NullSchema } from "../schemas/null.js";
 import type { PODTupleSchema } from "../schemas/pod.js";
 import type { EntriesParseOptions } from "./entries.js";
 import type { EntryParseOptions } from "./entry.js";
@@ -152,7 +157,28 @@ export function safeCheckPublicKeyFormat(
  * @returns True if the values are equal, false otherwise.
  */
 export function isEqualPODValue(a: PODValue, b: PODValue): boolean {
-  return a.type === b.type && a.value === b.value;
+  if (a.type !== b.type) {
+    return false;
+  }
+
+  switch (a.type) {
+    case "string":
+    case "int":
+    case "cryptographic":
+    case "eddsa_pubkey":
+    case "boolean":
+    case "null":
+      return a.value === b.value;
+    case "date":
+      return a.value.getTime() === (b as PODDateValue).value.getTime();
+    case "bytes":
+      return (
+        a.value.length === (b as PODBytesValue).value.length &&
+        a.value.every(
+          (byte, index) => byte === (b as PODBytesValue).value[index]
+        )
+      );
+  }
 }
 
 /**
@@ -165,7 +191,7 @@ export function isEqualPODValue(a: PODValue, b: PODValue): boolean {
  * @returns A ParseResult containing either a valid result or list of issues.
  */
 export function safeMembershipChecks<
-  S extends DefinedEntrySchema,
+  S extends Exclude<DefinedEntrySchema, NullSchema>,
   T extends PODValue
 >(
   schema: S,
@@ -303,6 +329,10 @@ export type PODValueNativeTypes = {
   int: bigint;
   cryptographic: bigint;
   eddsa_pubkey: string;
+  boolean: boolean;
+  bytes: Uint8Array;
+  date: Date;
+  null: null;
 };
 
 export type PODValueCoerceableNativeTypes = {
@@ -310,6 +340,10 @@ export type PODValueCoerceableNativeTypes = {
   int: bigint | number | boolean;
   cryptographic: bigint | number | boolean;
   eddsa_pubkey: string;
+  boolean: boolean;
+  bytes: Uint8Array;
+  date: Date;
+  null: null;
 };
 
 /**
@@ -320,4 +354,8 @@ export type PODValueTypeNameToPODValue = {
   int: PODIntValue;
   cryptographic: PODCryptographicValue;
   eddsa_pubkey: PODEdDSAPublicKeyValue;
+  boolean: PODBooleanValue;
+  bytes: PODBytesValue;
+  date: PODDateValue;
+  null: PODNullValue;
 };

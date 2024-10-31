@@ -140,8 +140,10 @@ function makeProofRequest<P extends NamedPODs>(
         schema.type === "optional" ? schema.innerType : schema;
 
       const isRevealed = proofConfigPODSchema.revealed?.[entryName] ?? false;
-      const isMemberOf = entrySchema.isMemberOf;
-      const isNotMemberOf = entrySchema.isNotMemberOf;
+      const isMemberOf =
+        entrySchema.type === "null" ? undefined : entrySchema.isMemberOf;
+      const isNotMemberOf =
+        entrySchema.type === "null" ? undefined : entrySchema.isNotMemberOf;
       const inRange =
         (entrySchema.type === "cryptographic" || entrySchema.type === "int") &&
         entrySchema.inRange;
@@ -173,11 +175,11 @@ function makeProofRequest<P extends NamedPODs>(
       };
       podConfig.entries[entryName] = entryConfig;
 
-      if (entrySchema.isMemberOf) {
+      if (entrySchema.type !== "null" && entrySchema.isMemberOf) {
         membershipLists[`allowlist_${podName}_${entryName}`] =
           entrySchema.isMemberOf;
       }
-      if (entrySchema.isNotMemberOf) {
+      if (entrySchema.type !== "null" && entrySchema.isNotMemberOf) {
         membershipLists[`blocklist_${podName}_${entryName}`] =
           entrySchema.isNotMemberOf;
       }

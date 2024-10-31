@@ -10,7 +10,7 @@ import type {
 } from "../src/error.js";
 import { IssueCode } from "../src/error.js";
 import * as p from "../src/index.js";
-import { $c, $i, $s } from "../src/pod_value_utils.js";
+import { $b, $bs, $c, $i, $s } from "../src/pod_value_utils.js";
 import type { EntriesTupleSchema } from "../src/schemas/entries.js";
 import { GPC_NPM_ARTIFACTS_PATH } from "./constants.js";
 import { generateKeyPair, generateRandomHex } from "./utils.js";
@@ -35,6 +35,24 @@ describe("podspec should work", function () {
       },
       publicKey: {
         type: "eddsa_pubkey"
+      },
+      isActive: {
+        type: "boolean",
+        isMemberOf: [$b(true)]
+      },
+      noneExistent: {
+        type: "null"
+      },
+      byteSequence: {
+        type: "bytes",
+        isMemberOf: [$bs(new Uint8Array([1, 2, 3]))]
+      },
+      registrationDate: {
+        type: "date",
+        inRange: {
+          min: BigInt(new Date("2024-01-01").getTime()),
+          max: BigInt(new Date("2024-12-31").getTime())
+        }
       }
     });
 
@@ -58,6 +76,22 @@ describe("podspec should work", function () {
       publicKey: {
         type: "eddsa_pubkey",
         value: publicKey
+      },
+      isActive: {
+        type: "boolean",
+        value: true
+      },
+      noneExistent: {
+        type: "null",
+        value: null
+      },
+      byteSequence: {
+        type: "bytes",
+        value: new Uint8Array([1, 2, 3])
+      },
+      registrationDate: {
+        type: "date",
+        value: new Date("2024-05-01")
       }
     });
 
@@ -72,6 +106,16 @@ describe("podspec should work", function () {
     expect(result.value.publicKey).to.eql({
       type: "eddsa_pubkey",
       value: publicKey
+    });
+    expect(result.value.isActive).to.eql({ type: "boolean", value: true });
+    expect(result.value.noneExistent).to.eql({ type: "null", value: null });
+    expect(result.value.byteSequence).to.eql({
+      type: "bytes",
+      value: new Uint8Array([1, 2, 3])
+    });
+    expect(result.value.registrationDate).to.eql({
+      type: "date",
+      value: new Date("2024-05-01")
     });
   });
 
@@ -98,6 +142,24 @@ describe("podspec should work", function () {
       },
       publicKey: {
         type: "eddsa_pubkey"
+      },
+      isActive: {
+        type: "boolean",
+        isMemberOf: [$b(true)]
+      },
+      noneExistent: {
+        type: "null"
+      },
+      byteSequence: {
+        type: "bytes",
+        isMemberOf: [$bs(new Uint8Array([1, 2, 3]))]
+      },
+      registrationDate: {
+        type: "date",
+        inRange: {
+          min: BigInt(new Date("2024-01-01").getTime()),
+          max: BigInt(new Date("2024-12-31").getTime())
+        }
       }
     });
 
@@ -108,7 +170,11 @@ describe("podspec should work", function () {
         firstName: "test",
         age: 41, // numbers can be coerced to bigint
         semaphoreId: 1000n,
-        publicKey: publicKey
+        publicKey: publicKey,
+        isActive: true,
+        noneExistent: null,
+        byteSequence: new Uint8Array([1, 2, 3]),
+        registrationDate: new Date("2024-05-01")
       },
       { coerce: true }
     );

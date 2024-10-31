@@ -18,6 +18,22 @@ export const PODValueSchema = v.variant("type", [
   v.object({
     type: v.literal("eddsa_pubkey"),
     value: v.string()
+  }),
+  v.object({
+    type: v.literal("boolean"),
+    value: v.boolean()
+  }),
+  v.object({
+    type: v.literal("date"),
+    value: v.date()
+  }),
+  v.object({
+    type: v.literal("bytes"),
+    value: v.instance(Uint8Array)
+  }),
+  v.object({
+    type: v.literal("null"),
+    value: v.null()
   })
 ]);
 
@@ -57,6 +73,30 @@ export const DefinedEntrySchema = v.variant("type", [
     isNotMemberOf: v.optional(v.array(PODValueSchema)),
     isRevealed: v.optional(v.boolean()),
     equalsEntry: v.optional(v.string())
+  }),
+  v.object({
+    type: v.literal("null")
+  }),
+  v.object({
+    type: v.literal("bytes"),
+    isMemberOf: v.optional(v.array(PODValueSchema)),
+    isNotMemberOf: v.optional(v.array(PODValueSchema))
+  }),
+  v.object({
+    type: v.literal("date"),
+    isMemberOf: v.optional(v.array(PODValueSchema)),
+    isNotMemberOf: v.optional(v.array(PODValueSchema)),
+    inRange: v.optional(
+      v.object({
+        min: v.bigint(),
+        max: v.bigint()
+      })
+    )
+  }),
+  v.object({
+    type: v.literal("boolean"),
+    isMemberOf: v.optional(v.array(PODValueSchema)),
+    isNotMemberOf: v.optional(v.array(PODValueSchema))
   })
 ]);
 

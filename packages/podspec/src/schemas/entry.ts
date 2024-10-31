@@ -1,6 +1,10 @@
+import type { BooleanSchema } from "./boolean.js";
+import type { BytesSchema } from "./bytes.js";
 import type { CryptographicSchema } from "./cryptographic.js";
+import type { DateSchema } from "./dates.js";
 import type { EdDSAPublicKeySchema } from "./eddsa_pubkey.js";
 import type { IntSchema } from "./int.js";
+import type { NullSchema } from "./null.js";
 import type { StringSchema } from "./string.js";
 
 /**
@@ -10,7 +14,11 @@ export type DefinedEntrySchema =
   | StringSchema
   | CryptographicSchema
   | IntSchema
-  | EdDSAPublicKeySchema;
+  | EdDSAPublicKeySchema
+  | BooleanSchema
+  | BytesSchema
+  | DateSchema
+  | NullSchema;
 
 /**
  * Schema for an optional entry.

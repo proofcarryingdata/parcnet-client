@@ -1,4 +1,8 @@
-import type { PODCryptographicValue, PODIntValue } from "@pcd/pod";
+import type {
+  PODCryptographicValue,
+  PODDateValue,
+  PODIntValue
+} from "@pcd/pod";
 import { checkBigintBounds } from "@pcd/pod/podChecks";
 import type { PodspecBaseIssue, PodspecNotInRangeIssue } from "../error.js";
 import { IssueCode } from "../error.js";
@@ -63,12 +67,19 @@ export function parseEntry<S extends DefinedEntrySchema>(
     }
   }
 
-  const checkedForMatches = safeMembershipChecks(schema, value, options, path);
-  if (!checkedForMatches.isValid) {
-    if (options.exitEarly) {
-      return FAILURE(checkedForMatches.issues);
-    } else {
-      issues.push(...checkedForMatches.issues);
+  if (schema.type !== "null") {
+    const checkedForMatches = safeMembershipChecks(
+      schema,
+      value,
+      options,
+      path
+    );
+    if (!checkedForMatches.isValid) {
+      if (options.exitEarly) {
+        return FAILURE(checkedForMatches.issues);
+      } else {
+        issues.push(...checkedForMatches.issues);
+      }
     }
   }
 
@@ -92,6 +103,18 @@ export function parseEntry<S extends DefinedEntrySchema>(
           issues.push(issue);
         }
       }
+    }
+  }
+
+  if (schema.type === "date") {
+    if (schema.inRange) {
+      const { min, max } = schema.inRange;
+      checkBigintBounds(
+        "",
+        BigInt((value as PODDateValue).value.getTime()),
+        min,
+        max
+      );
     }
   }
 
