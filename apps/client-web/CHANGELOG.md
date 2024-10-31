@@ -1,5 +1,16 @@
 # client-web
 
+## 0.0.17
+
+### Patch Changes
+
+- 7b37763: Bump dependencies on POD and GPC
+- Updated dependencies [7b37763]
+- Updated dependencies [7b37763]
+  - @parcnet-js/client-rpc@1.2.0
+  - @parcnet-js/podspec@1.2.0
+  - @parcnet-js/client-helpers@1.0.8
+
 ## 0.0.16
 
 ### Patch Changes

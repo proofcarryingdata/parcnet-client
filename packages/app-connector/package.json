@@ -1,6 +1,6 @@
 {
   "name": "@parcnet-js/app-connector",
-  "version": "1.1.8",
+  "version": "1.1.9",
   "license": "GPL-3.0-or-later",
   "type": "module",
   "main": "dist/index.cjs",

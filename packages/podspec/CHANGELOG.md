@@ -1,5 +1,15 @@
 # @parcnet-js/podspec
 
+## 1.2.0
+
+### Minor Changes
+
+- 7b37763: Support new PODValue types
+
+### Patch Changes
+
+- 7b37763: Bump dependencies on POD and GPC
+
 ## 1.1.3
 
 ### Patch Changes

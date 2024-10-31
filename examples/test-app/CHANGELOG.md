@@ -1,5 +1,18 @@
 # test-app
 
+## 1.0.23
+
+### Patch Changes
+
+- Updated dependencies [7b37763]
+- Updated dependencies [e1a97f3]
+- Updated dependencies [7b37763]
+  - @parcnet-js/client-rpc@1.2.0
+  - @parcnet-js/podspec@1.2.0
+  - @parcnet-js/app-connector@1.1.9
+  - @parcnet-js/ticket-spec@1.1.9
+  - @parcnet-js/app-connector-react@1.0.4
+
 ## 1.0.22
 
 ### Patch Changes

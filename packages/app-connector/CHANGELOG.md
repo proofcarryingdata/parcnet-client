@@ -1,5 +1,16 @@
 # @parcnet-js/app-connector
 
+## 1.1.9
+
+### Patch Changes
+
+- e1a97f3: Don't close the modal when clicking outside it
+- 7b37763: Bump dependencies on POD and GPC
+- Updated dependencies [7b37763]
+- Updated dependencies [7b37763]
+  - @parcnet-js/client-rpc@1.2.0
+  - @parcnet-js/podspec@1.2.0
+
 ## 1.1.8
 
 ### Patch Changes
