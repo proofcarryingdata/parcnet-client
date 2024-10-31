@@ -65,17 +65,6 @@ export function connect(
   dialog.style.maxWidth = "600px";
   dialog.style.height = "90vh";
   dialog.classList.add("parcnet-dialog");
-  dialog.addEventListener("click", (e) => {
-    const dialogDimensions = dialog.getBoundingClientRect();
-    if (
-      e.clientX < dialogDimensions.left ||
-      e.clientX > dialogDimensions.right ||
-      e.clientY < dialogDimensions.top ||
-      e.clientY > dialogDimensions.bottom
-    ) {
-      dialog.close();
-    }
-  });
 
   dialog.addEventListener("close", (ev: Event) => {
     if ((ev.target as HTMLDialogElement)?.returnValue !== "REMOTELY_CLOSED") {
