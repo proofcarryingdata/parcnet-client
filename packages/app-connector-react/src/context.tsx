@@ -1,9 +1,16 @@
-import { type ParcnetAPI, type Zapp, connect } from "@parcnet-js/app-connector";
+import {
+  type InitContext,
+  type ParcnetAPI,
+  type Zapp,
+  doConnect,
+  init
+} from "@parcnet-js/app-connector";
 import type { ReactNode } from "react";
 import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useRef,
   useState
 } from "react";
@@ -57,15 +64,17 @@ type ParcnetClientProviderProps = {
   zapp: Zapp;
   children: React.ReactNode;
   url?: string;
+  preload?: boolean;
 };
 
 export function ParcnetClientProvider({
   zapp,
   url,
-  children
+  children,
+  preload = false
 }: ParcnetClientProviderProps): ReactNode {
   return (
-    <ParcnetIframeProvider zapp={zapp} url={url}>
+    <ParcnetIframeProvider zapp={zapp} url={url} preload={preload}>
       {children}
     </ParcnetIframeProvider>
   );
@@ -74,10 +83,12 @@ export function ParcnetClientProvider({
 export function ParcnetIframeProvider({
   zapp,
   url,
+  preload,
   children
 }: {
   zapp: Zapp;
   url?: string;
+  preload: boolean;
   children: React.ReactNode;
 }): ReactNode {
   const ref = useRef<HTMLDivElement>(null);
@@ -87,6 +98,14 @@ export function ParcnetIframeProvider({
   );
   const [z, setZ] = useState<ParcnetAPI | null>(null);
   const [error, setError] = useState<Error | null>(null);
+  const [initContextPromise, setInitContextPromise] =
+    useState<Promise<InitContext> | null>(null);
+
+  useEffect(() => {
+    if (ref.current && preload) {
+      setInitContextPromise(init(ref.current, url ?? "https://zupass.org"));
+    }
+  }, [ref, url, preload]);
 
   const connectCallback = useCallback(async () => {
     const connectUrl = url ?? "https://zupass.org";
@@ -99,16 +118,20 @@ export function ParcnetIframeProvider({
       connectionState === ClientConnectionState.ERROR
     ) {
       setConnectionState(ClientConnectionState.CONNECTING);
+      const initContext = await (initContextPromise ??
+        init(ref.current, connectUrl));
       try {
-        const zupass = await connect(zapp, ref.current, connectUrl);
+        const zupass = await doConnect(zapp, initContext);
         setZ(zupass);
         setConnectionState(ClientConnectionState.CONNECTED);
       } catch (error) {
         setError(error as Error);
         setConnectionState(ClientConnectionState.ERROR);
+      } finally {
+        setInitContextPromise(null);
       }
     }
-  }, [zapp, connectionState, url]);
+  }, [url, initContextPromise, connectionState, zapp]);
 
   const disconnectCallback = useCallback(async () => {
     setConnectionState(ClientConnectionState.DISCONNECTED);

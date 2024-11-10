@@ -36,19 +36,16 @@ export interface DialogController {
   close(): void;
 }
 
-/**
- * Connects to PARCNET and returns a ParcnetAPI object.
- *
- * @param zapp - The Zapp iniating the connection.
- * @param element - The element to attach the client iframe to.
- * @param clientUrl - The URL of the Parcnet client to connect to.
- * @returns A promise that resolves to a ParcnetAPI object.
- */
-export function connect(
-  zapp: Zapp,
+export type InitContext = {
+  iframe: Window;
+  emitter: ModalEmitter;
+  dialog: HTMLDialogElement;
+};
+
+export function init(
   element: HTMLElement,
-  clientUrl = "https://zupass.org"
-): Promise<ParcnetAPI> {
+  clientUrl: string
+): Promise<InitContext> {
   // Will throw if the URL is invalid
   const normalizedUrl = new URL(clientUrl);
 
@@ -75,13 +72,13 @@ export function connect(
   // Add a backdrop to the dialog
   const style = document.createElement("style");
   style.textContent = `.parcnet-dialog::backdrop {
-  position: fixed;
-  top: 0px;
-  right: 0px;
-  bottom: 0px;
-  left: 0px;
-  background: rgba(0, 0, 0, 0.3);;
-  }`;
+ position: fixed;
+ top: 0px;
+ right: 0px;
+ bottom: 0px;
+ left: 0px;
+ background: rgba(0, 0, 0, 0.3);;
+ }`;
   dialog.appendChild(style);
 
   const container = document.createElement("div");
@@ -110,71 +107,93 @@ export function connect(
   iframe.style.height = "100%";
   iframe.src = normalizedUrl.toString();
 
-  return new Promise<ParcnetAPI>((resolve, reject) => {
-    const unsubscribeCloseEvent = emitter.on("close", () => {
-      reject(new UserCancelledConnectionError());
-    });
+  return new Promise<InitContext>((resolve, reject) => {
     iframe.addEventListener(
       "load",
       () => {
-        // Create a new MessageChannel to communicate with the iframe
-        const chan = new MessageChannel();
-
-        // Create a new RPC client
-        const client = new ParcnetRPCConnector(
-          chan.port2,
-          new DialogControllerImpl(dialog)
-        );
-        // Tell the RPC client to start. It will call the function we pass in
-        // when the connection is ready, at which point we can resolve the
-        // promise and return the API wrapper to the caller. Alternatively,
-        // the user can cancel the connection, in which case we reject the
-        // promise.
-        // See below for how the other port of the message channel is sent to
-        // the client.
-        client.start(
-          () => {
-            unsubscribeCloseEvent();
-            resolve(new ParcnetAPI(client, emitter));
-          },
-          () => {
-            unsubscribeCloseEvent();
-            reject(new UserCancelledConnectionError());
-          }
-        );
-
-        if (iframe.contentWindow) {
-          const contentWindow = iframe.contentWindow;
+        const contentWindow = iframe.contentWindow;
+        if (contentWindow) {
           // @todo Blink (and maybe Webkit) will discard messages if there's no
           // handler yet, so we need to wait a bit and/or retry until the client is
           // ready
           // The client takes a few seconds to load, so waiting isn't a bad solution
-          new Promise<void>((resolve) => {
-            window.setTimeout(() => resolve(), 1000);
-          })
-            .then(() => {
-              // Send the other port of the message channel to the client
-              postWindowMessage(
-                contentWindow,
-                {
-                  type: InitializationMessageType.PARCNET_CLIENT_CONNECT,
-                  zapp: zapp
-                },
-                "*",
-                // Our RPC client has port2, send port1 to the client
-                [chan.port1]
-              );
-            })
-            .catch((err) => {
-              console.error("Error sending initialization message", err);
-            });
+          window.setTimeout(
+            () => resolve({ iframe: contentWindow, emitter, dialog }),
+            1000
+          );
         } else {
+          reject(new Error("no iframe content window!"));
           console.error("no iframe content window!");
         }
       },
       { once: true }
     );
     shadow.appendChild(iframe);
+  });
+}
+
+/**
+ * Connects to PARCNET and returns a ParcnetAPI object.
+ *
+ * @param zapp - The Zapp iniating the connection.
+ * @param element - The element to attach the client iframe to.
+ * @param clientUrl - The URL of the Parcnet client to connect to.
+ * @returns A promise that resolves to a ParcnetAPI object.
+ */
+export async function connect(
+  zapp: Zapp,
+  element: HTMLElement,
+  clientUrl = "https://zupass.org"
+): Promise<ParcnetAPI> {
+  const context = await init(element, clientUrl);
+  return doConnect(zapp, context);
+}
+
+export function doConnect(
+  zapp: Zapp,
+  { iframe, emitter, dialog }: InitContext
+): Promise<ParcnetAPI> {
+  return new Promise<ParcnetAPI>((resolve, reject) => {
+    const unsubscribeCloseEvent = emitter.on("close", () => {
+      reject(new UserCancelledConnectionError());
+    });
+
+    // Create a new MessageChannel to communicate with the iframe
+    const chan = new MessageChannel();
+
+    // Create a new RPC client
+    const client = new ParcnetRPCConnector(
+      chan.port2,
+      new DialogControllerImpl(dialog)
+    );
+    // Tell the RPC client to start. It will call the function we pass in
+    // when the connection is ready, at which point we can resolve the
+    // promise and return the API wrapper to the caller. Alternatively,
+    // the user can cancel the connection, in which case we reject the
+    // promise.
+    // See below for how the other port of the message channel is sent to
+    // the client.
+    client.start(
+      () => {
+        unsubscribeCloseEvent();
+        resolve(new ParcnetAPI(client, emitter));
+      },
+      () => {
+        unsubscribeCloseEvent();
+        reject(new UserCancelledConnectionError());
+      }
+    );
+
+    postWindowMessage(
+      iframe,
+      {
+        type: InitializationMessageType.PARCNET_CLIENT_CONNECT,
+        zapp: zapp
+      },
+      "*",
+      // Our RPC client has port2, send port1 to the client
+      [chan.port1]
+    );
   });
 }
 

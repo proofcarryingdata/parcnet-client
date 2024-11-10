@@ -76,7 +76,7 @@ function App(): ReactNode {
   const connectUrl = localStorage.getItem("connectUrl") ?? "https://zupass.org";
   return (
     <StrictMode>
-      <ParcnetClientProvider zapp={zapp} url={connectUrl}>
+      <ParcnetClientProvider zapp={zapp} url={connectUrl} preload={true}>
         <Main />
       </ParcnetClientProvider>
     </StrictMode>

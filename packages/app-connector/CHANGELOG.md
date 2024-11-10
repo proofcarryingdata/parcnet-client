@@ -1,5 +1,11 @@
 # @parcnet-js/app-connector
 
+## 1.1.10
+
+### Patch Changes
+
+- Allow pre-loading of iframe component
+
 ## 1.1.9
 
 ### Patch Changes

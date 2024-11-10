@@ -74,6 +74,37 @@ export function GPC(): ReactNode {
     })();
   }, [connectionState, z]);
 
+  async function getGPCProof() {
+    if (connectionState !== ClientConnectionState.CONNECTED) {
+      return;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const result = await z.gpc.prove({
+      request: {
+        pods: {
+          FROGCRYPTO: {
+            pod: {
+              entries: entriesToProve,
+              meta: {
+                labelEntry: "name"
+              }
+            },
+            revealed: {
+              beauty: true,
+              jump: true,
+              speed: true,
+              forgId: true,
+              name: true,
+              biome: true,
+              owner: true,
+              intelligence: true
+            }
+          }
+        }
+      }
+    });
+  }
+
   return connectionState !== ClientConnectionState.CONNECTED ? null : (
     <div>
       <h1 className="text-xl font-bold mb-2">GPC</h1>
