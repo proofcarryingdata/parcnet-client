@@ -10,7 +10,7 @@ export const TicketSpec = p.pod({
     productId: { type: "string" },
     ticketName: { type: "string" },
     eventName: { type: "string" },
-    timestampConsumed: { type: "int" },
+    timestampConsumed: { type: "optional", innerType: { type: "int" } },
     timestampSigned: { type: "int" },
     // Semaphore v3
     attendeeSemaphoreId: {
@@ -20,8 +20,8 @@ export const TicketSpec = p.pod({
     // Semaphore v4
     owner: { type: "eddsa_pubkey" },
     isConsumed: { type: "int" },
-    isRevoked: { type: "int" },
-    ticketCategory: { type: "int" },
+    isRevoked: { type: "optional", innerType: { type: "int" } },
+    ticketCategory: { type: "optional", innerType: { type: "int" } },
     attendeeName: { type: "string" },
     attendeeEmail: { type: "string" },
     checkerEmail: { type: "optional", innerType: { type: "string" } },

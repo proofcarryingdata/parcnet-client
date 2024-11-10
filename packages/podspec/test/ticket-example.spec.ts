@@ -21,12 +21,12 @@ const TicketEntries = p.entries({
   imageUrl: { type: "optional", innerType: { type: "string" } },
   imageAltText: { type: "optional", innerType: { type: "string" } },
   ticketSecret: { type: "optional", innerType: { type: "string" } },
-  timestampConsumed: { type: "int" },
+  timestampConsumed: { type: "optional", innerType: { type: "int" } },
   timestampSigned: { type: "int" },
   attendeeSemaphoreId: { type: "cryptographic" },
   isConsumed: { type: "int" },
-  isRevoked: { type: "int" },
-  ticketCategory: { type: "string" },
+  isRevoked: { type: "optional", innerType: { type: "int" } },
+  ticketCategory: { type: "optional", innerType: { type: "int" } },
   attendeeName: { type: "string" },
   attendeeEmail: { type: "string" }
 });
@@ -51,12 +51,12 @@ const VALID_TICKET_DATA = {
   imageUrl: "https://example.com/image.jpg",
   imageAltText: "Image 1",
   ticketSecret: "secret123",
-  timestampConsumed: 1714857600,
+  //timestampConsumed: 1714857600,
   timestampSigned: 1714857600,
   attendeeSemaphoreId: 1234567890,
   isConsumed: 0,
-  isRevoked: 0,
-  ticketCategory: "Category 1",
+  //isRevoked: 0,
+  //ticketCategory: 1,
   attendeeName: "John Doe",
   attendeeEmail: "john.doe@example.com"
 };
