@@ -14,6 +14,8 @@ import { $b, $bs, $c, $i, $s } from "../src/pod_value_utils.js";
 import type { EntriesTupleSchema } from "../src/schemas/entries.js";
 import { GPC_NPM_ARTIFACTS_PATH } from "./constants.js";
 import { generateKeyPair, generateRandomHex } from "./utils.js";
+import { merge } from "../src/index.js";
+import { PodSpecGroup } from "../src/group.js";
 
 describe("podspec should work", function () {
   it("should validate POD entries", () => {
@@ -813,5 +815,82 @@ describe("podspec should work", function () {
       GPC_NPM_ARTIFACTS_PATH
     );
     assert(result);
+  });
+
+  it("can merge pod specs", async function () {
+    const p1 = p.pod({
+      entries: {
+        foo: { type: "string" },
+        bar: { type: "int" }
+      }
+    });
+
+    const p2 = p.pod({
+      entries: {
+        baz: { type: "string" },
+        quux: { type: "int" }
+      }
+    });
+
+    const p3 = merge(p1, p2);
+
+    assert(p3.schema.entries.foo === p1.schema.entries.foo);
+    assert(p3.schema.entries.bar === p1.schema.entries.bar);
+    assert(p3.schema.entries.baz === p2.schema.entries.baz);
+    assert(p3.schema.entries.quux === p2.schema.entries.quux);
+
+    const result = p3.safeParseEntries(
+      {
+        foo: "test",
+        bar: 5n,
+        baz: "test",
+        quux: 10n
+      },
+      {
+        coerce: true
+      }
+    );
+
+    assert(result.isValid);
+    assert(result.value.foo.type === "string");
+    assert(result.value.foo.value === "test");
+    assert(result.value.bar.type === "int");
+    assert(result.value.bar.value === 5n);
+    assert(result.value.baz.type === "string");
+    assert(result.value.baz.value === "test");
+    assert(result.value.quux.type === "int");
+    assert(result.value.quux.value === 10n);
+  });
+
+  it("group stuff", async function () {
+    const p1 = p.pod({
+      entries: { foo: { type: "string" } }
+    });
+    const p2 = p.pod({
+      entries: { bar: { type: "string" } }
+    });
+    const p3 = p.pod({
+      entries: { baz: { type: "string" } }
+    });
+    const group = new PodSpecGroup({
+      pods: { p1, p2, p3 },
+      tuples: [
+        {
+          entries: ["p1.foo", "p2.bar"],
+          isMemberOf: [
+            [
+              { type: "string", value: "test" },
+              { type: "string", value: "test" },
+              { type: "string", value: "test" }
+            ]
+          ]
+        }
+      ]
+    });
+
+    const p1got = group.get("p1");
+    assert(p1got !== undefined);
+    assert(p1got.schema.entries.foo !== undefined);
+    assert(p1got.schema.entries.foo.type === "string");
   });
 });

@@ -22,6 +22,9 @@ import {
 import type { ParseResult } from "./parse_utils.js";
 import { FAILURE, SUCCESS, safeCheckTuple } from "./parse_utils.js";
 
+const invalid = Symbol("invalid");
+type Invalid<T extends string> = { [invalid]: T };
+
 export interface PODData {
   entries: PODEntries;
   signature: string;
@@ -232,6 +235,58 @@ export class PodSpec<const E extends EntriesSchema = EntriesSchema> {
 }
 
 /**
+ * Merges two PodSpecs, combining their schemas.
+ * The resulting PodSpec will only accept PODs that satisfy both specs.
+ *
+ * @param spec1 The first PodSpec to merge
+ * @param spec2 The second PodSpec to merge
+ * @returns A new PodSpec that combines both schemas
+ * @throws {Error} If the specs have overlapping entries or conflicting constraints
+ */
+export function merge<
+  const E extends EntriesSchema,
+  const F extends EntriesSchema
+>(
+  spec1: NoOverlappingEntries<E, F> extends never
+    ? PodSpec<E> & Invalid<"Cannot merge PodSpecs with overlapping entries">
+    : PodSpec<E>,
+  spec2: PodSpec<F>
+): PodSpec<E & F> {
+  // Runtime checks for constraints that complement the type checks
+  const entriesOverlap = Object.keys(spec1.schema.entries).some(
+    (key) => key in spec2.schema.entries
+  );
+  if (entriesOverlap) {
+    throw new Error("Cannot merge PodSpecs with overlapping entries");
+  }
+
+  if (spec1.schema.signature && spec2.schema.signature) {
+    throw new Error(
+      "Cannot merge PodSpecs that both have signature constraints"
+    );
+  }
+
+  if (spec1.schema.signerPublicKey && spec2.schema.signerPublicKey) {
+    throw new Error(
+      "Cannot merge PodSpecs that both have signerPublicKey constraints"
+    );
+  }
+
+  const mergedSchema: PODSchema<E & F> = {
+    entries: {
+      ...spec1.schema.entries,
+      ...spec2.schema.entries
+    },
+    signature: spec1.schema.signature ?? spec2.schema.signature,
+    signerPublicKey:
+      spec1.schema.signerPublicKey ?? spec2.schema.signerPublicKey,
+    tuples: [...(spec1.schema.tuples ?? []), ...(spec2.schema.tuples ?? [])]
+  };
+
+  return PodSpec.create(mergedSchema);
+}
+
+/**
  * Exported version of static create method, for convenience.
  */
 export const pod = <const E extends EntriesSchema>(schema: PODSchema<E>) =>
@@ -368,3 +423,12 @@ export function safeParsePod<E extends EntriesSchema>(
         data as StrongPOD<EntriesOutputType<E>>
       );
 }
+
+/** Check if two types share any keys */
+type HasOverlap<T, U> = keyof T & keyof U extends never ? false : true;
+
+/** Ensure two schemas don't have overlapping entries */
+type NoOverlappingEntries<
+  E1 extends EntriesSchema,
+  E2 extends EntriesSchema
+> = HasOverlap<E1, E2> extends true ? never : E1 & E2;

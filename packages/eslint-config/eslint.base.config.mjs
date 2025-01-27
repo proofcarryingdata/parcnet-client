@@ -16,7 +16,9 @@ export default tseslint.config(
       "**/dist/",
       "**/vitest.config.ts",
       "**/vite.config.ts",
-      "**/tailwind.config.ts"
+      "**/vitest.workspace.ts",
+      "**/tailwind.config.ts",
+      "**/tsup.config.ts"
     ] // global ignore with single ignore key
   },
   {

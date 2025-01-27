@@ -9,7 +9,7 @@ import { proofRequest } from "./gpc/proof_request.js";
 import type { EntriesSpec } from "./parse/entries.js";
 import { entries } from "./parse/entries.js";
 import type { PODData, PodSpec } from "./parse/pod.js";
-import { pod } from "./parse/pod.js";
+import { pod, merge } from "./parse/pod.js";
 import type { EntriesSchema } from "./schemas/entries.js";
 import type { PODSchema } from "./schemas/pod.js";
 import type {
@@ -24,6 +24,7 @@ export {
   pod,
   proofRequest,
   podToPODData,
+  merge,
   type EntriesOutputType,
   type EntriesSchema,
   type EntriesSpec,

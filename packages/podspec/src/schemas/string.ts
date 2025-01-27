@@ -15,7 +15,7 @@ export interface StringSchema {
 }
 
 /**
- * Checks if the given input is a PODEdDSAPublicKeyValue.
+ * Checks if the given input is a PODStringValue.
  * @param data - The input to check.
  * @returns A ParseResult wrapping the value
  */

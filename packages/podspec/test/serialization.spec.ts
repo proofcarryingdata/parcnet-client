@@ -49,7 +49,6 @@ describe("should be able to serialize outputs", function () {
     });
 
     const pr = prs.getProofRequest();
-    console.dir(pr, { depth: null });
 
     expect(() => proofConfigToJSON(pr.proofConfig)).to.not.throw;
     expect(() => podMembershipListsToJSON(pr.membershipLists)).to.not.throw;
