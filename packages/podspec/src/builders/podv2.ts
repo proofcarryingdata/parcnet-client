@@ -8,7 +8,6 @@ import {
   type PODName,
   type PODValue
 } from "@pcd/pod";
-import type { EntryListSpec, EntrySpec } from "../types/entries.js";
 import type { PODValueType } from "../types/utils.js";
 import { validateRange } from "./shared.js";
 
@@ -24,15 +23,14 @@ import { validateRange } from "./shared.js";
  - [ ] rename away from v2 suffix
  - [ ] validate entry names
  - [ ] validate constraint parameters
- - [ ] switch to using value types rather than PODValues (everywhere?)
- - [ ] change `create` parameter to not take a PODEntryListSpec (maybe it should take nothing)
+ - [ ] switch to using value types rather than PODValues (everywhere? maybe not membership lists)
  */
 
-const virtualEntryNames = new Set([
-  "$contentID",
-  "$signature",
-  "$signerPublicKey"
-]);
+const virtualEntries: VirtualEntries = {
+  $contentID: { type: "string" },
+  $signature: { type: "string" },
+  $signerPublicKey: { type: "eddsa_pubkey" }
+};
 
 type VirtualEntries = {
   $contentID: { type: "string" };
@@ -40,20 +38,20 @@ type VirtualEntries = {
   $signerPublicKey: { type: "eddsa_pubkey" };
 };
 
-export type PODSpecV2<E extends EntryListSpec, C extends ConstraintMap> = {
+export type PODSpecV2<E extends EntryTypes, S extends StatementMap> = {
   entries: E;
-  constraints: C;
+  statements: S;
 };
 
-type EntryTypes = Record<PODName, PODValueType>;
+export type EntryTypes = Record<PODName, PODValueType>;
 
-type EntryKeys<E extends EntryListSpec> = (keyof E & string)[];
+export type EntryKeys<E extends EntryTypes> = (keyof E & string)[];
 
-type PODValueTupleForNamedEntries<
-  E extends EntryListSpec,
+export type PODValueTupleForNamedEntries<
+  E extends EntryTypes,
   Names extends EntryKeys<E>
 > = {
-  [K in keyof Names]: PODValueTypeForEntry<E[Names[K] & keyof E]>;
+  [K in keyof Names]: PODValueTypeFromTypeName<E[Names[K] & keyof E]>;
 };
 
 type PODValueTypeFromTypeName<T extends PODValueType> = Extract<
@@ -61,29 +59,24 @@ type PODValueTypeFromTypeName<T extends PODValueType> = Extract<
   { type: T }
 >;
 
-type PODValueTypeForEntry<E extends EntrySpec> = E["type"] extends PODValueType
-  ? PODValueTypeFromTypeName<E["type"]>
-  : never;
-
-// type EntryType<E extends EntrySpec> = E["type"];
-// type NamedEntry<E extends EntrySpec, N extends keyof E> = E[N];
-// type EntryOfType<E extends EntrySpec, T extends EntryType<E>> = E extends {
-//   [P in keyof E]: { type: T };
-// }
-//   ? E
-//   : never;
-
-type EntriesOfType<E extends EntryListSpec, T extends EntrySpec["type"]> = {
-  [P in keyof E as E[P] extends { type: T } ? P & string : never]: E[P];
+type EntriesOfType<E extends EntryTypes, T extends PODValueType> = {
+  [P in keyof E as E[P] extends T ? P & string : never]: E[P];
 };
 
-type IsMemberOf<E extends EntryListSpec, N extends EntryKeys<E>> = {
+/**
+ * @TODO Consider not having the E type parameter here.
+ * We can practically constrain the entry names using the constraint method
+ * signature, and then store a lighter-weight type that just lists the entry
+ * names used, without keeping a reference to the entry type list.
+ */
+
+type IsMemberOf<E extends EntryTypes, N extends EntryKeys<E>> = {
   entries: N;
   type: "isMemberOf";
   isMemberOf: PODValueTupleForNamedEntries<E, N>[];
 };
 
-type IsNotMemberOf<E extends EntryListSpec, N extends EntryKeys<E>> = {
+type IsNotMemberOf<E extends EntryTypes, N extends EntryKeys<E>> = {
   entries: N;
   type: "isNotMemberOf";
   isNotMemberOf: PODValueTupleForNamedEntries<E, N>[];
@@ -92,34 +85,34 @@ type IsNotMemberOf<E extends EntryListSpec, N extends EntryKeys<E>> = {
 type SupportsRangeChecks = "int" | "cryptographic" | "date";
 
 type InRange<
-  E extends EntryListSpec,
+  E extends EntryTypes,
   N extends keyof EntriesOfType<E, SupportsRangeChecks>
 > = {
   entry: N;
   type: "inRange";
   inRange: {
-    min: E[N]["type"] extends "date" ? Date : bigint;
-    max: E[N]["type"] extends "date" ? Date : bigint;
+    min: E[N] extends "date" ? Date : bigint;
+    max: E[N] extends "date" ? Date : bigint;
   };
 };
 
 type NotInRange<
-  E extends EntryListSpec,
+  E extends EntryTypes,
   N extends keyof EntriesOfType<E, SupportsRangeChecks>
 > = {
   entry: N;
   type: "notInRange";
   notInRange: {
-    min: E[N]["type"] extends "date" ? Date : bigint;
-    max: E[N]["type"] extends "date" ? Date : bigint;
+    min: E[N] extends "date" ? Date : bigint;
+    max: E[N] extends "date" ? Date : bigint;
   };
 };
 
 type EqualsEntry<
-  E extends EntryListSpec,
+  E extends EntryTypes,
   N1 extends keyof E,
   N2 extends keyof E
-> = E[N2]["type"] extends E[N1]["type"]
+> = E[N2] extends E[N1]
   ? {
       entry: N1;
       type: "equalsEntry";
@@ -128,10 +121,10 @@ type EqualsEntry<
   : never;
 
 type NotEqualsEntry<
-  E extends EntryListSpec,
+  E extends EntryTypes,
   N1 extends keyof E,
   N2 extends keyof E
-> = E[N2]["type"] extends E[N1]["type"]
+> = E[N2] extends E[N1]
   ? {
       entry: N1;
       type: "notEqualsEntry";
@@ -139,7 +132,7 @@ type NotEqualsEntry<
     }
   : never;
 
-type Constraints =
+type Statements =
   | IsMemberOf<any, any>
   | IsNotMemberOf<any, any>
   | InRange<any, any>
@@ -150,46 +143,46 @@ type Constraints =
 /**
  * Given a list of entry names, return the names of the entries that are not in the list
  */
-type OmittedEntryNames<E extends EntryListSpec, N extends string[]> = Exclude<
+type OmittedEntryNames<E extends EntryTypes, N extends string[]> = Exclude<
   keyof E,
   N[number]
 >;
 
-type NonOverlappingConstraints<C extends ConstraintMap, N extends string[]> = {
-  [K in keyof C as C[K] extends
+type NonOverlappingStatements<S extends StatementMap, N extends string[]> = {
+  [K in keyof S as S[K] extends
     | IsMemberOf<any, infer Entries>
     | IsNotMemberOf<any, infer Entries>
     ? Entries[number] extends N[number]
       ? K
       : never
-    : C[K] extends InRange<any, infer Entry>
+    : S[K] extends InRange<any, infer Entry>
       ? Entry extends N[number]
         ? K
         : never
-      : C[K] extends NotInRange<any, infer Entry>
+      : S[K] extends NotInRange<any, infer Entry>
         ? Entry extends N[number]
           ? K
           : never
-        : C[K] extends EqualsEntry<any, infer Entry1, infer Entry2>
+        : S[K] extends EqualsEntry<any, infer Entry1, infer Entry2>
           ? [Entry1, Entry2][number] extends N[number]
             ? K
             : never
-          : C[K] extends NotEqualsEntry<any, infer Entry1, infer Entry2>
+          : S[K] extends NotEqualsEntry<any, infer Entry1, infer Entry2>
             ? [Entry1, Entry2][number] extends N[number]
               ? K
               : never
-            : never]: C[K];
+            : never]: S[K];
 };
 
 type Concrete<T> = T extends object ? { [K in keyof T]: T[K] } : T;
 
 type AddEntry<
-  E extends EntryListSpec,
+  E extends EntryTypes,
   K extends keyof E,
   V extends PODValueType
-> = Concrete<E & { [P in K]: { type: V } }>;
+> = Concrete<E & { [P in K]: V }>;
 
-// Utility types for constraint naming
+// Utility types for statement naming
 type JoinWithUnderscore<T extends readonly string[]> = T extends readonly [
   infer F extends string,
   ...infer R extends string[]
@@ -199,50 +192,50 @@ type JoinWithUnderscore<T extends readonly string[]> = T extends readonly [
     : `${F}_${JoinWithUnderscore<R>}`
   : never;
 
-type BaseConstraintName<
+type BaseStatementName<
   N extends readonly string[],
-  C extends Constraints["type"]
-> = `${JoinWithUnderscore<N>}_${C}`;
+  S extends Statements["type"]
+> = `${JoinWithUnderscore<N>}_${S}`;
 
 type NextAvailableSuffix<
   Base extends string,
-  C extends ConstraintMap
-> = Base extends keyof C
-  ? `${Base}_1` extends keyof C
-    ? `${Base}_2` extends keyof C
+  S extends StatementMap
+> = Base extends keyof S
+  ? `${Base}_1` extends keyof S
+    ? `${Base}_2` extends keyof S
       ? `${Base}_3`
       : `${Base}_2`
     : `${Base}_1`
   : Base;
 
-type ConstraintName<
+type StatementName<
   N extends readonly string[],
-  C extends Constraints["type"],
-  Map extends ConstraintMap
-> = NextAvailableSuffix<BaseConstraintName<N, C>, Map>;
+  S extends Statements["type"],
+  Map extends StatementMap
+> = NextAvailableSuffix<BaseStatementName<N, S>, Map>;
 
 // Base constraint map
-export type ConstraintMap = Record<string, Constraints>;
+export type StatementMap = Record<string, Statements>;
 
 export class PODSpecBuilderV2<
-  E extends EntryListSpec,
+  E extends EntryTypes,
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  C extends ConstraintMap = {}
+  S extends StatementMap = {}
 > {
-  readonly #spec: PODSpecV2<E, C>;
+  readonly #spec: PODSpecV2<E, S>;
 
-  private constructor(spec: PODSpecV2<E, C>) {
+  private constructor(spec: PODSpecV2<E, S>) {
     this.#spec = spec;
   }
 
   public static create() {
     return new PODSpecBuilderV2({
       entries: {},
-      constraints: {}
+      statements: {}
     });
   }
 
-  public spec(): PODSpecV2<E, C> {
+  public spec(): PODSpecV2<E, S> {
     return structuredClone(this.#spec);
   }
 
@@ -250,15 +243,15 @@ export class PODSpecBuilderV2<
     K extends string,
     V extends PODValueType,
     NewEntries extends AddEntry<E, K, V>
-  >(key: Exclude<K, keyof E>, type: V): PODSpecBuilderV2<NewEntries, C> {
+  >(key: Exclude<K, keyof E>, type: V): PODSpecBuilderV2<NewEntries, S> {
     // @todo handle existing entries?
     return new PODSpecBuilderV2({
       ...this.#spec,
       entries: {
         ...this.#spec.entries,
-        [key]: { type }
+        [key]: type
       } as NewEntries,
-      constraints: this.#spec.constraints
+      statements: this.#spec.statements
     });
   }
 
@@ -267,25 +260,25 @@ export class PODSpecBuilderV2<
    */
   public pick<K extends keyof E & string>(
     keys: K[]
-  ): PODSpecBuilderV2<Pick<E, K>, Concrete<NonOverlappingConstraints<C, K[]>>> {
+  ): PODSpecBuilderV2<Pick<E, K>, Concrete<NonOverlappingStatements<S, K[]>>> {
     return new PODSpecBuilderV2({
       entries: Object.fromEntries(
         Object.entries(this.#spec.entries).filter(([key]) =>
           keys.includes(key as K)
         )
       ) as Pick<E, K>,
-      constraints: Object.fromEntries(
-        Object.entries(this.#spec.constraints).filter(([_key, constraint]) => {
-          if (constraint.type === "isMemberOf") {
-            return (constraint.entries as EntryKeys<E>).every((entry) =>
+      statements: Object.fromEntries(
+        Object.entries(this.#spec.statements).filter(([_key, statement]) => {
+          if (statement.type === "isMemberOf") {
+            return (statement.entries as EntryKeys<E>).every((entry) =>
               keys.includes(entry as K)
             );
-          } else if (constraint.type === "inRange") {
-            return keys.includes(constraint.entry as K);
+          } else if (statement.type === "inRange") {
+            return keys.includes(statement.entry as K);
           }
           return false;
         })
-      ) as Concrete<NonOverlappingConstraints<C, K[]>>
+      ) as Concrete<NonOverlappingStatements<S, K[]>>
     });
   }
 
@@ -307,17 +300,17 @@ export class PODSpecBuilderV2<
   public isMemberOf<N extends EntryKeys<E & VirtualEntries>>(
     names: [...N],
     values: N["length"] extends 1
-      ? PODValueTypeForEntry<
+      ? PODValueTypeFromTypeName<
           (E & VirtualEntries)[N[0] & keyof (E & VirtualEntries)]
         >[]
       : PODValueTupleForNamedEntries<E & VirtualEntries, N>[]
   ): PODSpecBuilderV2<
     E,
-    C & { [K in ConstraintName<N, "isMemberOf", C>]: IsMemberOf<E, N> }
+    S & { [K in StatementName<N, "isMemberOf", S>]: IsMemberOf<E, N> }
   > {
     // Check that all names exist in entries
     for (const name of names) {
-      if (!(name in this.#spec.entries) && !virtualEntryNames.has(name)) {
+      if (!(name in this.#spec.entries) && !(name in virtualEntries)) {
         throw new Error(`Entry "${name}" does not exist`);
       }
     }
@@ -328,29 +321,31 @@ export class PODSpecBuilderV2<
       throw new Error("Duplicate entry names are not allowed");
     }
 
-    const constraint: IsMemberOf<E, N> = {
+    const statement: IsMemberOf<E, N> = {
       entries: names,
       type: "isMemberOf",
       // Wrap single values in arrays to match the expected tuple format
       isMemberOf: (names.length === 1
         ? // @todo handle virtual entries
-          (values as PODValueTypeForEntry<E[N[0] & keyof E]>[]).map((v) => [v])
+          (values as PODValueTypeFromTypeName<E[N[0] & keyof E]>[]).map((v) => [
+            v
+          ])
         : values) as PODValueTupleForNamedEntries<E, N>[]
     };
 
     const baseName = `${names.join("_")}_isMemberOf`;
-    let constraintName = baseName;
+    let statementName = baseName;
     let suffix = 1;
 
-    while (constraintName in this.#spec.constraints) {
-      constraintName = `${baseName}_${suffix++}`;
+    while (statementName in this.#spec.statements) {
+      statementName = `${baseName}_${suffix++}`;
     }
 
     return new PODSpecBuilderV2({
       ...this.#spec,
-      constraints: {
-        ...this.#spec.constraints,
-        [constraintName]: constraint
+      statements: {
+        ...this.#spec.statements,
+        [statementName]: statement
       }
     });
   }
@@ -373,11 +368,11 @@ export class PODSpecBuilderV2<
   public isNotMemberOf<N extends EntryKeys<E>>(
     names: [...N],
     values: N["length"] extends 1
-      ? PODValueTypeForEntry<E[N[0] & keyof E]>[]
+      ? PODValueTypeFromTypeName<E[N[0] & keyof E]>[]
       : PODValueTupleForNamedEntries<E, N>[]
   ): PODSpecBuilderV2<
     E,
-    C & { [K in ConstraintName<N, "isNotMemberOf", C>]: IsNotMemberOf<E, N> }
+    S & { [K in StatementName<N, "isNotMemberOf", S>]: IsNotMemberOf<E, N> }
   > {
     // Check that all names exist in entries
     for (const name of names) {
@@ -392,28 +387,30 @@ export class PODSpecBuilderV2<
       throw new Error("Duplicate entry names are not allowed");
     }
 
-    const constraint: IsNotMemberOf<E, N> = {
+    const statement: IsNotMemberOf<E, N> = {
       entries: names,
       type: "isNotMemberOf",
       // Wrap single values in arrays to match the expected tuple format
       isNotMemberOf: (names.length === 1
-        ? (values as PODValueTypeForEntry<E[N[0] & keyof E]>[]).map((v) => [v])
+        ? (values as PODValueTypeFromTypeName<E[N[0] & keyof E]>[]).map((v) => [
+            v
+          ])
         : values) as PODValueTupleForNamedEntries<E, N>[]
     };
 
     const baseName = `${names.join("_")}_isNotMemberOf`;
-    let constraintName = baseName;
+    let statementName = baseName;
     let suffix = 1;
 
-    while (constraintName in this.#spec.constraints) {
-      constraintName = `${baseName}_${suffix++}`;
+    while (statementName in this.#spec.statements) {
+      statementName = `${baseName}_${suffix++}`;
     }
 
     return new PODSpecBuilderV2({
       ...this.#spec,
-      constraints: {
-        ...this.#spec.constraints,
-        [constraintName]: constraint
+      statements: {
+        ...this.#spec.statements,
+        [statementName]: statement
       }
     });
   }
@@ -430,19 +427,19 @@ export class PODSpecBuilderV2<
   >(
     name: N,
     range: {
-      min: E[N]["type"] extends "date" ? Date : bigint;
-      max: E[N]["type"] extends "date" ? Date : bigint;
+      min: E[N] extends "date" ? Date : bigint;
+      max: E[N] extends "date" ? Date : bigint;
     }
   ): PODSpecBuilderV2<
     E,
-    C & { [K in ConstraintName<[N & string], "inRange", C>]: InRange<E, N> }
+    S & { [K in StatementName<[N & string], "inRange", S>]: InRange<E, N> }
   > {
     // Check that the entry exists
-    if (!(name in this.#spec.entries) && !virtualEntryNames.has(name)) {
+    if (!(name in this.#spec.entries) && !(name in virtualEntries)) {
       throw new Error(`Entry "${name}" does not exist`);
     }
 
-    const entryType = this.#spec.entries[name]?.type;
+    const entryType = this.#spec.entries[name];
 
     if (entryType === "int") {
       validateRange(
@@ -467,25 +464,25 @@ export class PODSpecBuilderV2<
       );
     }
 
-    const constraint: InRange<E, N> = {
+    const statement: InRange<E, N> = {
       entry: name,
       type: "inRange",
       inRange: range
     };
 
     const baseName = `${name}_inRange`;
-    let constraintName = baseName;
+    let statementName = baseName;
     let suffix = 1;
 
-    while (constraintName in this.#spec.constraints) {
-      constraintName = `${baseName}_${suffix++}`;
+    while (statementName in this.#spec.statements) {
+      statementName = `${baseName}_${suffix++}`;
     }
 
     return new PODSpecBuilderV2({
       ...this.#spec,
-      constraints: {
-        ...this.#spec.constraints,
-        [constraintName]: constraint
+      statements: {
+        ...this.#spec.statements,
+        [statementName]: statement
       }
     });
   }
@@ -502,21 +499,21 @@ export class PODSpecBuilderV2<
   >(
     name: N,
     range: {
-      min: E[N]["type"] extends "date" ? Date : bigint;
-      max: E[N]["type"] extends "date" ? Date : bigint;
+      min: E[N] extends "date" ? Date : bigint;
+      max: E[N] extends "date" ? Date : bigint;
     }
   ): PODSpecBuilderV2<
     E,
-    C & {
-      [K in ConstraintName<[N & string], "notInRange", C>]: NotInRange<E, N>;
+    S & {
+      [K in StatementName<[N & string], "notInRange", S>]: NotInRange<E, N>;
     }
   > {
     // Check that the entry exists
-    if (!(name in this.#spec.entries)) {
+    if (!(name in this.#spec.entries) && !(name in virtualEntries)) {
       throw new Error(`Entry "${name}" does not exist`);
     }
 
-    const entryType = this.#spec.entries[name]?.type;
+    const entryType = this.#spec.entries[name];
 
     if (entryType === "int") {
       validateRange(
@@ -541,36 +538,36 @@ export class PODSpecBuilderV2<
       );
     }
 
-    const constraint: NotInRange<E, N> = {
+    const statement: NotInRange<E, N> = {
       entry: name,
       type: "notInRange",
       notInRange: range
     };
 
     const baseName = `${name}_notInRange`;
-    let constraintName = baseName;
+    let statementName = baseName;
     let suffix = 1;
 
-    while (constraintName in this.#spec.constraints) {
-      constraintName = `${baseName}_${suffix++}`;
+    while (statementName in this.#spec.statements) {
+      statementName = `${baseName}_${suffix++}`;
     }
 
     return new PODSpecBuilderV2({
       ...this.#spec,
-      constraints: {
-        ...this.#spec.constraints,
-        [constraintName]: constraint
+      statements: {
+        ...this.#spec.statements,
+        [statementName]: statement
       }
     });
   }
 
   public equalsEntry<N1 extends keyof E & string, N2 extends keyof E & string>(
     name1: N1,
-    name2: E[N2]["type"] extends E[N1]["type"] ? N2 : never
+    name2: E[N2] extends E[N1] ? N2 : never
   ): PODSpecBuilderV2<
     E,
-    C & {
-      [K in ConstraintName<[N1, N2], "equalsEntry", C>]: EqualsEntry<E, N1, N2>;
+    S & {
+      [K in StatementName<[N1, N2], "equalsEntry", S>]: EqualsEntry<E, N1, N2>;
     }
   > {
     // Check that both names exist in entries
@@ -583,11 +580,11 @@ export class PODSpecBuilderV2<
     if ((name1 as string) === (name2 as string)) {
       throw new Error("Entry names must be different");
     }
-    if (this.#spec.entries[name1]?.type !== this.#spec.entries[name2]?.type) {
+    if ((this.#spec.entries[name1] as string) !== this.#spec.entries[name2]) {
       throw new Error("Entry types must be the same");
     }
 
-    const constraint = {
+    const statement = {
       entry: name1,
       type: "equalsEntry",
       equalsEntry: name2
@@ -595,18 +592,18 @@ export class PODSpecBuilderV2<
     } as unknown as EqualsEntry<E, N1, N2>;
 
     const baseName = `${name1}_${name2}_equalsEntry`;
-    let constraintName = baseName;
+    let statementName = baseName;
     let suffix = 1;
 
-    while (constraintName in this.#spec.constraints) {
-      constraintName = `${baseName}_${suffix++}`;
+    while (statementName in this.#spec.statements) {
+      statementName = `${baseName}_${suffix++}`;
     }
 
     return new PODSpecBuilderV2({
       ...this.#spec,
-      constraints: {
-        ...this.#spec.constraints,
-        [constraintName]: constraint
+      statements: {
+        ...this.#spec.statements,
+        [statementName]: statement
       }
     });
   }
@@ -616,11 +613,11 @@ export class PODSpecBuilderV2<
     N2 extends keyof E & string
   >(
     name1: N1,
-    name2: E[N2]["type"] extends E[N1]["type"] ? N2 : never
+    name2: E[N2] extends E[N1] ? N2 : never
   ): PODSpecBuilderV2<
     E,
-    C & {
-      [K in ConstraintName<[N1, N2], "notEqualsEntry", C>]: NotEqualsEntry<
+    S & {
+      [K in StatementName<[N1, N2], "notEqualsEntry", S>]: NotEqualsEntry<
         E,
         N1,
         N2
@@ -637,11 +634,11 @@ export class PODSpecBuilderV2<
     if ((name1 as string) === (name2 as string)) {
       throw new Error("Entry names must be different");
     }
-    if (this.#spec.entries[name1]?.type !== this.#spec.entries[name2]?.type) {
+    if ((this.#spec.entries[name1] as string) !== this.#spec.entries[name2]) {
       throw new Error("Entry types must be the same");
     }
 
-    const constraint = {
+    const statement = {
       entry: name1,
       type: "notEqualsEntry",
       notEqualsEntry: name2
@@ -649,18 +646,18 @@ export class PODSpecBuilderV2<
     } as unknown as NotEqualsEntry<E, N1, N2>;
 
     const baseName = `${name1}_${name2}_notEqualsEntry`;
-    let constraintName = baseName;
+    let statementName = baseName;
     let suffix = 1;
 
-    while (constraintName in this.#spec.constraints) {
-      constraintName = `${baseName}_${suffix++}`;
+    while (statementName in this.#spec.statements) {
+      statementName = `${baseName}_${suffix++}`;
     }
 
     return new PODSpecBuilderV2({
       ...this.#spec,
-      constraints: {
-        ...this.#spec.constraints,
-        [constraintName]: constraint
+      statements: {
+        ...this.#spec.statements,
+        [statementName]: statement
       }
     });
   }
@@ -677,7 +674,7 @@ if (import.meta.vitest) {
     });
 
     const c = b.isMemberOf(["a"], [{ type: "string", value: "foo" }]);
-    expect(c.spec().constraints).toEqual({
+    expect(c.spec().statements).toEqual({
       a_isMemberOf: {
         entries: ["a"],
         type: "isMemberOf",
@@ -686,7 +683,7 @@ if (import.meta.vitest) {
     });
 
     const d = c.inRange("b", { min: 10n, max: 100n });
-    expect(d.spec().constraints).toEqual({
+    expect(d.spec().statements).toEqual({
       a_isMemberOf: {
         entries: ["a"],
         type: "isMemberOf",
@@ -708,10 +705,10 @@ if (import.meta.vitest) {
         ]
       ]
     );
-    expect(e.spec().constraints.a_b_isMemberOf.entries).toEqual(["a", "b"]);
+    expect(e.spec().statements.a_b_isMemberOf.entries).toEqual(["a", "b"]);
 
     const f = e.pick(["b"]);
-    expect(f.spec().constraints).toEqual({
+    expect(f.spec().statements).toEqual({
       b_inRange: {
         entry: "b",
         type: "inRange",
@@ -722,13 +719,13 @@ if (import.meta.vitest) {
     const g = e.entry("new", "string").equalsEntry("a", "new");
     const _GEntries = g.spec().entries;
     type EntriesType = typeof _GEntries;
-    g.spec().constraints.a_new_equalsEntry satisfies EqualsEntry<
+    g.spec().statements.a_new_equalsEntry satisfies EqualsEntry<
       EntriesType,
       "a",
       "new"
     >;
 
-    expect(g.spec().constraints).toMatchObject({
+    expect(g.spec().statements).toMatchObject({
       a_new_equalsEntry: {
         entry: "a",
         type: "equalsEntry",
@@ -745,8 +742,8 @@ type TestEntries = {
   c: { type: "int" };
 };
 
-// Example constraint map
-type TestConstraints = {
+// Example statement map
+type TestStatements = {
   a_isMemberOf: IsMemberOf<TestEntries, ["a"]>;
   b_inRange: InRange<TestEntries, "b">;
   ac_isMemberOf: IsMemberOf<TestEntries, ["a", "c"]>;
@@ -760,10 +757,7 @@ type TestOmitted = OmittedEntryNames<TestEntries, PickedKeys>;
 // Should be: "c"
 
 // Now let's test NonOverlapping
-type TestNonOverlapping = NonOverlappingConstraints<
-  TestConstraints,
-  PickedKeys
->;
+type TestNonOverlapping = NonOverlappingStatements<TestStatements, PickedKeys>;
 
 // Let's see what we get when picking just 'a'
-type TestPickA = NonOverlappingConstraints<TestConstraints, ["a"]>;
+type TestPickA = NonOverlappingStatements<TestStatements, ["a"]>;

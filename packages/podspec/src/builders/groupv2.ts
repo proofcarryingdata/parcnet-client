@@ -1,13 +1,12 @@
 import type { PODName } from "@pcd/pod";
-import type { EntryListSpec } from "../types/entries.js";
-
 import {
   PODSpecBuilderV2,
-  type ConstraintMap,
-  type PODSpecV2
+  type StatementMap,
+  type PODSpecV2,
+  type EntryTypes
 } from "./podv2.js";
 
-type PODGroupPODs = Record<PODName, PODSpecV2<EntryListSpec, ConstraintMap>>;
+type PODGroupPODs = Record<PODName, PODSpecV2<EntryTypes, StatementMap>>;
 
 // @TODO add group constraints, where instead of extending EntryListSpec,
 // we have some kind of group entry list, with each entry name prefixed
@@ -21,10 +20,10 @@ type PODGroupPODs = Record<PODName, PODSpecV2<EntryListSpec, ConstraintMap>>;
 
 type PODGroupSpec<
   PODs extends PODGroupPODs,
-  Constraints extends ConstraintMap
+  Statements extends StatementMap
 > = {
   pods: PODs;
-  constraints: Constraints;
+  statements: Statements;
 };
 
 // type AddEntry<
@@ -38,21 +37,21 @@ type Evaluate<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
 type AddPOD<
   PODs extends PODGroupPODs,
   N extends PODName,
-  Spec extends PODSpecV2<EntryListSpec, ConstraintMap>
+  Spec extends PODSpecV2<EntryTypes, StatementMap>
 > = Evaluate<{
   [K in keyof PODs | N]: K extends N ? Spec : PODs[K & keyof PODs];
 }>;
 
 class PODGroupSpecBuilder<
   PODs extends PODGroupPODs,
-  Constraints extends ConstraintMap
+  Statements extends StatementMap
 > {
-  #spec: PODGroupSpec<PODs, Constraints>;
+  #spec: PODGroupSpec<PODs, Statements>;
 
-  constructor(pods: PODs, constraints: Constraints) {
+  constructor(pods: PODs, statements: Statements) {
     this.#spec = {
       pods,
-      constraints
+      statements
     };
   }
 
@@ -60,26 +59,26 @@ class PODGroupSpecBuilder<
     return new PODGroupSpecBuilder(pods, {});
   }
 
-  public spec(): PODGroupSpec<PODs, Constraints> {
+  public spec(): PODGroupSpec<PODs, Statements> {
     return this.#spec;
   }
 
   public pod<
     N extends PODName,
-    Spec extends PODSpecV2<EntryListSpec, ConstraintMap>,
+    Spec extends PODSpecV2<EntryTypes, StatementMap>,
     NewPods extends AddPOD<PODs, N, Spec>
-  >(name: N, spec: Spec): PODGroupSpecBuilder<NewPods, Constraints> {
+  >(name: N, spec: Spec): PODGroupSpecBuilder<NewPods, Statements> {
     return new PODGroupSpecBuilder(
       { ...this.#spec.pods, [name]: spec } as unknown as NewPods,
-      this.#spec.constraints
+      this.#spec.statements
     );
   }
 
   public isMemberOf<N extends PODName>(
     name: N
-  ): PODGroupSpecBuilder<PODs, Constraints> {
+  ): PODGroupSpecBuilder<PODs, Statements> {
     return new PODGroupSpecBuilder(this.#spec.pods, {
-      ...this.#spec.constraints,
+      ...this.#spec.statements,
       [name]: { type: "isMemberOf", isMemberOf: name }
     });
   }
@@ -97,7 +96,7 @@ if (import.meta.vitest) {
       pods: {
         foo: podBuilder.spec()
       },
-      constraints: {}
+      statements: {}
     });
   });
 }
