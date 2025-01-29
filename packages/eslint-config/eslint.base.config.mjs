@@ -12,6 +12,7 @@ export default tseslint.config(
 
   {
     ignores: [
+      "**/src/generated/**",
       "**/node_modules/*",
       "**/dist/",
       "**/vitest.config.ts",
