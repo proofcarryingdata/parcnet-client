@@ -1,12 +1,12 @@
 import { checkPODName, type PODName } from "@pcd/pod";
-import type { PODValueType } from "../types/utils.js";
 import { type PODSpec, PODSpecBuilder } from "./pod.js";
 import type {
   EntryTypes,
   VirtualEntries,
   EntryKeys,
   PODValueTypeFromTypeName,
-  PODValueTupleForNamedEntries
+  PODValueTupleForNamedEntries,
+  PODValueType
 } from "./types/entries.js";
 import type { StatementMap, IsMemberOf } from "./types/statements.js";
 

@@ -1,5 +1,6 @@
 import type { PODName, PODValue } from "@pcd/pod";
-import type { PODValueType } from "../../types/utils.js";
+
+export type PODValueType = PODValue["type"];
 
 export type EntryTypes = Record<PODName, PODValueType>;
 

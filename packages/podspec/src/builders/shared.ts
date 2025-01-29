@@ -1,5 +1,5 @@
 import { checkPODValue, type PODValue } from "@pcd/pod";
-import type { PODValueType } from "../types/utils.js";
+import type { PODValueType } from "./types/entries.js";
 
 /**
  * Validates a range check.
@@ -58,6 +58,9 @@ export function deepFreeze<T>(obj: T): T {
     properties.forEach((prop) => {
       const value = obj[prop as keyof T];
       if (value && typeof value === "object" && !Object.isFrozen(value)) {
+        if (value instanceof Uint8Array) {
+          return;
+        }
         deepFreeze(value);
       }
     });

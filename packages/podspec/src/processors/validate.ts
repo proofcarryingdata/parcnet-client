@@ -19,6 +19,7 @@ import {
 } from "./validate/issues.js";
 import { checkIsMemberOf } from "./validate/checks/isMemberOf.js";
 import { checkIsNotMemberOf } from "./validate/checks/isNotMemberOf.js";
+import { assertPODSpec } from "../generated/podspec.js";
 
 /**
  @TOOO
@@ -78,6 +79,8 @@ function validatePOD<E extends EntryTypes, S extends StatementMap>(
   spec: PODSpec<E, S>,
   options: ValidateOptions = DEFAULT_VALIDATE_OPTIONS
 ): ValidateResult<StrongPOD<PODEntriesFromEntryTypes<E>>> {
+  assertPODSpec(spec);
+
   const podEntries = pod.content.asEntries();
 
   const issues = [];

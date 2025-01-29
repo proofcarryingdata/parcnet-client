@@ -7,7 +7,6 @@ import {
   POD_INT_MAX,
   POD_INT_MIN
 } from "@pcd/pod";
-import type { PODValueType } from "../types/utils.js";
 import { deepFreeze, validateRange } from "./shared.js";
 import type {
   IsMemberOf,
@@ -25,9 +24,11 @@ import type {
   EntryKeys,
   EntryTypes,
   PODValueTupleForNamedEntries,
+  PODValueType,
   PODValueTypeFromTypeName,
   VirtualEntries
 } from "./types/entries.js";
+import canonicalize from "canonicalize/lib/canonicalize.js";
 
 /**
  @todo
@@ -44,7 +45,15 @@ import type {
  - [ ] handle multiple/incompatible range checks on the same entry
  - [x] switch to using value types rather than PODValues (everywhere? maybe not membership lists)
  - [ ] better error messages
+ - [ ] consider adding a hash to the spec to prevent tampering
  */
+
+function canonicalizeJSON(input: unknown): string | undefined {
+  // Something is screwy with the typings for canonicalize
+  return (canonicalize as unknown as (input: unknown) => string | undefined)(
+    input
+  );
+}
 
 const virtualEntries: VirtualEntries = {
   $contentID: { type: "string" },
@@ -140,6 +149,21 @@ export class PODSpecBuilder<
 
   public spec(): PODSpec<E, S> {
     return deepFreeze(this.#spec);
+  }
+
+  public toJSON(): string {
+    const canonicalized = canonicalizeJSON(this.#spec);
+    if (!canonicalized) {
+      throw new Error("Failed to canonicalize PODSpec");
+    }
+    return JSON.stringify(
+      {
+        ...this.#spec,
+        hash: canonicalized /* TODO hashing! */
+      },
+      null,
+      2
+    );
   }
 
   public entry<
