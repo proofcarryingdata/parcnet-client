@@ -5,12 +5,29 @@ import {
   POD_DATE_MAX,
   POD_DATE_MIN,
   POD_INT_MAX,
-  POD_INT_MIN,
-  type PODName,
-  type PODValue
+  POD_INT_MIN
 } from "@pcd/pod";
 import type { PODValueType } from "../types/utils.js";
 import { deepFreeze, validateRange } from "./shared.js";
+import type {
+  IsMemberOf,
+  IsNotMemberOf,
+  InRange,
+  NotInRange,
+  EqualsEntry,
+  NotEqualsEntry,
+  SupportsRangeChecks,
+  StatementMap,
+  StatementName
+} from "./types/statements.js";
+import type {
+  EntriesOfType,
+  EntryKeys,
+  EntryTypes,
+  PODValueTupleForNamedEntries,
+  PODValueTypeFromTypeName,
+  VirtualEntries
+} from "./types/entries.js";
 
 /**
  @todo
@@ -35,57 +52,11 @@ const virtualEntries: VirtualEntries = {
   $signerPublicKey: { type: "eddsa_pubkey" }
 };
 
-type VirtualEntries = {
-  $contentID: { type: "string" };
-  $signature: { type: "string" };
-  $signerPublicKey: { type: "eddsa_pubkey" };
-};
-
 export type PODSpec<E extends EntryTypes, S extends StatementMap> = {
   entries: E;
   statements: S;
 };
 
-export type EntryTypes = Record<PODName, PODValueType>;
-
-export type EntryKeys<E extends EntryTypes> = (keyof E & string)[];
-
-export type PODValueTupleForNamedEntries<
-  E extends EntryTypes,
-  Names extends EntryKeys<E>
-> = {
-  [K in keyof Names]: PODValueTypeFromTypeName<E[Names[K] & keyof E]>;
-};
-
-type PODValueTypeFromTypeName<T extends PODValueType> = Extract<
-  PODValue,
-  { type: T }
->["value"];
-
-type EntriesOfType<E extends EntryTypes, T extends PODValueType> = {
-  [P in keyof E as E[P] extends T ? P & string : never]: E[P];
-};
-
-/**
- * @TODO Consider not having the E type parameter here.
- * We can practically constrain the entry names using the constraint method
- * signature, and then store a lighter-weight type that just lists the entry
- * names used, without keeping a reference to the entry type list.
- */
-
-type IsMemberOf<E extends EntryTypes, N extends EntryKeys<E> & string[]> = {
-  entries: N;
-  type: "isMemberOf";
-  isMemberOf: PODValueTupleForNamedEntries<E & VirtualEntries, N>[];
-};
-
-type IsNotMemberOf<E extends EntryTypes, N extends EntryKeys<E>> = {
-  entries: N;
-  type: "isNotMemberOf";
-  isNotMemberOf: PODValueTupleForNamedEntries<E & VirtualEntries, N>[];
-};
-
-type SupportsRangeChecks = "int" | "boolean" | "date";
 type DoesNotSupportRangeChecks = Exclude<PODValueType, SupportsRangeChecks>;
 
 function supportsRangeChecks(type: PODValueType): type is SupportsRangeChecks {
@@ -101,68 +72,6 @@ function supportsRangeChecks(type: PODValueType): type is SupportsRangeChecks {
       return false;
   }
 }
-
-type InRange<
-  E extends EntryTypes,
-  N extends keyof EntriesOfType<E & VirtualEntries, SupportsRangeChecks>
-> = {
-  entry: N;
-  type: "inRange";
-  inRange: {
-    min: E[N] extends "date" ? Date : bigint;
-    max: E[N] extends "date" ? Date : bigint;
-  };
-};
-
-type NotInRange<
-  E extends EntryTypes,
-  N extends keyof EntriesOfType<E & VirtualEntries, SupportsRangeChecks>
-> = {
-  entry: N;
-  type: "notInRange";
-  notInRange: {
-    min: E[N] extends "date" ? Date : bigint;
-    max: E[N] extends "date" ? Date : bigint;
-  };
-};
-
-type EqualsEntry<
-  E extends EntryTypes,
-  N1 extends keyof (E & VirtualEntries),
-  N2 extends keyof (E & VirtualEntries)
-> = E[N2] extends E[N1]
-  ? {
-      entry: N1;
-      type: "equalsEntry";
-      equalsEntry: N2;
-    }
-  : never;
-
-type NotEqualsEntry<
-  E extends EntryTypes,
-  N1 extends keyof (E & VirtualEntries),
-  N2 extends keyof (E & VirtualEntries)
-> = E[N2] extends E[N1]
-  ? {
-      entry: N1;
-      type: "notEqualsEntry";
-      notEqualsEntry: N2;
-    }
-  : never;
-
-type Statements =
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  | IsMemberOf<any, string[]>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  | IsNotMemberOf<any, any>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  | InRange<any, any>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  | NotInRange<any, any>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  | EqualsEntry<any, any, any>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  | NotEqualsEntry<any, any, any>;
 
 /**
  * Given a list of entry names, return the names of the entries that are not in the list
@@ -210,41 +119,6 @@ type AddEntry<
   K extends keyof E,
   V extends PODValueType
 > = Concrete<E & { [P in K]: V }>;
-
-// Utility types for statement naming
-type JoinWithUnderscore<T extends readonly string[]> = T extends readonly [
-  infer F extends string,
-  ...infer R extends string[]
-]
-  ? R["length"] extends 0
-    ? F
-    : `${F}_${JoinWithUnderscore<R>}`
-  : never;
-
-type BaseStatementName<
-  N extends readonly string[],
-  S extends Statements["type"]
-> = `${JoinWithUnderscore<N>}_${S}`;
-
-type NextAvailableSuffix<
-  Base extends string,
-  S extends StatementMap
-> = Base extends keyof S
-  ? `${Base}_1` extends keyof S
-    ? `${Base}_2` extends keyof S
-      ? `${Base}_3`
-      : `${Base}_2`
-    : `${Base}_1`
-  : Base;
-
-type StatementName<
-  N extends readonly string[],
-  S extends Statements["type"],
-  Map extends StatementMap
-> = NextAvailableSuffix<BaseStatementName<N, S>, Map>;
-
-// Base constraint map
-export type StatementMap = Record<string, Statements>;
 
 export class PODSpecBuilder<
   E extends EntryTypes,
@@ -385,7 +259,12 @@ export class PODSpecBuilder<
       : PODValueTupleForNamedEntries<E & VirtualEntries, N>[]
   ): PODSpecBuilder<
     E,
-    S & { [K in StatementName<N, "isMemberOf", S>]: IsMemberOf<E, N> }
+    S & {
+      [K in StatementName<N, "isMemberOf", S>]: IsMemberOf<
+        E & VirtualEntries,
+        N
+      >;
+    }
   > {
     // Check that all names exist in entries
     for (const name of names) {
@@ -400,7 +279,7 @@ export class PODSpecBuilder<
       throw new Error("Duplicate entry names are not allowed");
     }
 
-    const statement: IsMemberOf<E, N> = {
+    const statement: IsMemberOf<E & VirtualEntries, N> = {
       entries: names,
       type: "isMemberOf",
       // Wrap single values in arrays to match the expected tuple format
@@ -847,11 +726,11 @@ type TestStatements = {
 type PickedKeys = ["b"];
 
 // First, let's see what OmittedEntryNames gives us
-type TestOmitted = OmittedEntryNames<TestEntries, PickedKeys>;
+type _TestOmitted = OmittedEntryNames<TestEntries, PickedKeys>;
 // Should be: "c"
 
 // Now let's test NonOverlapping
-type TestNonOverlapping = NonOverlappingStatements<TestStatements, PickedKeys>;
+type _TestNonOverlapping = NonOverlappingStatements<TestStatements, PickedKeys>;
 
 // Let's see what we get when picking just 'a'
-type TestPickA = NonOverlappingStatements<TestStatements, ["a"]>;
+type _TestPickA = NonOverlappingStatements<TestStatements, ["a"]>;

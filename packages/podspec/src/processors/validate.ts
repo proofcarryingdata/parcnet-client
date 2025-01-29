@@ -6,17 +6,23 @@ import {
   type PODStringValue,
   type PODName
 } from "@pcd/pod";
+import { PODSpecBuilder, type PODSpec } from "../builders/pod.js";
+import type { EntryTypes } from "../builders/types/entries.js";
+import type { StatementMap } from "../builders/types/statements.js";
+import type { ValidateResult } from "./validate/types.js";
+import { FAILURE, SUCCESS } from "./validate/result.js";
 import {
-  PODSpecBuilder,
-  type EntryTypes,
-  type PODSpec,
-  type StatementMap
-} from "../builders/pod.js";
+  IssueCode,
+  type ValidationMissingEntryIssue,
+  type ValidationTypeMismatchIssue,
+  type ValidationUnexpectedInputEntryIssue
+} from "./validate/issues.js";
+import { checkIsMemberOf } from "./validate/checks/isMemberOf.js";
+import { checkIsNotMemberOf } from "./validate/checks/isNotMemberOf.js";
 
 /**
  @TOOO
- - [ ] Return a typed POD if validation succeeds.
- - [ ] "Compile" a spec by hashing the statement parameters where necessary.
+ - [ ] "Compile" a spec by hashing the statement parameters where necessary?
 */
 
 /**
@@ -44,6 +50,22 @@ type PODEntriesFromEntryTypes<E extends EntryTypes> = {
   [K in keyof E]: Extract<PODValue, { type: E[K] }>;
 };
 
+interface ValidateOptions {
+  /**
+   * If true, the validation will exit as soon as the first error is encountered.
+   */
+  exitOnError?: boolean;
+  /**
+   * If true, the validation will reject entries in the input which are not in the spec.
+   */
+  strict?: boolean;
+}
+
+const DEFAULT_VALIDATE_OPTIONS: ValidateOptions = {
+  exitOnError: false,
+  strict: false
+};
+
 /**
  * Validate a POD against a PODSpec.
  *
@@ -53,48 +75,91 @@ type PODEntriesFromEntryTypes<E extends EntryTypes> = {
  */
 function validatePOD<E extends EntryTypes, S extends StatementMap>(
   pod: POD,
-  spec: PODSpec<E, S>
-): pod is StrongPOD<PODEntriesFromEntryTypes<E>> {
+  spec: PODSpec<E, S>,
+  options: ValidateOptions = DEFAULT_VALIDATE_OPTIONS
+): ValidateResult<StrongPOD<PODEntriesFromEntryTypes<E>>> {
   const podEntries = pod.content.asEntries();
+
+  const issues = [];
+  const path: string[] = [];
 
   for (const [key, entryType] of Object.entries(spec.entries)) {
     if (!(key in podEntries)) {
-      console.error(`Entry ${key} not found in pod`);
-      return false;
+      const issue = {
+        code: IssueCode.missing_entry,
+        path: [...path, key],
+        key
+      } satisfies ValidationMissingEntryIssue;
+      if (options.strict) {
+        return FAILURE([issue]);
+      } else {
+        issues.push(issue);
+      }
     }
     if (podEntries[key]?.type !== entryType) {
-      console.error(
-        `Entry ${key} type mismatch: ${podEntries[key]?.type} !== ${entryType}`
-      );
-      return false;
+      const issue = {
+        code: IssueCode.type_mismatch,
+        path: [...path, key],
+        expectedType: entryType
+      } satisfies ValidationTypeMismatchIssue;
+      if (options.strict) {
+        return FAILURE([issue]);
+      } else {
+        issues.push(issue);
+      }
+    }
+  }
+
+  if (options.strict) {
+    for (const key in podEntries) {
+      if (!(key in spec.entries)) {
+        const issue = {
+          code: IssueCode.unexpected_input_entry,
+          path: [...path, key],
+          key
+        } satisfies ValidationUnexpectedInputEntryIssue;
+        return FAILURE([issue]);
+      }
     }
   }
 
   for (const [key, statement] of Object.entries(spec.statements)) {
     switch (statement.type) {
       case "isMemberOf":
-        const tuple = statement.entries.map(
-          (entry) => podEntries[entry]?.value
+        issues.push(
+          ...checkIsMemberOf(
+            statement,
+            key,
+            path,
+            podEntries,
+            spec.entries,
+            options.exitOnError ?? false
+          )
         );
-        for (const listMember of statement.isMemberOf) {
-          if (
-            listMember.some((value, index) => {
-              return value === tuple[index];
-            })
-          ) {
-            break;
-          }
-          console.error(
-            `Statement ${key} failed: could not find ${statement.entries.join(
-              ", "
-            )} in isMemberOf list`
-          );
-          return false;
-        }
+        break;
+      case "isNotMemberOf":
+        issues.push(
+          ...checkIsNotMemberOf(
+            statement,
+            key,
+            path,
+            podEntries,
+            spec.entries,
+            options.exitOnError ?? false
+          )
+        );
+        break;
+      default:
+        // prettier-ignore
+        statement.type satisfies never;
+      // maybe throw an exception here
+    }
+    if (options.exitOnError && issues.length > 0) {
+      return FAILURE(issues);
     }
   }
 
-  return true;
+  return SUCCESS(pod as StrongPOD<PODEntriesFromEntryTypes<E>>);
 }
 
 if (import.meta.vitest) {
@@ -114,18 +179,20 @@ if (import.meta.vitest) {
     // This should pass because the entry "foo" is in the list ["foo", "bar"]
     expect(validatePOD(myPOD, myPodSpecBuilder.spec())).toBe(true);
 
-    if (validatePOD(myPOD, myPodSpecBuilder.spec())) {
+    const result = validatePOD(myPOD, myPodSpecBuilder.spec());
+    if (result.isValid) {
+      const pod = result.value;
       // After validation, the entries are strongly typed
-      myPOD.content.asEntries().bar?.value satisfies
+      pod.content.asEntries().bar?.value satisfies
         | PODValue["value"]
         | undefined;
-      myPOD.content.asEntries().foo.value satisfies string;
-      myPOD.content.getValue("bar")?.value satisfies
+      pod.content.asEntries().foo.value satisfies string;
+      pod.content.getValue("bar")?.value satisfies
         | PODValue["value"]
         | undefined;
-      myPOD.content.getRawValue("bar") satisfies PODValue["value"] | undefined;
-      myPOD.content.getValue("foo") satisfies PODStringValue;
-      myPOD.content.getRawValue("foo") satisfies string;
+      pod.content.getRawValue("bar") satisfies PODValue["value"] | undefined;
+      pod.content.getValue("foo") satisfies PODStringValue;
+      pod.content.getRawValue("foo") satisfies string;
     }
 
     // This should fail because the entry "foo" is not in the list ["baz", "quux"]
