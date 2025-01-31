@@ -1,5 +1,6 @@
 import { checkPODValue, type PODValue } from "@pcd/pod";
 import type { PODValueType } from "./types/entries.js";
+import { fromByteArray } from "base64-js";
 
 /**
  * Validates a range check.
@@ -66,4 +67,37 @@ export function deepFreeze<T>(obj: T): T {
     });
   }
   return Object.freeze(obj);
+}
+
+function valueToString(value: PODValue["value"]): string {
+  if (value === null) {
+    return "null";
+  }
+  if (value instanceof Uint8Array) {
+    return fromByteArray(value);
+  }
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+  return value.toString();
+}
+
+/**
+ * Converts POD values to their string representation for storage in a spec.
+ * Handles both single-entry and multi-entry cases.
+ */
+export function convertValuesToStringTuples<N extends string[]>(
+  names: [...N],
+  values: N["length"] extends 1 ? PODValue["value"][] : PODValue["value"][][]
+): { [K in keyof N]: string }[] {
+  return names.length === 1
+    ? (values as PODValue["value"][]).map(
+        (v) => [valueToString(v)] as { [K in keyof N]: string }
+      )
+    : (values as PODValue["value"][][]).map(
+        (tuple) =>
+          tuple.map((v) => valueToString(v)) as {
+            [K in keyof N]: string;
+          }
+      );
 }

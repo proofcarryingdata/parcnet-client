@@ -67,19 +67,75 @@ const DEFAULT_VALIDATE_OPTIONS: ValidateOptions = {
   strict: false
 };
 
+interface PODValidator<E extends EntryTypes> {
+  validate(pod: POD): ValidateResult<StrongPOD<PODEntriesFromEntryTypes<E>>>;
+  check(pod: POD): boolean;
+  assert(pod: POD): asserts pod is StrongPOD<PODEntriesFromEntryTypes<E>>;
+  strictValidate(
+    pod: POD
+  ): ValidateResult<StrongPOD<PODEntriesFromEntryTypes<E>>>;
+  strictCheck(pod: POD): boolean;
+  strictAssert(pod: POD): asserts pod is StrongPOD<PODEntriesFromEntryTypes<E>>;
+}
+
+function validate<E extends EntryTypes, S extends StatementMap>(
+  spec: PODSpec<E, S>
+): PODValidator<E> {
+  // @TODO maybe typia's clone is better
+  spec = structuredClone(spec);
+  assertPODSpec(spec);
+
+  return {
+    validate: (pod) => validatePOD(pod, spec, {}),
+    check: (pod) => validatePOD(pod, spec, { exitOnError: true }).isValid,
+    assert: (pod) => {
+      const result = validatePOD(pod, spec, { exitOnError: true });
+      if (!result.isValid) throw new Error("POD is not valid");
+    },
+    strictValidate: (pod) => validatePOD(pod, spec, { strict: true }),
+    strictCheck: (pod) =>
+      validatePOD(pod, spec, { strict: true, exitOnError: true }).isValid,
+    strictAssert: (pod) => {
+      const result = validatePOD(pod, spec, {
+        strict: true,
+        exitOnError: true
+      });
+      if (!result.isValid) throw new Error("POD is not valid");
+    }
+  };
+}
+
+const SpecValidatorState = new WeakMap<
+  PODSpec<EntryTypes, StatementMap>,
+  boolean
+>();
+
 /**
  * Validate a POD against a PODSpec.
  *
  * @param pod - The POD to validate.
  * @param spec - The PODSpec to validate against.
+ * @param options - The options to use for validation.
  * @returns true if the POD is valid, false otherwise.
  */
-function validatePOD<E extends EntryTypes, S extends StatementMap>(
+export function validatePOD<E extends EntryTypes, S extends StatementMap>(
   pod: POD,
   spec: PODSpec<E, S>,
   options: ValidateOptions = DEFAULT_VALIDATE_OPTIONS
 ): ValidateResult<StrongPOD<PODEntriesFromEntryTypes<E>>> {
-  assertPODSpec(spec);
+  const validSpec = SpecValidatorState.get(spec);
+  if (validSpec === undefined) {
+    // If we haven't seen this spec before, we need to validate it
+    try {
+      assertPODSpec(spec);
+
+      // If we successfully validated the spec, we can cache the result
+      SpecValidatorState.set(spec, true);
+    } catch (e) {
+      SpecValidatorState.set(spec, false);
+      throw e;
+    }
+  }
 
   const podEntries = pod.content.asEntries();
 
@@ -162,7 +218,9 @@ function validatePOD<E extends EntryTypes, S extends StatementMap>(
     }
   }
 
-  return SUCCESS(pod as StrongPOD<PODEntriesFromEntryTypes<E>>);
+  return issues.length > 0
+    ? FAILURE(issues)
+    : SUCCESS(pod as StrongPOD<PODEntriesFromEntryTypes<E>>);
 }
 
 if (import.meta.vitest) {
@@ -180,7 +238,7 @@ if (import.meta.vitest) {
       .isMemberOf(["foo"], ["foo", "bar"]);
 
     // This should pass because the entry "foo" is in the list ["foo", "bar"]
-    expect(validatePOD(myPOD, myPodSpecBuilder.spec())).toBe(true);
+    expect(validatePOD(myPOD, myPodSpecBuilder.spec()).isValid).toBe(true);
 
     const result = validatePOD(myPOD, myPodSpecBuilder.spec());
     if (result.isValid) {
@@ -200,14 +258,14 @@ if (import.meta.vitest) {
 
     // This should fail because the entry "foo" is not in the list ["baz", "quux"]
     const secondBuilder = myPodSpecBuilder.isMemberOf(["foo"], ["baz", "quux"]);
-    expect(validatePOD(myPOD, secondBuilder.spec())).toBe(false);
+    expect(validatePOD(myPOD, secondBuilder.spec()).isValid).toBe(false);
 
     // If we omit the new statement, it should pass
     expect(
       validatePOD(
         myPOD,
         secondBuilder.omitStatements(["foo_isMemberOf_1"]).spec()
-      )
+      ).isValid
     ).toBe(true);
   });
 }

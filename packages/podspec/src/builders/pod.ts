@@ -7,7 +7,11 @@ import {
   POD_INT_MAX,
   POD_INT_MIN
 } from "@pcd/pod";
-import { deepFreeze, validateRange } from "./shared.js";
+import {
+  convertValuesToStringTuples,
+  deepFreeze,
+  validateRange
+} from "./shared.js";
 import type {
   IsMemberOf,
   IsNotMemberOf,
@@ -16,8 +20,8 @@ import type {
   EqualsEntry,
   NotEqualsEntry,
   SupportsRangeChecks,
-  StatementMap,
-  StatementName
+  StatementName,
+  StatementMap
 } from "./types/statements.js";
 import type {
   EntriesOfType,
@@ -29,6 +33,7 @@ import type {
   VirtualEntries
 } from "./types/entries.js";
 import canonicalize from "canonicalize/lib/canonicalize.js";
+import type { IsJsonSafe } from "../shared/jsonSafe.js";
 
 /**
  @todo
@@ -65,6 +70,9 @@ export type PODSpec<E extends EntryTypes, S extends StatementMap> = {
   entries: E;
   statements: S;
 };
+
+// This is a compile-time check that the PODSpec is JSON-safe
+true satisfies IsJsonSafe<PODSpec<EntryTypes, StatementMap>>;
 
 type DoesNotSupportRangeChecks = Exclude<PODValueType, SupportsRangeChecks>;
 
@@ -303,17 +311,23 @@ export class PODSpecBuilder<
       throw new Error("Duplicate entry names are not allowed");
     }
 
+    /**
+     * We want type-safe inputs, but we want JSON-safe data to persist in the
+     * spec. So, we convert the input values to strings - because we have the
+     * POD type information, we can convert back to the correct type when we
+     * read the spec.
+     *
+     * For readability, we also have a special-case on inputs, where if there
+     * is only one entry being matched on, we accept a list in the form of
+     * value[] instead of [value][] - an array of plain values instead of an
+     * array of one-element tuples. When persisting, however, we convert these
+     * to one-element tuples since this makes reading the data out later more
+     * efficient.
+     */
     const statement: IsMemberOf<E & VirtualEntries, N> = {
       entries: names,
       type: "isMemberOf",
-      // Wrap single values in arrays to match the expected tuple format
-      isMemberOf: (names.length === 1
-        ? (
-            values as PODValueTypeFromTypeName<
-              (E & VirtualEntries)[N[0] & keyof (E & VirtualEntries)]
-            >[]
-          ).map((v) => [v])
-        : values) as PODValueTupleForNamedEntries<E & VirtualEntries, N>[]
+      isMemberOf: convertValuesToStringTuples<N>(names, values)
     };
 
     const baseName = `${names.join("_")}_isMemberOf`;
@@ -372,17 +386,23 @@ export class PODSpecBuilder<
       throw new Error("Duplicate entry names are not allowed");
     }
 
-    const statement: IsNotMemberOf<E, N> = {
+    /**
+     * We want type-safe inputs, but we want JSON-safe data to persist in the
+     * spec. So, we convert the input values to strings - because we have the
+     * POD type information, we can convert back to the correct type when we
+     * read the spec.
+     *
+     * For readability, we also have a special-case on inputs, where if there
+     * is only one entry being matched on, we accept a list in the form of
+     * value[] instead of [value][] - an array of plain values instead of an
+     * array of one-element tuples. When persisting, however, we convert these
+     * to one-element tuples since this makes reading the data out later more
+     * efficient.
+     */
+    const statement: IsNotMemberOf<E & VirtualEntries, N> = {
       entries: names,
       type: "isNotMemberOf",
-      // Wrap single values in arrays to match the expected tuple format
-      isNotMemberOf: (names.length === 1
-        ? (
-            values as PODValueTypeFromTypeName<
-              (E & VirtualEntries)[N[0] & keyof (E & VirtualEntries)]
-            >[]
-          ).map((v) => [v])
-        : values) as PODValueTupleForNamedEntries<E & VirtualEntries, N>[]
+      isNotMemberOf: convertValuesToStringTuples<N>(names, values)
     };
 
     const baseName = `${names.join("_")}_isNotMemberOf`;
@@ -460,7 +480,16 @@ export class PODSpecBuilder<
     const statement: InRange<E, N> = {
       entry: name,
       type: "inRange",
-      inRange: range
+      inRange: {
+        min:
+          range.min instanceof Date
+            ? range.min.getTime().toString()
+            : range.min.toString(),
+        max:
+          range.max instanceof Date
+            ? range.max.getTime().toString()
+            : range.max.toString()
+      }
     };
 
     const baseName = `${name}_inRange`;
@@ -534,7 +563,16 @@ export class PODSpecBuilder<
     const statement: NotInRange<E, N> = {
       entry: name,
       type: "notInRange",
-      notInRange: range
+      notInRange: {
+        min:
+          range.min instanceof Date
+            ? range.min.getTime().toString()
+            : range.min.toString(),
+        max:
+          range.max instanceof Date
+            ? range.max.getTime().toString()
+            : range.max.toString()
+      }
     };
 
     const baseName = `${name}_notInRange`;
@@ -705,9 +743,10 @@ if (import.meta.vitest) {
     });
 
     const g = e.entry("new", "string").equalsEntry("a", "new");
-    const _GEntries = g.spec().entries;
+    const _GSpec = g.spec();
+    const _GEntries = _GSpec.entries;
     type EntriesType = typeof _GEntries;
-    g.spec().statements.a_new_equalsEntry satisfies EqualsEntry<
+    _GSpec.statements.a_new_equalsEntry satisfies EqualsEntry<
       EntriesType,
       "a",
       "new"
@@ -720,6 +759,40 @@ if (import.meta.vitest) {
         equalsEntry: "new"
       }
     });
+
+    expect(g.spec()).toEqual({
+      entries: {
+        a: "string",
+        b: "int",
+        new: "string"
+      },
+      statements: {
+        a_isMemberOf: {
+          entries: ["a"],
+          type: "isMemberOf",
+          isMemberOf: [["foo"]]
+        },
+        a_b_isMemberOf: {
+          entries: ["a", "b"],
+          type: "isMemberOf",
+          // Note that the values are strings here, because we convert them to
+          // strings when persisting the spec.
+          isMemberOf: [["foo", "10"]]
+        },
+        b_inRange: {
+          entry: "b",
+          type: "inRange",
+          // Note that the values are strings here, because we convert them to
+          // strings when persisting the spec.
+          inRange: { min: "10", max: "100" }
+        },
+        a_new_equalsEntry: {
+          entry: "a",
+          type: "equalsEntry",
+          equalsEntry: "new"
+        }
+      }
+    } satisfies typeof _GSpec);
 
     const h = g.pickStatements(["a_isMemberOf"]);
     expect(h.spec().statements).toEqual({

@@ -9,6 +9,7 @@ import type {
   PODValueType
 } from "./types/entries.js";
 import type { StatementMap, IsMemberOf } from "./types/statements.js";
+import { convertValuesToStringTuples } from "./shared.js";
 
 type PODGroupPODs = Record<PODName, PODSpec<EntryTypes, StatementMap>>;
 
@@ -22,7 +23,7 @@ type PODGroupPODs = Record<PODName, PODSpec<EntryTypes, StatementMap>>;
 //   isMemberOf: N[number];
 // };
 
-type PODGroupSpec<P extends PODGroupPODs, S extends StatementMap> = {
+export type PODGroupSpec<P extends PODGroupPODs, S extends StatementMap> = {
   pods: P;
   statements: S;
 };
@@ -54,7 +55,10 @@ type AddPOD<
   [K in keyof PODs | N]: K extends N ? Spec : PODs[K & keyof PODs];
 }>;
 
-class PODGroupSpecBuilder<P extends PODGroupPODs, S extends StatementMap> {
+export class PODGroupSpecBuilder<
+  P extends PODGroupPODs,
+  S extends StatementMap
+> {
   readonly #spec: PODGroupSpec<P, S>;
 
   private constructor(spec: PODGroupSpec<P, S>) {
@@ -119,14 +123,7 @@ class PODGroupSpecBuilder<P extends PODGroupPODs, S extends StatementMap> {
     const statement: IsMemberOf<AllPODEntries<P>, N> = {
       entries: names,
       type: "isMemberOf",
-      // Wrap single values in arrays to match the expected tuple format
-      isMemberOf: (names.length === 1
-        ? (
-            values as PODValueTypeFromTypeName<
-              EntryType<P, N[0] & keyof AllPODEntries<P>>
-            >[]
-          ).map((v) => [v])
-        : values) as PODValueTupleForNamedEntries<AllPODEntries<P>, N>[]
+      isMemberOf: convertValuesToStringTuples<N>(names, values)
     };
 
     const baseName = `${names.join("_")}_isMemberOf`;

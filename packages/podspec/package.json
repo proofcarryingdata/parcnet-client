@@ -38,6 +38,7 @@
   "dependencies": {
     "@pcd/gpc": "^0.4.0",
     "@pcd/pod": "^0.5.0",
+    "base64-js": "^1.5.1",
     "canonicalize": "^2.0.0",
     "typia": "^7.6.0"
   },

@@ -10,52 +10,77 @@ import type {
  * Statements
  ****************************************************************************/
 
+export type MembershipListInput<
+  E extends EntryTypes,
+  N extends EntryKeys<E>
+> = PODValueTupleForNamedEntries<E, N>[];
+
+export type MembershipListPersistent<
+  E extends EntryTypes,
+  N extends EntryKeys<E>
+> = { [K in keyof N]: string }[];
+
+type Concrete<T> = T extends object ? { [K in keyof T]: T[K] } : T;
+
 export type IsMemberOf<
   E extends EntryTypes,
   N extends EntryKeys<E> & string[]
 > = {
   entries: N;
   type: "isMemberOf";
-  isMemberOf: PODValueTupleForNamedEntries<E, N>[];
+  isMemberOf: Concrete<MembershipListPersistent<E, N>>;
 };
 
-export type IsNotMemberOf<E extends EntryTypes, N extends EntryKeys<E>> = {
+export type IsNotMemberOf<
+  E extends EntryTypes,
+  N extends EntryKeys<E> & string[]
+> = {
   entries: N;
   type: "isNotMemberOf";
-  isNotMemberOf: PODValueTupleForNamedEntries<E & VirtualEntries, N>[];
+  isNotMemberOf: Concrete<MembershipListPersistent<E, N>>;
 };
 
 // Which entry types support range checks?
 export type SupportsRangeChecks = "int" | "boolean" | "date";
 
+export type RangeInput<
+  E extends EntryTypes,
+  N extends keyof EntriesOfType<E & VirtualEntries, SupportsRangeChecks> &
+    string
+> = {
+  min: E[N] extends "date" ? Date : bigint;
+  max: E[N] extends "date" ? Date : bigint;
+};
+
+export type RangePersistent = {
+  min: string;
+  max: string;
+};
+
 export type InRange<
   E extends EntryTypes,
-  N extends keyof EntriesOfType<E & VirtualEntries, SupportsRangeChecks>
+  N extends keyof EntriesOfType<E & VirtualEntries, SupportsRangeChecks> &
+    string
 > = {
   entry: N;
   type: "inRange";
-  inRange: {
-    min: E[N] extends "date" ? Date : bigint;
-    max: E[N] extends "date" ? Date : bigint;
-  };
+  inRange: RangePersistent;
 };
 
 export type NotInRange<
   E extends EntryTypes,
-  N extends keyof EntriesOfType<E & VirtualEntries, SupportsRangeChecks>
+  N extends keyof EntriesOfType<E & VirtualEntries, SupportsRangeChecks> &
+    string
 > = {
   entry: N;
   type: "notInRange";
-  notInRange: {
-    min: E[N] extends "date" ? Date : bigint;
-    max: E[N] extends "date" ? Date : bigint;
-  };
+  notInRange: RangePersistent;
 };
 
 export type EqualsEntry<
   E extends EntryTypes,
-  N1 extends keyof (E & VirtualEntries),
-  N2 extends keyof (E & VirtualEntries)
+  N1 extends keyof (E & VirtualEntries) & string,
+  N2 extends keyof (E & VirtualEntries) & string
 > = E[N2] extends E[N1]
   ? {
       entry: N1;
@@ -66,8 +91,8 @@ export type EqualsEntry<
 
 export type NotEqualsEntry<
   E extends EntryTypes,
-  N1 extends keyof (E & VirtualEntries),
-  N2 extends keyof (E & VirtualEntries)
+  N1 extends keyof (E & VirtualEntries) & string,
+  N2 extends keyof (E & VirtualEntries) & string
 > = E[N2] extends E[N1]
   ? {
       entry: N1;
@@ -90,7 +115,6 @@ export type Statements =
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   | NotEqualsEntry<any, string, string>;
 
-// Base map of named statements
 export type StatementMap = Record<string, Statements>;
 
 /****************************************************************************

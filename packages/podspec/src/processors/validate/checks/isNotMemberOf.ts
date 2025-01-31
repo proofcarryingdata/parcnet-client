@@ -7,6 +7,7 @@ import {
 } from "../issues.js";
 import type { IsNotMemberOf } from "../../../builders/types/statements.js";
 import type { EntryTypes } from "../../../builders/types/entries.js";
+import { tupleToPODValueTypeValues, valueIsEqual } from "../utils.js";
 
 function validateIsNotMemberOfStatement(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -38,6 +39,7 @@ export function checkIsNotMemberOf(
   specEntries: EntryTypes,
   exitOnError: boolean
 ): ValidationBaseIssue[] {
+  // TODO Move this to a pre-processing step
   const issues: ValidationBaseIssue[] = validateIsNotMemberOfStatement(
     statement,
     statementName,
@@ -51,15 +53,26 @@ export function checkIsNotMemberOf(
   }
 
   const tuple = statement.entries.map((entry) => entries[entry]?.value);
+  // TODO Move this to a pre-processing step
+  const tuplesToMatch = tupleToPODValueTypeValues(
+    statement.isNotMemberOf,
+    statement.entries
+  );
 
-  for (const listMember of statement.isNotMemberOf) {
-    if (
-      listMember.every((value, index) => {
-        return value !== tuple[index];
-      })
-    ) {
+  let match = false;
+  for (const listMember of tuplesToMatch) {
+    for (let index = 0; index < tuple.length; index++) {
+      if (valueIsEqual(tuple[index]!, listMember[index]!)) {
+        match = true;
+        break;
+      }
+    }
+    if (match) {
       break;
     }
+  }
+  // If we found a match, then the result is negative
+  if (match) {
     const issue = {
       code: IssueCode.statement_negative_result,
       statementName: statementName,

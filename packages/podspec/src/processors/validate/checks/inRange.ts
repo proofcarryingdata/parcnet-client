@@ -13,26 +13,26 @@ export function checkInRange(
   statementName: string,
   path: string[],
   entries: PODEntries,
-  specEntries: EntryTypes,
-  exitOnError: boolean
+  _specEntries: EntryTypes,
+  _exitOnError: boolean
 ): ValidationBaseIssue[] {
   const entryName = statement.entry;
   const entry = entries[entryName]!;
 
-  // @TODO need an issue type for statement referring to a non-existent entry
+  // TODO need an issue type for statement referring to a non-existent entry
   // or entry of the wrong type
+
+  const isDate = entry.type === "date";
+  const min = isDate
+    ? new Date(statement.inRange.min)
+    : BigInt(statement.inRange.min);
+  const max = isDate
+    ? new Date(statement.inRange.max)
+    : BigInt(statement.inRange.max);
 
   if (isPODArithmeticValue(entry)) {
     const value = entry.value;
-    // @TODO date comparison?
-    // maybe the spec should convert dates to bigints, and we also convert
-    // dates to bigints here, so we have a consistent way to compare dates
-    // correct framing here is "how do we serialize statement parameters",
-    // followed by "how do we deserialize statement parameters into the
-    // format required by the processor".
-    // so the specifier provides, say, Date objects. the builder may serialize
-    // those as strings or bigints. the processor needs bigints.
-    if (value < statement.inRange.min || value > statement.inRange.max) {
+    if (value < min || value > max) {
       return [
         {
           code: IssueCode.statement_negative_result,

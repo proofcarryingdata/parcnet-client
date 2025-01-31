@@ -1,25 +1,11 @@
-import type {
-  PodspecProofRequestSchema,
-  ProofConfigPODSchema,
-  ProofRequest,
-  ProofRequestSpec
-} from "./gpc/proof_request.js";
-import { proofRequest } from "./gpc/proof_request.js";
-import type { EntriesSpec } from "./parse/entries.js";
-import { entries } from "./parse/entries.js";
-import type { PODData, PodSpec } from "./parse/pod.js";
-import { pod, merge } from "./parse/pod.js";
+import { type PODSpec, PODSpecBuilder } from "./builders/pod.js";
+import { type PODGroupSpec, PODGroupSpecBuilder } from "./builders/group.js";
+import { validatePOD } from "./processors/validate.js";
 
 export {
-  entries,
-  pod,
-  proofRequest,
-  merge,
-  type EntriesSpec,
-  type ProofConfigPODSchema,
-  type PodSpec,
-  type PODData,
-  type PodspecProofRequestSchema as PodspecProofRequest,
-  type ProofRequest,
-  type ProofRequestSpec
+  type PODSpec,
+  PODSpecBuilder,
+  type PODGroupSpec,
+  PODGroupSpecBuilder,
+  validatePOD
 };
