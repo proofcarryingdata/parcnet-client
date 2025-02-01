@@ -439,6 +439,9 @@ importers:
         specifier: ^7.6.0
         version: 7.6.0(@samchon/openapi@2.4.1)(typescript@5.5.4)
     devDependencies:
+      '@fast-check/vitest':
+        specifier: ^0.1.5
+        version: 0.1.5(vitest@3.0.4(@types/debug@4.1.12)(@types/node@22.5.5)(sass@1.80.3)(terser@5.34.1))
       '@parcnet-js/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
@@ -1186,6 +1189,11 @@ packages:
 
   '@expressive-code/plugin-text-markers@0.35.6':
     resolution: {integrity: sha512-/k9eWVZSCs+uEKHR++22Uu6eIbHWEciVHbIuD8frT8DlqTtHYaaiwHPncO6KFWnGDz5i/gL7oyl6XmOi/E6GVg==}
+
+  '@fast-check/vitest@0.1.5':
+    resolution: {integrity: sha512-TxtdmzHFzHu1zLDc08SjJHH3jxxtf8oO/fZagsH3MXwkLu2bl0CSo6DWq03kNOxzd5uGT+jSUvZqFajy08+9sg==}
+    peerDependencies:
+      vitest: '>=0.28.1 <1.0.0 || ^1 || ^2 || ^3'
 
   '@humanwhocodes/module-importer@1.0.1':
     resolution: {integrity: sha512-bxveV4V8v5Yb4ncFTT3rPSgZBOpCkjfK0y4oVVVJwIuDVBRMDXrPyXRL988i5ap9m9bnyEEjWfm5WkBmtffLfA==}
@@ -3193,6 +3201,10 @@ packages:
     resolution: {integrity: sha512-hMQ4CX1p1izmuLYyZqLMO/qGNw10wSv9QDCPfzXfyFrOaCSSoRfqE1Kf1s5an66J5JZC62NewG+mK49jOCtQew==}
     engines: {node: '>=4'}
 
+  fast-check@3.23.2:
+    resolution: {integrity: sha512-h5+1OzzfCC3Ef7VbtKdcv7zsstUQwUDlYpUTvjeUsJAssPgLn7QzbboPtL5ro04Mq0rPOsMzl7q5hIbRs2wD1A==}
+    engines: {node: '>=8.0.0'}
+
   fast-deep-equal@3.1.3:
     resolution: {integrity: sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==}
 
@@ -4700,6 +4712,9 @@ packages:
   punycode@2.3.1:
     resolution: {integrity: sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==}
     engines: {node: '>=6'}
+
+  pure-rand@6.1.0:
+    resolution: {integrity: sha512-bVWawvoZoBYpp6yIoQtQXHZjmz35RSVHnUOTefl8Vcjr8snTPY1wnpSPMWekcFwbxI6gtmT7rSYPFvz71ldiOA==}
 
   qs@6.13.0:
     resolution: {integrity: sha512-+38qI9SOr8tfZ4QmJNplMUxqjbe7LKvvZgWdExBOmd+egZTtjLB67Gu0HRX3u/XOq7UU2Nx6nsjvS16Z9uwfpg==}
@@ -6902,6 +6917,11 @@ snapshots:
   '@expressive-code/plugin-text-markers@0.35.6':
     dependencies:
       '@expressive-code/core': 0.35.6
+
+  '@fast-check/vitest@0.1.5(vitest@3.0.4(@types/debug@4.1.12)(@types/node@22.5.5)(sass@1.80.3)(terser@5.34.1))':
+    dependencies:
+      fast-check: 3.23.2
+      vitest: 3.0.4(@types/debug@4.1.12)(@types/node@22.5.5)(sass@1.80.3)(terser@5.34.1)
 
   '@humanwhocodes/module-importer@1.0.1': {}
 
@@ -9351,6 +9371,10 @@ snapshots:
       iconv-lite: 0.4.24
       tmp: 0.0.33
 
+  fast-check@3.23.2:
+    dependencies:
+      pure-rand: 6.1.0
+
   fast-deep-equal@3.1.3: {}
 
   fast-fifo@1.3.2: {}
@@ -11244,6 +11268,8 @@ snapshots:
   punycode@1.4.1: {}
 
   punycode@2.3.1: {}
+
+  pure-rand@6.1.0: {}
 
   qs@6.13.0:
     dependencies:

@@ -1,13 +1,5 @@
-import {
-  POD,
-  type PODEntries,
-  type PODValue,
-  type PODContent,
-  type PODStringValue,
-  type PODName,
-  type PODIntValue
-} from "@pcd/pod";
-import { PODSpecBuilder, type PODSpec } from "../builders/pod.js";
+import type { POD, PODEntries, PODValue, PODContent, PODName } from "@pcd/pod";
+import type { PODSpec } from "../builders/pod.js";
 import type { EntryTypes } from "../builders/types/entries.js";
 import type { StatementMap } from "../builders/types/statements.js";
 import type { ValidateResult } from "./validate/types.js";
@@ -16,7 +8,6 @@ import { checkIsMemberOf } from "./validate/checks/checkIsMemberOf.js";
 import { checkIsNotMemberOf } from "./validate/checks/checkIsNotMemberOf.js";
 import { assertPODSpec } from "../generated/podspec.js";
 import { EntrySourcePodSpec } from "./validate/EntrySource.js";
-import { assert } from "vitest";
 import { checkInRange } from "./validate/checks/checkInRange.js";
 import { checkNotInRange } from "./validate/checks/checkNotInRange.js";
 import { checkEqualsEntry } from "./validate/checks/checkEqualsEntry.js";
@@ -278,68 +269,4 @@ export function validatePOD<E extends EntryTypes, S extends StatementMap>(
   return issues.length > 0
     ? FAILURE(issues)
     : SUCCESS(pod as StrongPOD<PODEntriesFromEntryTypes<E>>);
-}
-
-if (import.meta.vitest) {
-  const { test, expect } = import.meta.vitest;
-
-  const privKey =
-    "f72c3def0a54280ded2990a66fabcf717130c6f2bb595004658ec77774b98924";
-
-  const signPOD = (entries: PODEntries) => POD.sign(entries, privKey);
-
-  test("validatePOD", () => {
-    const myPOD = signPOD({
-      foo: { type: "string", value: "foo" },
-      num: { type: "int", value: 50n }
-    });
-    const myPodSpecBuilder = PODSpecBuilder.create()
-      .entry("foo", "string")
-      .isMemberOf(["foo"], ["foo", "bar"]);
-
-    // This should pass because the entry "foo" is in the list ["foo", "bar"]
-    expect(validatePOD(myPOD, myPodSpecBuilder.spec()).isValid).toBe(true);
-
-    const result = validatePOD(myPOD, myPodSpecBuilder.spec());
-    if (result.isValid) {
-      const pod = result.value;
-      // After validation, the entries are strongly typed
-      pod.content.asEntries().bar?.value satisfies
-        | PODValue["value"]
-        | undefined;
-      pod.content.asEntries().foo.value satisfies string;
-      pod.content.getValue("bar")?.value satisfies
-        | PODValue["value"]
-        | undefined;
-      pod.content.getRawValue("bar") satisfies PODValue["value"] | undefined;
-      pod.content.getValue("foo") satisfies PODStringValue;
-      pod.content.getRawValue("foo") satisfies string;
-    }
-
-    // This should fail because the entry "foo" is not in the list ["baz", "quux"]
-    const secondBuilder = myPodSpecBuilder.isMemberOf(["foo"], ["baz", "quux"]);
-    expect(validatePOD(myPOD, secondBuilder.spec()).isValid).toBe(false);
-
-    // If we omit the new statement, it should pass
-    expect(
-      validatePOD(
-        myPOD,
-        secondBuilder.omitStatements(["foo_isMemberOf_1"]).spec()
-      ).isValid
-    ).toBe(true);
-
-    {
-      const result = validatePOD(
-        myPOD,
-        secondBuilder
-          .omitStatements(["foo_isMemberOf_1"])
-          .entry("num", "int")
-          .inRange("num", { min: 0n, max: 100n })
-          .spec()
-      );
-      assert(result.isValid);
-      const pod = result.value;
-      pod.content.asEntries().num satisfies PODIntValue;
-    }
-  });
 }

@@ -6,7 +6,6 @@ import {
   POD_INT_MIN,
   type PODName
 } from "@pcd/pod";
-import { type PODSpec, PODSpecBuilder } from "./pod.js";
 import type {
   EntryTypes,
   VirtualEntries,
@@ -35,6 +34,7 @@ import {
   supportsRangeChecks,
   validateRange
 } from "./shared.js";
+import type { PODSpec } from "./pod.js";
 
 export type NamedPODSpecs = Record<PODName, PODSpec<EntryTypes, StatementMap>>;
 
@@ -53,7 +53,7 @@ export type PODGroupSpec<P extends NamedPODSpecs, S extends StatementMap> = {
   statements: S;
 };
 
-type AllPODEntries<P extends NamedPODSpecs> = {
+export type AllPODEntries<P extends NamedPODSpecs> = {
   [K in keyof P]: {
     [E in keyof (P[K]["entries"] & VirtualEntries) as `${K & string}.${E &
       string}`]: (P[K]["entries"] & VirtualEntries)[E];
@@ -731,123 +731,3 @@ export class PODGroupSpecBuilder<
     });
   }
 }
-
-if (import.meta.vitest) {
-  const { it, expect, assertType } = import.meta.vitest;
-
-  it("PODGroupSpecBuilder", () => {
-    const group = PODGroupSpecBuilder.create();
-    const podBuilder = PODSpecBuilder.create()
-      .entry("my_string", "string")
-      .entry("my_num", "int");
-    const groupWithPod = group.pod("foo", podBuilder.spec());
-    const _spec = groupWithPod.spec();
-
-    // Here we can see that, at the type level, we have the entry we defined
-    // for the 'foo' pod, as well as the virtual entries.
-    assertType<AllPODEntries<typeof _spec.pods>>({
-      "foo.my_string": "string",
-      "foo.my_num": "int",
-      "foo.$signerPublicKey": "eddsa_pubkey",
-      "foo.$contentID": "string",
-      "foo.$signature": "string"
-    });
-
-    expect(groupWithPod.spec()).toEqual({
-      pods: {
-        foo: podBuilder.spec()
-      },
-      statements: {}
-    });
-
-    const groupWithPodAndStatement = groupWithPod.isMemberOf(
-      ["foo.my_string"],
-      ["hello"]
-    );
-    const spec3 = groupWithPodAndStatement.spec();
-
-    expect(spec3).toEqual({
-      pods: {
-        foo: podBuilder.spec()
-      },
-      statements: {
-        "foo.my_string_isMemberOf": {
-          entries: ["foo.my_string"],
-          isMemberOf: [["hello"]],
-          type: "isMemberOf"
-        }
-      }
-    });
-  });
-
-  it("debug equalsEntry types", () => {
-    const group = PODGroupSpecBuilder.create();
-    const podBuilder = PODSpecBuilder.create()
-      .entry("my_string", "string")
-      .entry("my_other_string", "string")
-      .entry("my_num", "int")
-      .entry("my_other_num", "int");
-
-    const groupWithPod = group.pod("foo", podBuilder.spec());
-
-    // This should show us the concrete types
-    assertType<AllPODEntries<ReturnType<typeof groupWithPod.spec>["pods"]>>({
-      "foo.my_string": "string",
-      "foo.my_other_string": "string",
-      "foo.my_num": "int",
-      "foo.my_other_num": "int",
-      "foo.$contentID": "string",
-      "foo.$signature": "string",
-      "foo.$signerPublicKey": "eddsa_pubkey"
-    });
-
-    groupWithPod.equalsEntry("foo.my_num", "foo.my_other_num");
-
-    // Now let's try to see what happens in equalsEntry
-    type _T1 = Parameters<typeof groupWithPod.equalsEntry>[0]; // First parameter type
-    type _T2 = Parameters<typeof groupWithPod.equalsEntry>[1]; // Second parameter type
-  });
-
-  it("debug AllPODEntries types", () => {
-    const group = PODGroupSpecBuilder.create();
-    const podBuilder = PODSpecBuilder.create()
-      .entry("my_string", "string")
-      .entry("my_other_string", "string")
-      .entry("my_num", "int");
-
-    const _groupWithPod = group.pod("foo", podBuilder.spec());
-
-    type TestPods = ReturnType<typeof _groupWithPod.spec>["pods"];
-
-    // Verify type equivalence
-    type TestPodEntries = PodTest<TestPods>;
-
-    // Check that entries are exactly the types we expect
-    type Test1 = TestPodEntries["foo.my_string"] extends "string"
-      ? true
-      : false; // should be true
-    type Test2 = "string" extends TestPodEntries["foo.my_string"]
-      ? true
-      : false; // should be true
-    type Test3 = TestPodEntries["foo.my_num"] extends "int" ? true : false; // should be true
-    type Test4 = "int" extends TestPodEntries["foo.my_num"] ? true : false; // should be true
-
-    // Verify that the types are exactly equal
-    type Test5 = TestPodEntries["foo.my_string"] extends "string"
-      ? true
-      : false; // should be true
-
-    assertType<Test1>(true);
-    assertType<Test2>(true);
-    assertType<Test3>(true);
-    assertType<Test4>(true);
-    assertType<Test5>(true);
-  });
-}
-
-type PodTest<P extends NamedPODSpecs> = {
-  [K in keyof P]: {
-    [E in keyof (P[K]["entries"] & VirtualEntries) as `${K & string}.${E &
-      string}`]: (P[K]["entries"] & VirtualEntries)[E];
-  };
-}[keyof P];
