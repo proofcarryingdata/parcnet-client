@@ -81,25 +81,61 @@ export type EqualsEntry<
   E extends EntryTypes,
   N1 extends keyof (E & VirtualEntries) & string,
   N2 extends keyof (E & VirtualEntries) & string
-> = E[N2] extends E[N1]
-  ? {
-      entry: N1;
-      type: "equalsEntry";
-      equalsEntry: N2;
-    }
-  : never;
+> = {
+  entry: N1;
+  type: "equalsEntry";
+  otherEntry: N2;
+};
 
 export type NotEqualsEntry<
   E extends EntryTypes,
   N1 extends keyof (E & VirtualEntries) & string,
   N2 extends keyof (E & VirtualEntries) & string
-> = E[N2] extends E[N1]
-  ? {
-      entry: N1;
-      type: "notEqualsEntry";
-      notEqualsEntry: N2;
-    }
-  : never;
+> = {
+  entry: N1;
+  type: "notEqualsEntry";
+  otherEntry: N2;
+};
+
+export type GreaterThan<
+  E extends EntryTypes,
+  N1 extends keyof (E & VirtualEntries) & string,
+  N2 extends keyof (E & VirtualEntries) & string
+> = {
+  entry: N1;
+  type: "greaterThan";
+  otherEntry: N2;
+};
+
+export type GreaterThanEq<
+  E extends EntryTypes,
+  N1 extends keyof (E & VirtualEntries) & string,
+  N2 extends keyof (E & VirtualEntries) & string
+> = {
+  entry: N1;
+  type: "greaterThanEq";
+  otherEntry: N2;
+};
+
+export type LessThan<
+  E extends EntryTypes,
+  N1 extends keyof (E & VirtualEntries) & string,
+  N2 extends keyof (E & VirtualEntries) & string
+> = {
+  entry: N1;
+  type: "lessThan";
+  otherEntry: N2;
+};
+
+export type LessThanEq<
+  E extends EntryTypes,
+  N1 extends keyof (E & VirtualEntries) & string,
+  N2 extends keyof (E & VirtualEntries) & string
+> = {
+  entry: N1;
+  type: "lessThanEq";
+  otherEntry: N2;
+};
 
 export type Statements =
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -113,7 +149,15 @@ export type Statements =
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   | EqualsEntry<any, string, string>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  | NotEqualsEntry<any, string, string>;
+  | NotEqualsEntry<any, string, string>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  | GreaterThan<any, string, string>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  | GreaterThanEq<any, string, string>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  | LessThan<any, string, string>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  | LessThanEq<any, string, string>;
 
 export type StatementMap = Record<string, Statements>;
 

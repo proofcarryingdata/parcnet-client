@@ -1,7 +1,5 @@
 import {
   checkPODName,
-  POD_CRYPTOGRAPHIC_MAX,
-  POD_CRYPTOGRAPHIC_MIN,
   POD_DATE_MAX,
   POD_DATE_MIN,
   POD_INT_MAX,
@@ -10,6 +8,7 @@ import {
 import {
   convertValuesToStringTuples,
   deepFreeze,
+  supportsRangeChecks,
   validateRange
 } from "./shared.js";
 import type {
@@ -21,7 +20,11 @@ import type {
   NotEqualsEntry,
   SupportsRangeChecks,
   StatementName,
-  StatementMap
+  StatementMap,
+  GreaterThan,
+  GreaterThanEq,
+  LessThan,
+  LessThanEq
 } from "./types/statements.js";
 import type {
   EntriesOfType,
@@ -61,9 +64,9 @@ function canonicalizeJSON(input: unknown): string | undefined {
 }
 
 const virtualEntries: VirtualEntries = {
-  $contentID: { type: "string" },
-  $signature: { type: "string" },
-  $signerPublicKey: { type: "eddsa_pubkey" }
+  $contentID: "string",
+  $signature: "string",
+  $signerPublicKey: "eddsa_pubkey"
 };
 
 export type PODSpec<E extends EntryTypes, S extends StatementMap> = {
@@ -73,22 +76,6 @@ export type PODSpec<E extends EntryTypes, S extends StatementMap> = {
 
 // This is a compile-time check that the PODSpec is JSON-safe
 true satisfies IsJsonSafe<PODSpec<EntryTypes, StatementMap>>;
-
-type DoesNotSupportRangeChecks = Exclude<PODValueType, SupportsRangeChecks>;
-
-function supportsRangeChecks(type: PODValueType): type is SupportsRangeChecks {
-  switch (type) {
-    case "int":
-    case "boolean":
-    case "date":
-      return true;
-    default:
-      // Verify the narrowed type matches DoesNotSupportRangeChecks exactly
-      // prettier-ignore
-      (type) satisfies DoesNotSupportRangeChecks;
-      return false;
-  }
-}
 
 /**
  * Given a list of entry names, return the names of the entries that are not in the list
@@ -221,15 +208,16 @@ export class PODSpecBuilder<
             case "notInRange":
               return keys.includes(statement.entry as K);
             case "equalsEntry":
-              return (
-                keys.includes(statement.entry as K) &&
-                keys.includes(statement.equalsEntry as K)
-              );
             case "notEqualsEntry":
+            case "greaterThan":
+            case "greaterThanEq":
+            case "lessThan":
+            case "lessThanEq":
               return (
                 keys.includes(statement.entry as K) &&
-                keys.includes(statement.notEqualsEntry as K)
+                keys.includes(statement.otherEntry as K)
               );
+
             default:
               const _exhaustiveCheck: never = statement;
               throw new Error(
@@ -535,29 +523,36 @@ export class PODSpecBuilder<
       throw new Error(`Entry "${name}" does not exist`);
     }
 
-    const entryType = this.#spec.entries[name];
+    const entryType = this.#spec.entries[name]!;
 
-    if (entryType === "int") {
-      validateRange(
-        range.min as bigint,
-        range.max as bigint,
-        POD_INT_MIN,
-        POD_INT_MAX
-      );
-    } else if (entryType === "cryptographic") {
-      validateRange(
-        range.min as bigint,
-        range.max as bigint,
-        POD_CRYPTOGRAPHIC_MIN,
-        POD_CRYPTOGRAPHIC_MAX
-      );
-    } else if (entryType === "date") {
-      validateRange(
-        range.min as Date,
-        range.max as Date,
-        POD_DATE_MIN,
-        POD_DATE_MAX
-      );
+    if (!supportsRangeChecks(entryType)) {
+      throw new Error(`Entry "${name}" does not support range checks`);
+    }
+
+    // TODO repetition, consider moving to a utility function
+    switch (entryType) {
+      case "int":
+        validateRange(
+          range.min as bigint,
+          range.max as bigint,
+          POD_INT_MIN,
+          POD_INT_MAX
+        );
+        break;
+      case "boolean":
+        validateRange(range.min as bigint, range.max as bigint, 0n, 1n);
+        break;
+      case "date":
+        validateRange(
+          range.min as Date,
+          range.max as Date,
+          POD_DATE_MIN,
+          POD_DATE_MAX
+        );
+        break;
+      default:
+        const _exhaustiveCheck: never = entryType;
+        throw new Error(`Unsupported entry type: ${name}`);
     }
 
     const statement: NotInRange<E, N> = {
@@ -594,10 +589,14 @@ export class PODSpecBuilder<
 
   public equalsEntry<
     N1 extends keyof (E & VirtualEntries) & string,
-    N2 extends keyof (E & VirtualEntries) & string
+    N2 extends keyof EntriesOfType<
+      E & VirtualEntries,
+      (E & VirtualEntries)[N1]
+    > &
+      string
   >(
     name1: N1,
-    name2: E[N2] extends E[N1] ? N2 : never
+    name2: Exclude<N2, N1>
   ): PODSpecBuilder<
     E,
     S & {
@@ -621,9 +620,8 @@ export class PODSpecBuilder<
     const statement = {
       entry: name1,
       type: "equalsEntry",
-      equalsEntry: name2
-      // We know that the types are compatible, so we can cast to the correct type
-    } as unknown as EqualsEntry<E, N1, N2>;
+      otherEntry: name2
+    } satisfies EqualsEntry<E, N1, N2>;
 
     const baseName = `${name1}_${name2}_equalsEntry`;
     let statementName = baseName;
@@ -643,11 +641,15 @@ export class PODSpecBuilder<
   }
 
   public notEqualsEntry<
-    N1 extends keyof E & VirtualEntries & string,
-    N2 extends keyof E & VirtualEntries & string
+    N1 extends keyof (E & VirtualEntries) & string,
+    N2 extends keyof EntriesOfType<
+      E & VirtualEntries,
+      (E & VirtualEntries)[N1]
+    > &
+      string
   >(
     name1: N1,
-    name2: E[N2] extends E[N1] ? N2 : never
+    name2: Exclude<N2, N1>
   ): PODSpecBuilder<
     E,
     S & {
@@ -675,11 +677,226 @@ export class PODSpecBuilder<
     const statement = {
       entry: name1,
       type: "notEqualsEntry",
-      notEqualsEntry: name2
-      // We know that the types are compatible, so we can cast to the correct type
-    } as unknown as NotEqualsEntry<E, N1, N2>;
+      otherEntry: name2
+    } satisfies NotEqualsEntry<E, N1, N2>;
 
     const baseName = `${name1}_${name2}_notEqualsEntry`;
+    let statementName = baseName;
+    let suffix = 1;
+
+    while (statementName in this.#spec.statements) {
+      statementName = `${baseName}_${suffix++}`;
+    }
+
+    return new PODSpecBuilder({
+      ...this.#spec,
+      statements: {
+        ...this.#spec.statements,
+        [statementName]: statement
+      }
+    });
+  }
+
+  public greaterThan<
+    N1 extends keyof (E & VirtualEntries) & string,
+    N2 extends keyof EntriesOfType<
+      E & VirtualEntries,
+      (E & VirtualEntries)[N1]
+    > &
+      string
+  >(
+    name1: N1,
+    name2: Exclude<N2, N1>
+  ): PODSpecBuilder<
+    E,
+    S & {
+      [K in StatementName<[N1, N2], "greaterThan", S>]: GreaterThan<E, N1, N2>;
+    }
+  > {
+    // Check that both names exist in entries
+    if (!(name1 in this.#spec.entries) && !(name1 in virtualEntries)) {
+      throw new Error(`Entry "${name1}" does not exist`);
+    }
+    if (!(name2 in this.#spec.entries) && !(name2 in virtualEntries)) {
+      throw new Error(`Entry "${name2}" does not exist`);
+    }
+    if ((name1 as string) === (name2 as string)) {
+      throw new Error("Entry names must be different");
+    }
+    if ((this.#spec.entries[name1] as string) !== this.#spec.entries[name2]) {
+      throw new Error("Entry types must be the same");
+    }
+
+    const statement = {
+      entry: name1,
+      type: "greaterThan",
+      otherEntry: name2
+    } satisfies GreaterThan<E, N1, N2>;
+
+    const baseName = `${name1}_${name2}_greaterThan`;
+    let statementName = baseName;
+    let suffix = 1;
+
+    while (statementName in this.#spec.statements) {
+      statementName = `${baseName}_${suffix++}`;
+    }
+
+    return new PODSpecBuilder({
+      ...this.#spec,
+      statements: {
+        ...this.#spec.statements,
+        [statementName]: statement
+      }
+    });
+  }
+
+  public greaterThanEq<
+    N1 extends keyof (E & VirtualEntries) & string,
+    N2 extends keyof EntriesOfType<
+      E & VirtualEntries,
+      (E & VirtualEntries)[N1]
+    > &
+      string
+  >(
+    name1: N1,
+    name2: Exclude<N2, N1>
+  ): PODSpecBuilder<
+    E,
+    S & {
+      [K in StatementName<[N1, N2], "greaterThanEq", S>]: GreaterThanEq<
+        E,
+        N1,
+        N2
+      >;
+    }
+  > {
+    // Check that both names exist in entries
+    if (!(name1 in this.#spec.entries) && !(name1 in virtualEntries)) {
+      throw new Error(`Entry "${name1}" does not exist`);
+    }
+    if (!(name2 in this.#spec.entries) && !(name2 in virtualEntries)) {
+      throw new Error(`Entry "${name2}" does not exist`);
+    }
+    if ((name1 as string) === (name2 as string)) {
+      throw new Error("Entry names must be different");
+    }
+    if ((this.#spec.entries[name1] as string) !== this.#spec.entries[name2]) {
+      throw new Error("Entry types must be the same");
+    }
+
+    const statement = {
+      entry: name1,
+      type: "greaterThanEq",
+      otherEntry: name2
+    } satisfies GreaterThanEq<E, N1, N2>;
+
+    const baseName = `${name1}_${name2}_greaterThanEq`;
+    let statementName = baseName;
+    let suffix = 1;
+
+    while (statementName in this.#spec.statements) {
+      statementName = `${baseName}_${suffix++}`;
+    }
+
+    return new PODSpecBuilder({
+      ...this.#spec,
+      statements: {
+        ...this.#spec.statements,
+        [statementName]: statement
+      }
+    });
+  }
+
+  public lessThan<
+    N1 extends keyof (E & VirtualEntries) & string,
+    N2 extends keyof EntriesOfType<
+      E & VirtualEntries,
+      (E & VirtualEntries)[N1]
+    > &
+      string
+  >(
+    name1: N1,
+    name2: Exclude<N2, N1>
+  ): PODSpecBuilder<
+    E,
+    S & {
+      [K in StatementName<[N1, N2], "lessThan", S>]: LessThan<E, N1, N2>;
+    }
+  > {
+    // Check that both names exist in entries
+    if (!(name1 in this.#spec.entries) && !(name1 in virtualEntries)) {
+      throw new Error(`Entry "${name1}" does not exist`);
+    }
+    if (!(name2 in this.#spec.entries) && !(name2 in virtualEntries)) {
+      throw new Error(`Entry "${name2}" does not exist`);
+    }
+    if ((name1 as string) === (name2 as string)) {
+      throw new Error("Entry names must be different");
+    }
+    if ((this.#spec.entries[name1] as string) !== this.#spec.entries[name2]) {
+      throw new Error("Entry types must be the same");
+    }
+
+    const statement = {
+      entry: name1,
+      type: "lessThan",
+      otherEntry: name2
+    } satisfies LessThan<E, N1, N2>;
+
+    const baseName = `${name1}_${name2}_lessThan`;
+    let statementName = baseName;
+    let suffix = 1;
+
+    while (statementName in this.#spec.statements) {
+      statementName = `${baseName}_${suffix++}`;
+    }
+
+    return new PODSpecBuilder({
+      ...this.#spec,
+      statements: {
+        ...this.#spec.statements,
+        [statementName]: statement
+      }
+    });
+  }
+
+  public lessThanEq<
+    N1 extends keyof (E & VirtualEntries) & string,
+    N2 extends keyof EntriesOfType<
+      E & VirtualEntries,
+      (E & VirtualEntries)[N1]
+    > &
+      string
+  >(
+    name1: N1,
+    name2: Exclude<N2, N1>
+  ): PODSpecBuilder<
+    E,
+    S & {
+      [K in StatementName<[N1, N2], "lessThanEq", S>]: LessThanEq<E, N1, N2>;
+    }
+  > {
+    // Check that both names exist in entries
+    if (!(name1 in this.#spec.entries) && !(name1 in virtualEntries)) {
+      throw new Error(`Entry "${name1}" does not exist`);
+    }
+    if (!(name2 in this.#spec.entries) && !(name2 in virtualEntries)) {
+      throw new Error(`Entry "${name2}" does not exist`);
+    }
+    if ((name1 as string) === (name2 as string)) {
+      throw new Error("Entry names must be different");
+    }
+    if ((this.#spec.entries[name1] as string) !== this.#spec.entries[name2]) {
+      throw new Error("Entry types must be the same");
+    }
+
+    const statement = {
+      entry: name1,
+      type: "lessThanEq",
+      otherEntry: name2
+    } satisfies LessThanEq<E, N1, N2>;
+
+    const baseName = `${name1}_${name2}_lessThanEq`;
     let statementName = baseName;
     let suffix = 1;
 
@@ -789,7 +1006,7 @@ if (import.meta.vitest) {
         a_new_equalsEntry: {
           entry: "a",
           type: "equalsEntry",
-          equalsEntry: "new"
+          otherEntry: "new"
         }
       }
     } satisfies typeof _GSpec);

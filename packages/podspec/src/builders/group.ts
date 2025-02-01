@@ -1,4 +1,11 @@
-import { checkPODName, type PODName } from "@pcd/pod";
+import {
+  checkPODName,
+  POD_DATE_MAX,
+  POD_DATE_MIN,
+  POD_INT_MAX,
+  POD_INT_MIN,
+  type PODName
+} from "@pcd/pod";
 import { type PODSpec, PODSpecBuilder } from "./pod.js";
 import type {
   EntryTypes,
@@ -6,10 +13,29 @@ import type {
   EntryKeys,
   PODValueTypeFromTypeName,
   PODValueTupleForNamedEntries,
-  PODValueType
+  PODValueType,
+  EntriesOfType
 } from "./types/entries.js";
-import type { StatementMap, IsMemberOf } from "./types/statements.js";
-import { convertValuesToStringTuples } from "./shared.js";
+import type {
+  StatementMap,
+  IsMemberOf,
+  IsNotMemberOf,
+  InRange,
+  NotInRange,
+  EqualsEntry,
+  NotEqualsEntry,
+  GreaterThan,
+  GreaterThanEq,
+  LessThan,
+  LessThanEq,
+  SupportsRangeChecks
+} from "./types/statements.js";
+import {
+  convertValuesToStringTuples,
+  supportsRangeChecks,
+  validateRange
+} from "./shared.js";
+import { assertType } from "vitest";
 
 type PODGroupPODs = Record<PODName, PODSpec<EntryTypes, StatementMap>>;
 
@@ -28,16 +54,35 @@ export type PODGroupSpec<P extends PODGroupPODs, S extends StatementMap> = {
   statements: S;
 };
 
+// type AllPODEntries<P extends PODGroupPODs> = {
+//   [K in keyof P]: {
+//     [E in keyof (P[K]["entries"] & VirtualEntries) as `${K & string}.${E &
+//       string}`]: (P[K]["entries"] & VirtualEntries)[E];
+//   };
+// }[keyof P];
+
+// First get the entries with pod name prefixes
+type PodEntries<P extends PODGroupPODs> = {
+  [K in keyof P]: {
+    [E in keyof (P[K]["entries"] & VirtualEntries) as `${K & string}.${E &
+      string}`]: (P[K]["entries"] & VirtualEntries)[E];
+  };
+}[keyof P];
+
+// Then ensure we only get POD value types
 type AllPODEntries<P extends PODGroupPODs> = {
-  [K in keyof P as `${K & string}.${keyof (P[K]["entries"] & VirtualEntries) &
-    string}`]: P[K]["entries"][keyof P[K]["entries"] & string];
+  [K in keyof PodEntries<P>]: PodEntries<P>[K] extends PODValueType
+    ? PodEntries<P>[K]
+    : never;
 };
+
+type MustBePODValueType<T> = T extends PODValueType ? T : never;
 
 // Add this helper type to preserve literal types
 type EntryType<
   P extends PODGroupPODs,
   K extends keyof AllPODEntries<P>
-> = AllPODEntries<P>[K] extends PODValueType ? AllPODEntries<P>[K] : never;
+> = MustBePODValueType<AllPODEntries<P>[K]>;
 
 // type AddEntry<
 //   E extends EntryListSpec,
@@ -55,13 +100,57 @@ type AddPOD<
   [K in keyof PODs | N]: K extends N ? Spec : PODs[K & keyof PODs];
 }>;
 
+type PODGroupWithFirstPOD<
+  First extends PODSpec<EntryTypes, StatementMap>,
+  Rest extends PODGroupPODs
+> = {
+  firstPOD: First;
+} & Rest;
+
+class BasePODGroupSpecBuilder<P extends PODGroupPODs, S extends StatementMap> {
+  protected readonly spec: PODGroupSpec<P, S>;
+
+  protected constructor(spec: PODGroupSpec<P, S>) {
+    this.spec = spec;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  public static create(): BasePODGroupSpecBuilder<{}, {}> {
+    return new BasePODGroupSpecBuilder({
+      pods: {},
+      statements: {}
+    });
+  }
+
+  public pod<
+    N extends PODName,
+    Spec extends PODSpec<EntryTypes, StatementMap>,
+    NewPods extends AddPOD<P, N, Spec>
+  >(name: N, spec: Spec): PODGroupSpecBuilder<NewPods, S> {
+    if (name in this.spec.pods) {
+      throw new Error(`POD "${name}" already exists`);
+    }
+
+    checkPODName(name);
+
+    return new PODGroupSpecBuilder({
+      ...this.spec,
+      pods: { ...this.spec.pods, [name]: spec } as unknown as NewPods
+    });
+  }
+}
+
 export class PODGroupSpecBuilder<
-  P extends PODGroupPODs,
+  P extends PODGroupWithFirstPOD<
+    PODSpec<EntryTypes, StatementMap>,
+    PODGroupPODs
+  >,
   S extends StatementMap
-> {
+> extends BasePODGroupSpecBuilder<P, S> {
   readonly #spec: PODGroupSpec<P, S>;
 
-  private constructor(spec: PODGroupSpec<P, S>) {
+  constructor(spec: PODGroupSpec<P, S>) {
+    super(spec);
     this.#spec = spec;
   }
 
@@ -142,6 +231,568 @@ export class PODGroupSpecBuilder<
       }
     });
   }
+
+  public isNotMemberOf<N extends EntryKeys<AllPODEntries<P>>>(
+    names: [...N],
+    values: N["length"] extends 1
+      ? PODValueTypeFromTypeName<EntryType<P, N[0] & keyof AllPODEntries<P>>>[]
+      : PODValueTupleForNamedEntries<AllPODEntries<P>, N>[]
+  ): PODGroupSpecBuilder<P, S> {
+    // Check that all names exist in entries
+    for (const name of names) {
+      const [podName, entryName] = name.split(".");
+      if (
+        podName === undefined ||
+        entryName === undefined ||
+        !(podName in this.#spec.pods) ||
+        !(entryName in this.#spec.pods[podName]!.entries)
+      ) {
+        throw new Error(`Entry "${name}" does not exist`);
+      }
+    }
+
+    // Check for duplicate names
+    const uniqueNames = new Set(names);
+    if (uniqueNames.size !== names.length) {
+      throw new Error("Duplicate entry names are not allowed");
+    }
+
+    const statement: IsNotMemberOf<AllPODEntries<P>, N> = {
+      entries: names,
+      type: "isNotMemberOf",
+      isNotMemberOf: convertValuesToStringTuples<N>(names, values)
+    };
+
+    const baseName = `${names.join("_")}_isNotMemberOf`;
+    let statementName = baseName;
+    let suffix = 1;
+
+    while (statementName in this.#spec.statements) {
+      statementName = `${baseName}_${suffix++}`;
+    }
+
+    return new PODGroupSpecBuilder({
+      ...this.#spec,
+      statements: {
+        ...this.#spec.statements,
+        [statementName]: statement
+      }
+    });
+  }
+
+  public inRange<
+    N extends keyof EntriesOfType<AllPODEntries<P>, SupportsRangeChecks> &
+      string
+  >(
+    name: N,
+    range: {
+      min: AllPODEntries<P>[N] extends "date" ? Date : bigint;
+      max: AllPODEntries<P>[N] extends "date" ? Date : bigint;
+    }
+  ): PODGroupSpecBuilder<P, S> {
+    // Check that the entry exists
+    const [podName, entryName] = name.split(".");
+    if (
+      podName === undefined ||
+      entryName === undefined ||
+      !(podName in this.#spec.pods) ||
+      !(entryName in this.#spec.pods[podName]!.entries)
+    ) {
+      throw new Error(`Entry "${name}" does not exist`);
+    }
+
+    const entryType = this.#spec.pods[podName]!.entries[entryName]!;
+
+    if (!supportsRangeChecks(entryType)) {
+      throw new Error(`Entry "${name}" does not support range checks`);
+    }
+
+    switch (entryType) {
+      case "int":
+        validateRange(
+          range.min as bigint,
+          range.max as bigint,
+          POD_INT_MIN,
+          POD_INT_MAX
+        );
+        break;
+      case "boolean":
+        validateRange(range.min as bigint, range.max as bigint, 0n, 1n);
+        break;
+      case "date":
+        validateRange(
+          range.min as Date,
+          range.max as Date,
+          POD_DATE_MIN,
+          POD_DATE_MAX
+        );
+        break;
+      default:
+        const _exhaustiveCheck: never = entryType;
+        throw new Error(`Unsupported entry type: ${name}`);
+    }
+
+    const statement: InRange<AllPODEntries<P>, N> = {
+      entry: name,
+      type: "inRange",
+      inRange: {
+        min:
+          range.min instanceof Date
+            ? range.min.getTime().toString()
+            : range.min.toString(),
+        max:
+          range.max instanceof Date
+            ? range.max.getTime().toString()
+            : range.max.toString()
+      }
+    };
+
+    const baseName = `${name}_inRange`;
+    let statementName = baseName;
+    let suffix = 1;
+
+    while (statementName in this.#spec.statements) {
+      statementName = `${baseName}_${suffix++}`;
+    }
+
+    return new PODGroupSpecBuilder({
+      ...this.#spec,
+      statements: {
+        ...this.#spec.statements,
+        [statementName]: statement
+      }
+    });
+  }
+
+  public notInRange<
+    N extends keyof EntriesOfType<AllPODEntries<P>, SupportsRangeChecks> &
+      string
+  >(
+    name: N,
+    range: {
+      min: AllPODEntries<P>[N] extends "date" ? Date : bigint;
+      max: AllPODEntries<P>[N] extends "date" ? Date : bigint;
+    }
+  ): PODGroupSpecBuilder<P, S> {
+    // Check that the entry exists
+    const [podName, entryName] = name.split(".");
+    if (
+      podName === undefined ||
+      entryName === undefined ||
+      !(podName in this.#spec.pods) ||
+      !(entryName in this.#spec.pods[podName]!.entries)
+    ) {
+      throw new Error(`Entry "${name}" does not exist`);
+    }
+
+    const entryType = this.#spec.pods[podName]!.entries[entryName]!;
+
+    if (!supportsRangeChecks(entryType)) {
+      throw new Error(`Entry "${name}" does not support range checks`);
+    }
+
+    switch (entryType) {
+      case "int":
+        validateRange(
+          range.min as bigint,
+          range.max as bigint,
+          POD_INT_MIN,
+          POD_INT_MAX
+        );
+        break;
+      case "boolean":
+        validateRange(range.min as bigint, range.max as bigint, 0n, 1n);
+        break;
+      case "date":
+        validateRange(
+          range.min as Date,
+          range.max as Date,
+          POD_DATE_MIN,
+          POD_DATE_MAX
+        );
+        break;
+      default:
+        const _exhaustiveCheck: never = entryType;
+        throw new Error(`Unsupported entry type: ${name}`);
+    }
+
+    const statement: NotInRange<AllPODEntries<P>, N> = {
+      entry: name,
+      type: "notInRange",
+      notInRange: {
+        min:
+          range.min instanceof Date
+            ? range.min.getTime().toString()
+            : range.min.toString(),
+        max:
+          range.max instanceof Date
+            ? range.max.getTime().toString()
+            : range.max.toString()
+      }
+    };
+
+    const baseName = `${name}_notInRange`;
+    let statementName = baseName;
+    let suffix = 1;
+
+    while (statementName in this.#spec.statements) {
+      statementName = `${baseName}_${suffix++}`;
+    }
+
+    return new PODGroupSpecBuilder({
+      ...this.#spec,
+      statements: {
+        ...this.#spec.statements,
+        [statementName]: statement
+      }
+    });
+  }
+
+  public greaterThan<
+    N1 extends keyof AllPODEntries<P> & string,
+    N2 extends keyof EntriesOfType<AllPODEntries<P>, EntryType<P, N1>> & string
+  >(name1: N1, name2: N2): PODGroupSpecBuilder<P, S> {
+    // Check that both entries exist
+    const [pod1, entry1] = name1.split(".");
+    const [pod2, entry2] = name2.split(".");
+    if (
+      pod1 === undefined ||
+      entry1 === undefined ||
+      !(pod1 in this.#spec.pods) ||
+      !(entry1 in this.#spec.pods[pod1]!.entries)
+    ) {
+      throw new Error(`Entry "${name1}" does not exist`);
+    }
+    if (
+      pod2 === undefined ||
+      entry2 === undefined ||
+      !(pod2 in this.#spec.pods) ||
+      !(entry2 in this.#spec.pods[pod2]!.entries)
+    ) {
+      throw new Error(`Entry "${name2}" does not exist`);
+    }
+
+    if ((name1 as string) === (name2 as string)) {
+      throw new Error("Entry names must be different");
+    }
+
+    const type1 = this.#spec.pods[pod1]!.entries[entry1]!;
+    const type2 = this.#spec.pods[pod2]!.entries[entry2]!;
+    if (type1 !== type2) {
+      throw new Error("Entry types must be the same");
+    }
+
+    const statement: GreaterThan<AllPODEntries<P>, N1, N2> = {
+      entry: name1,
+      type: "greaterThan",
+      otherEntry: name2
+    };
+
+    const baseName = `${name1}_${name2}_greaterThan`;
+    let statementName = baseName;
+    let suffix = 1;
+
+    while (statementName in this.#spec.statements) {
+      statementName = `${baseName}_${suffix++}`;
+    }
+
+    return new PODGroupSpecBuilder({
+      ...this.#spec,
+      statements: {
+        ...this.#spec.statements,
+        [statementName]: statement
+      }
+    });
+  }
+
+  public greaterThanEq<
+    N1 extends keyof AllPODEntries<P> & string,
+    N2 extends keyof EntriesOfType<AllPODEntries<P>, EntryType<P, N1>> & string
+  >(name1: N1, name2: N2): PODGroupSpecBuilder<P, S> {
+    // Check that both entries exist
+    const [pod1, entry1] = name1.split(".");
+    const [pod2, entry2] = name2.split(".");
+    if (
+      pod1 === undefined ||
+      entry1 === undefined ||
+      !(pod1 in this.#spec.pods) ||
+      !(entry1 in this.#spec.pods[pod1]!.entries)
+    ) {
+      throw new Error(`Entry "${name1}" does not exist`);
+    }
+    if (
+      pod2 === undefined ||
+      entry2 === undefined ||
+      !(pod2 in this.#spec.pods) ||
+      !(entry2 in this.#spec.pods[pod2]!.entries)
+    ) {
+      throw new Error(`Entry "${name2}" does not exist`);
+    }
+
+    if ((name1 as string) === (name2 as string)) {
+      throw new Error("Entry names must be different");
+    }
+
+    const type1 = this.#spec.pods[pod1]!.entries[entry1]!;
+    const type2 = this.#spec.pods[pod2]!.entries[entry2]!;
+    if (type1 !== type2) {
+      throw new Error("Entry types must be the same");
+    }
+
+    const statement: GreaterThanEq<AllPODEntries<P>, N1, N2> = {
+      entry: name1,
+      type: "greaterThanEq",
+      otherEntry: name2
+    };
+
+    const baseName = `${name1}_${name2}_greaterThanEq`;
+    let statementName = baseName;
+    let suffix = 1;
+
+    while (statementName in this.#spec.statements) {
+      statementName = `${baseName}_${suffix++}`;
+    }
+
+    return new PODGroupSpecBuilder({
+      ...this.#spec,
+      statements: {
+        ...this.#spec.statements,
+        [statementName]: statement
+      }
+    });
+  }
+
+  public lessThan<
+    N1 extends keyof AllPODEntries<P> & string,
+    N2 extends keyof EntriesOfType<AllPODEntries<P>, EntryType<P, N1>> & string
+  >(name1: N1, name2: N2): PODGroupSpecBuilder<P, S> {
+    // Check that both entries exist
+    const [pod1, entry1] = name1.split(".");
+    const [pod2, entry2] = name2.split(".");
+    if (
+      pod1 === undefined ||
+      entry1 === undefined ||
+      !(pod1 in this.#spec.pods) ||
+      !(entry1 in this.#spec.pods[pod1]!.entries)
+    ) {
+      throw new Error(`Entry "${name1}" does not exist`);
+    }
+    if (
+      pod2 === undefined ||
+      entry2 === undefined ||
+      !(pod2 in this.#spec.pods) ||
+      !(entry2 in this.#spec.pods[pod2]!.entries)
+    ) {
+      throw new Error(`Entry "${name2}" does not exist`);
+    }
+
+    if ((name1 as string) === (name2 as string)) {
+      throw new Error("Entry names must be different");
+    }
+
+    const type1 = this.#spec.pods[pod1]!.entries[entry1]!;
+    const type2 = this.#spec.pods[pod2]!.entries[entry2]!;
+    if (type1 !== type2) {
+      throw new Error("Entry types must be the same");
+    }
+
+    const statement: LessThan<AllPODEntries<P>, N1, N2> = {
+      entry: name1,
+      type: "lessThan",
+      otherEntry: name2
+    };
+
+    const baseName = `${name1}_${name2}_lessThan`;
+    let statementName = baseName;
+    let suffix = 1;
+
+    while (statementName in this.#spec.statements) {
+      statementName = `${baseName}_${suffix++}`;
+    }
+
+    return new PODGroupSpecBuilder({
+      ...this.#spec,
+      statements: {
+        ...this.#spec.statements,
+        [statementName]: statement
+      }
+    });
+  }
+
+  public lessThanEq<
+    N1 extends keyof AllPODEntries<P> & string,
+    N2 extends keyof EntriesOfType<AllPODEntries<P>, EntryType<P, N1>> & string
+  >(name1: N1, name2: N2): PODGroupSpecBuilder<P, S> {
+    // Check that both entries exist
+    const [pod1, entry1] = name1.split(".");
+    const [pod2, entry2] = name2.split(".");
+    if (
+      pod1 === undefined ||
+      entry1 === undefined ||
+      !(pod1 in this.#spec.pods) ||
+      !(entry1 in this.#spec.pods[pod1]!.entries)
+    ) {
+      throw new Error(`Entry "${name1}" does not exist`);
+    }
+    if (
+      pod2 === undefined ||
+      entry2 === undefined ||
+      !(pod2 in this.#spec.pods) ||
+      !(entry2 in this.#spec.pods[pod2]!.entries)
+    ) {
+      throw new Error(`Entry "${name2}" does not exist`);
+    }
+
+    if ((name1 as string) === (name2 as string)) {
+      throw new Error("Entry names must be different");
+    }
+
+    const type1 = this.#spec.pods[pod1]!.entries[entry1]!;
+    const type2 = this.#spec.pods[pod2]!.entries[entry2]!;
+    if (type1 !== type2) {
+      throw new Error("Entry types must be the same");
+    }
+
+    const statement: LessThanEq<AllPODEntries<P>, N1, N2> = {
+      entry: name1,
+      type: "lessThanEq",
+      otherEntry: name2
+    };
+
+    const baseName = `${name1}_${name2}_lessThanEq`;
+    let statementName = baseName;
+    let suffix = 1;
+
+    while (statementName in this.#spec.statements) {
+      statementName = `${baseName}_${suffix++}`;
+    }
+
+    return new PODGroupSpecBuilder({
+      ...this.#spec,
+      statements: {
+        ...this.#spec.statements,
+        [statementName]: statement
+      }
+    });
+  }
+
+  public equalsEntry<
+    N1 extends keyof AllPODEntries<P> & string,
+    N2 extends keyof EntriesOfType<
+      Evaluate<AllPODEntries<P>>,
+      EntryType<P, N1>
+    > &
+      string
+  >(name1: N1, name2: Exclude<N2, N1>): PODGroupSpecBuilder<P, S> {
+    // Check that both entries exist
+    const [pod1, entry1] = name1.split(".");
+    const [pod2, entry2] = name2.split(".");
+    if (
+      pod1 === undefined ||
+      entry1 === undefined ||
+      !(pod1 in this.#spec.pods) ||
+      !(entry1 in this.#spec.pods[pod1]!.entries)
+    ) {
+      throw new Error(`Entry "${name1}" does not exist`);
+    }
+    if (
+      pod2 === undefined ||
+      entry2 === undefined ||
+      !(pod2 in this.#spec.pods) ||
+      !(entry2 in this.#spec.pods[pod2]!.entries)
+    ) {
+      throw new Error(`Entry "${name2}" does not exist`);
+    }
+
+    if ((name1 as string) === (name2 as string)) {
+      throw new Error("Entry names must be different");
+    }
+
+    const type1 = this.#spec.pods[pod1]!.entries[entry1]!;
+    const type2 = this.#spec.pods[pod2]!.entries[entry2]!;
+    if (type1 !== type2) {
+      throw new Error("Entry types must be the same");
+    }
+
+    const statement: EqualsEntry<AllPODEntries<P>, N1, N2> = {
+      entry: name1,
+      type: "equalsEntry",
+      otherEntry: name2
+    };
+
+    const baseName = `${name1}_${name2}_equalsEntry`;
+    let statementName = baseName;
+    let suffix = 1;
+
+    while (statementName in this.#spec.statements) {
+      statementName = `${baseName}_${suffix++}`;
+    }
+
+    return new PODGroupSpecBuilder({
+      ...this.#spec,
+      statements: {
+        ...this.#spec.statements,
+        [statementName]: statement
+      }
+    });
+  }
+
+  public notEqualsEntry<
+    N1 extends keyof AllPODEntries<P> & string,
+    N2 extends keyof EntriesOfType<AllPODEntries<P>, EntryType<P, N1>> & string
+  >(name1: N1, name2: N2): PODGroupSpecBuilder<P, S> {
+    // Check that both entries exist
+    const [pod1, entry1] = name1.split(".");
+    const [pod2, entry2] = name2.split(".");
+    if (
+      pod1 === undefined ||
+      entry1 === undefined ||
+      !(pod1 in this.#spec.pods) ||
+      !(entry1 in this.#spec.pods[pod1]!.entries)
+    ) {
+      throw new Error(`Entry "${name1}" does not exist`);
+    }
+    if (
+      pod2 === undefined ||
+      entry2 === undefined ||
+      !(pod2 in this.#spec.pods) ||
+      !(entry2 in this.#spec.pods[pod2]!.entries)
+    ) {
+      throw new Error(`Entry "${name2}" does not exist`);
+    }
+
+    if ((name1 as string) === (name2 as string)) {
+      throw new Error("Entry names must be different");
+    }
+
+    const type1 = this.#spec.pods[pod1]!.entries[entry1]!;
+    const type2 = this.#spec.pods[pod2]!.entries[entry2]!;
+    if (type1 !== type2) {
+      throw new Error("Entry types must be the same");
+    }
+
+    const statement: NotEqualsEntry<AllPODEntries<P>, N1, N2> = {
+      entry: name1,
+      type: "notEqualsEntry",
+      otherEntry: name2
+    };
+
+    const baseName = `${name1}_${name2}_notEqualsEntry`;
+    let statementName = baseName;
+    let suffix = 1;
+
+    while (statementName in this.#spec.statements) {
+      statementName = `${baseName}_${suffix++}`;
+    }
+
+    return new PODGroupSpecBuilder({
+      ...this.#spec,
+      statements: {
+        ...this.#spec.statements,
+        [statementName]: statement
+      }
+    });
+  }
 }
 
 if (import.meta.vitest) {
@@ -149,7 +800,9 @@ if (import.meta.vitest) {
 
   it("PODGroupSpecBuilder", () => {
     const group = PODGroupSpecBuilder.create();
-    const podBuilder = PODSpecBuilder.create().entry("my_string", "string");
+    const podBuilder = PODSpecBuilder.create()
+      .entry("my_string", "string")
+      .entry("my_num", "int");
     const groupWithPod = group.pod("foo", podBuilder.spec());
     const _spec = groupWithPod.spec();
 
@@ -157,7 +810,8 @@ if (import.meta.vitest) {
     // for the 'foo' pod, as well as the virtual entries.
     assertType<AllPODEntries<typeof _spec.pods>>({
       "foo.my_string": "string",
-      "foo.$signerPublicKey": "string",
+      "foo.my_num": "int",
+      "foo.$signerPublicKey": "eddsa_pubkey",
       "foo.$contentID": "string",
       "foo.$signature": "string"
     });
@@ -188,4 +842,75 @@ if (import.meta.vitest) {
       }
     });
   });
+
+  it("debug equalsEntry types", () => {
+    const group = PODGroupSpecBuilder.create();
+    const podBuilder = PODSpecBuilder.create()
+      .entry("my_string", "string")
+      .entry("my_other_string", "string")
+      .entry("my_num", "int")
+      .entry("my_other_num", "int");
+
+    const groupWithPod = group.pod("foo", podBuilder.spec());
+
+    // This should show us the concrete types
+    assertType<AllPODEntries<ReturnType<typeof groupWithPod.spec>["pods"]>>({
+      "foo.my_string": "string",
+      "foo.my_other_string": "string",
+      "foo.my_num": "int",
+      "foo.my_other_num": "int",
+      "foo.$contentID": "string",
+      "foo.$signature": "string",
+      "foo.$signerPublicKey": "eddsa_pubkey"
+    });
+
+    groupWithPod.equalsEntry("foo.my_num", "foo.my_other_num");
+
+    // Now let's try to see what happens in equalsEntry
+    type T1 = Parameters<typeof groupWithPod.equalsEntry>[0]; // First parameter type
+    type T2 = Parameters<typeof groupWithPod.equalsEntry>[1]; // Second parameter type
+  });
+
+  it("debug AllPODEntries types", () => {
+    const group = PODGroupSpecBuilder.create();
+    const podBuilder = PODSpecBuilder.create()
+      .entry("my_string", "string")
+      .entry("my_other_string", "string")
+      .entry("my_num", "int");
+
+    const groupWithPod = group.pod("foo", podBuilder.spec());
+
+    type TestPods = ReturnType<typeof groupWithPod.spec>["pods"];
+
+    // Verify type equivalence
+    type TestPodEntries = AllPODEntries<TestPods>;
+
+    // Check that entries are exactly the types we expect
+    type Test1 = TestPodEntries["foo.my_string"] extends "string"
+      ? true
+      : false; // should be true
+    type Test2 = "string" extends TestPodEntries["foo.my_string"]
+      ? true
+      : false; // should be true
+    type Test3 = TestPodEntries["foo.my_num"] extends "int" ? true : false; // should be true
+    type Test4 = "int" extends TestPodEntries["foo.my_num"] ? true : false; // should be true
+
+    // Verify that the types are exactly equal
+    type Test5 = TestPodEntries["foo.my_string"] extends "string"
+      ? true
+      : false; // should be true
+
+    assertType<Test1>(true);
+    assertType<Test2>(true);
+    assertType<Test3>(true);
+    assertType<Test4>(true);
+    assertType<Test5>(true);
+  });
 }
+
+type PodTest<P extends PODGroupPODs> = {
+  [K in keyof P]: {
+    [E in keyof (P[K]["entries"] & VirtualEntries) as `${K & string}.${E &
+      string}`]: (P[K]["entries"] & VirtualEntries)[E];
+  };
+}[keyof P];

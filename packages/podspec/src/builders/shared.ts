@@ -1,6 +1,7 @@
 import { checkPODValue, type PODValue } from "@pcd/pod";
 import type { PODValueType } from "./types/entries.js";
 import { fromByteArray } from "base64-js";
+import type { SupportsRangeChecks } from "./types/statements.js";
 
 /**
  * Validates a range check.
@@ -100,4 +101,22 @@ export function convertValuesToStringTuples<N extends string[]>(
             [K in keyof N]: string;
           }
       );
+}
+
+type DoesNotSupportRangeChecks = Exclude<PODValueType, SupportsRangeChecks>;
+
+export function supportsRangeChecks(
+  type: PODValueType
+): type is SupportsRangeChecks {
+  switch (type) {
+    case "int":
+    case "boolean":
+    case "date":
+      return true;
+    default:
+      // Verify the narrowed type matches DoesNotSupportRangeChecks exactly
+      // prettier-ignore
+      (type) satisfies DoesNotSupportRangeChecks;
+      return false;
+  }
 }
