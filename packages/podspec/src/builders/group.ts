@@ -35,9 +35,8 @@ import {
   supportsRangeChecks,
   validateRange
 } from "./shared.js";
-import { assertType } from "vitest";
 
-type PODGroupPODs = Record<PODName, PODSpec<EntryTypes, StatementMap>>;
+export type NamedPODSpecs = Record<PODName, PODSpec<EntryTypes, StatementMap>>;
 
 // @TODO add group constraints, where instead of extending EntryListSpec,
 // we have some kind of group entry list, with each entry name prefixed
@@ -49,108 +48,50 @@ type PODGroupPODs = Record<PODName, PODSpec<EntryTypes, StatementMap>>;
 //   isMemberOf: N[number];
 // };
 
-export type PODGroupSpec<P extends PODGroupPODs, S extends StatementMap> = {
+export type PODGroupSpec<P extends NamedPODSpecs, S extends StatementMap> = {
   pods: P;
   statements: S;
 };
 
-// type AllPODEntries<P extends PODGroupPODs> = {
-//   [K in keyof P]: {
-//     [E in keyof (P[K]["entries"] & VirtualEntries) as `${K & string}.${E &
-//       string}`]: (P[K]["entries"] & VirtualEntries)[E];
-//   };
-// }[keyof P];
-
-// First get the entries with pod name prefixes
-type PodEntries<P extends PODGroupPODs> = {
+type AllPODEntries<P extends NamedPODSpecs> = {
   [K in keyof P]: {
     [E in keyof (P[K]["entries"] & VirtualEntries) as `${K & string}.${E &
       string}`]: (P[K]["entries"] & VirtualEntries)[E];
   };
 }[keyof P];
 
-// Then ensure we only get POD value types
-type AllPODEntries<P extends PODGroupPODs> = {
-  [K in keyof PodEntries<P>]: PodEntries<P>[K] extends PODValueType
-    ? PodEntries<P>[K]
-    : never;
-};
-
 type MustBePODValueType<T> = T extends PODValueType ? T : never;
 
-// Add this helper type to preserve literal types
 type EntryType<
-  P extends PODGroupPODs,
+  P extends NamedPODSpecs,
   K extends keyof AllPODEntries<P>
 > = MustBePODValueType<AllPODEntries<P>[K]>;
-
-// type AddEntry<
-//   E extends EntryListSpec,
-//   K extends keyof E,
-//   V extends PODValueType
-// > = Concrete<E & { [P in K]: { type: V } }>;
 
 type Evaluate<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
 
 type AddPOD<
-  PODs extends PODGroupPODs,
+  PODs extends NamedPODSpecs,
   N extends PODName,
   Spec extends PODSpec<EntryTypes, StatementMap>
 > = Evaluate<{
   [K in keyof PODs | N]: K extends N ? Spec : PODs[K & keyof PODs];
 }>;
 
-type PODGroupWithFirstPOD<
-  First extends PODSpec<EntryTypes, StatementMap>,
-  Rest extends PODGroupPODs
-> = {
-  firstPOD: First;
-} & Rest;
-
-class BasePODGroupSpecBuilder<P extends PODGroupPODs, S extends StatementMap> {
-  protected readonly spec: PODGroupSpec<P, S>;
-
-  protected constructor(spec: PODGroupSpec<P, S>) {
-    this.spec = spec;
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  public static create(): BasePODGroupSpecBuilder<{}, {}> {
-    return new BasePODGroupSpecBuilder({
-      pods: {},
-      statements: {}
-    });
-  }
-
-  public pod<
-    N extends PODName,
-    Spec extends PODSpec<EntryTypes, StatementMap>,
-    NewPods extends AddPOD<P, N, Spec>
-  >(name: N, spec: Spec): PODGroupSpecBuilder<NewPods, S> {
-    if (name in this.spec.pods) {
-      throw new Error(`POD "${name}" already exists`);
-    }
-
-    checkPODName(name);
-
-    return new PODGroupSpecBuilder({
-      ...this.spec,
-      pods: { ...this.spec.pods, [name]: spec } as unknown as NewPods
-    });
-  }
-}
-
+// TODO it's possible to create a PODGroupSpecBuilder with no PODs initially,
+// and this causes some issues for typing, because we can't assume that there
+// will be any PODs. The create/constructor should require at least one named
+// POD, which will ensure there is always one POD. Any attempt to remove the
+// final POD should fail.
+// Once fixed, we can add some extra type exclusions around statements which
+// refer to multiple POD entries, where the second entry cannot be the same as
+// the first.
 export class PODGroupSpecBuilder<
-  P extends PODGroupWithFirstPOD<
-    PODSpec<EntryTypes, StatementMap>,
-    PODGroupPODs
-  >,
+  P extends NamedPODSpecs,
   S extends StatementMap
-> extends BasePODGroupSpecBuilder<P, S> {
+> {
   readonly #spec: PODGroupSpec<P, S>;
 
-  constructor(spec: PODGroupSpec<P, S>) {
-    super(spec);
+  private constructor(spec: PODGroupSpec<P, S>) {
     this.#spec = spec;
   }
 
@@ -678,12 +619,8 @@ export class PODGroupSpecBuilder<
 
   public equalsEntry<
     N1 extends keyof AllPODEntries<P> & string,
-    N2 extends keyof EntriesOfType<
-      Evaluate<AllPODEntries<P>>,
-      EntryType<P, N1>
-    > &
-      string
-  >(name1: N1, name2: Exclude<N2, N1>): PODGroupSpecBuilder<P, S> {
+    N2 extends keyof EntriesOfType<AllPODEntries<P>, EntryType<P, N1>> & string
+  >(name1: N1, name2: N2): PODGroupSpecBuilder<P, S> {
     // Check that both entries exist
     const [pod1, entry1] = name1.split(".");
     const [pod2, entry2] = name2.split(".");
@@ -867,8 +804,8 @@ if (import.meta.vitest) {
     groupWithPod.equalsEntry("foo.my_num", "foo.my_other_num");
 
     // Now let's try to see what happens in equalsEntry
-    type T1 = Parameters<typeof groupWithPod.equalsEntry>[0]; // First parameter type
-    type T2 = Parameters<typeof groupWithPod.equalsEntry>[1]; // Second parameter type
+    type _T1 = Parameters<typeof groupWithPod.equalsEntry>[0]; // First parameter type
+    type _T2 = Parameters<typeof groupWithPod.equalsEntry>[1]; // Second parameter type
   });
 
   it("debug AllPODEntries types", () => {
@@ -878,12 +815,12 @@ if (import.meta.vitest) {
       .entry("my_other_string", "string")
       .entry("my_num", "int");
 
-    const groupWithPod = group.pod("foo", podBuilder.spec());
+    const _groupWithPod = group.pod("foo", podBuilder.spec());
 
-    type TestPods = ReturnType<typeof groupWithPod.spec>["pods"];
+    type TestPods = ReturnType<typeof _groupWithPod.spec>["pods"];
 
     // Verify type equivalence
-    type TestPodEntries = AllPODEntries<TestPods>;
+    type TestPodEntries = PodTest<TestPods>;
 
     // Check that entries are exactly the types we expect
     type Test1 = TestPodEntries["foo.my_string"] extends "string"
@@ -908,7 +845,7 @@ if (import.meta.vitest) {
   });
 }
 
-type PodTest<P extends PODGroupPODs> = {
+type PodTest<P extends NamedPODSpecs> = {
   [K in keyof P]: {
     [E in keyof (P[K]["entries"] & VirtualEntries) as `${K & string}.${E &
       string}`]: (P[K]["entries"] & VirtualEntries)[E];

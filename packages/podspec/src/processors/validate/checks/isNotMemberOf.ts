@@ -1,4 +1,3 @@
-import type { PODEntries } from "@pcd/pod";
 import {
   IssueCode,
   type ValidationBaseIssue,
@@ -6,17 +5,17 @@ import {
   type ValidationStatementNegativeResultIssue
 } from "../issues.js";
 import type { IsNotMemberOf } from "../../../builders/types/statements.js";
-import type { EntryTypes } from "../../../builders/types/entries.js";
 import { tupleToPODValueTypeValues, valueIsEqual } from "../utils.js";
+import type { EntrySource } from "../EntrySource.js";
 
 function validateIsNotMemberOfStatement(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   statement: IsNotMemberOf<any, string[]>,
   statementName: string,
   path: string[],
-  specEntries: EntryTypes
+  entrySource: EntrySource
 ): ValidationInvalidStatementIssue[] {
-  if (statement.entries.some((entry) => !(entry in specEntries))) {
+  if (statement.entries.some((entry) => !entrySource.getEntry(entry))) {
     return [
       {
         code: IssueCode.invalid_statement,
@@ -35,8 +34,7 @@ export function checkIsNotMemberOf(
   statement: IsNotMemberOf<any, string[]>,
   statementName: string,
   path: string[],
-  entries: PODEntries,
-  specEntries: EntryTypes,
+  entrySource: EntrySource,
   exitOnError: boolean
 ): ValidationBaseIssue[] {
   // TODO Move this to a pre-processing step
@@ -44,7 +42,7 @@ export function checkIsNotMemberOf(
     statement,
     statementName,
     path,
-    specEntries
+    entrySource
   );
 
   // Can't proceed if there are any issues with the statement
@@ -52,11 +50,15 @@ export function checkIsNotMemberOf(
     return issues;
   }
 
-  const tuple = statement.entries.map((entry) => entries[entry]?.value);
+  const tuple = statement.entries.map(
+    (entry) => entrySource.getEntry(entry)?.value
+  );
   // TODO Move this to a pre-processing step
   const tuplesToMatch = tupleToPODValueTypeValues(
     statement.isNotMemberOf,
-    statement.entries
+    statement.entries.map(
+      (entry) => entrySource.getEntryTypeFromSpec(entry) as string
+    )
   );
 
   let match = false;

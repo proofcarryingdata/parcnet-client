@@ -1,4 +1,3 @@
-import type { PODEntries } from "@pcd/pod";
 import type {
   ValidationBaseIssue,
   ValidationInvalidStatementIssue,
@@ -6,17 +5,17 @@ import type {
 } from "../issues.js";
 import { IssueCode } from "../issues.js";
 import type { IsMemberOf } from "../../../builders/types/statements.js";
-import type { EntryTypes } from "../../../builders/types/entries.js";
 import { tupleToPODValueTypeValues, valueIsEqual } from "../utils.js";
+import type { EntrySource } from "../EntrySource.js";
 
 function validateIsMemberOfStatement(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   statement: IsMemberOf<any, string[]>,
   statementName: string,
   path: string[],
-  specEntries: EntryTypes
+  entrySource: EntrySource
 ): ValidationInvalidStatementIssue[] {
-  if (statement.entries.some((entry) => !(entry in specEntries))) {
+  if (statement.entries.some((entry) => !entrySource.getEntry(entry))) {
     return [
       {
         code: IssueCode.invalid_statement,
@@ -35,8 +34,7 @@ export function checkIsMemberOf(
   statement: IsMemberOf<any, string[]>,
   statementName: string,
   path: string[],
-  podEntries: PODEntries,
-  specEntries: EntryTypes,
+  entrySource: EntrySource,
   exitOnError: boolean
 ): ValidationBaseIssue[] {
   // TODO Move this to a pre-processing step
@@ -44,19 +42,23 @@ export function checkIsMemberOf(
     statement,
     statementName,
     path,
-    specEntries
+    entrySource
   );
   if (issues.length > 0) {
     // Can't proceed if there are issues with the statement
     return issues;
   }
 
-  const tuple = statement.entries.map((entry) => podEntries[entry]?.value);
+  const tuple = statement.entries.map(
+    (entry) => entrySource.getEntry(entry)?.value
+  );
 
   // TODO Move this to a pre-processing step
   const tuplesToMatch = tupleToPODValueTypeValues(
     statement.isMemberOf,
-    statement.entries
+    statement.entries.map(
+      (entry) => entrySource.getEntryTypeFromSpec(entry) as string
+    )
   );
 
   let match = false;

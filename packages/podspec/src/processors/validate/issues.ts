@@ -4,10 +4,12 @@ import type { Statements } from "../../builders/types/statements.js";
 export const IssueCode = {
   type_mismatch: "type_mismatch",
   missing_entry: "missing_entry",
+  missing_pod: "missing_pod",
   invalid_entry_name: "invalid_entry_name",
   invalid_pod_value: "invalid_pod_value",
   invalid_statement: "invalid_statement",
   unexpected_input_entry: "unexpected_input_entry",
+  unexpected_input_pod: "unexpected_input_pod",
   statement_negative_result: "statement_negative_result"
 } as const;
 
@@ -41,6 +43,14 @@ export interface ValidationTypeMismatchIssue extends ValidationBaseIssue {
 export interface ValidationMissingEntryIssue extends ValidationBaseIssue {
   code: typeof IssueCode.missing_entry;
   key: string;
+}
+
+/**
+ * Issue that occurs when a pod is missing from a pod group.
+ */
+export interface ValidationMissingPodIssue extends ValidationBaseIssue {
+  code: typeof IssueCode.missing_pod;
+  podName: string;
 }
 
 /**
@@ -79,6 +89,15 @@ export interface ValidationUnexpectedInputEntryIssue
   extends ValidationBaseIssue {
   code: typeof IssueCode.unexpected_input_entry;
   key: string;
+}
+
+/**
+ * Issue that occurs when an unexpected pod is encountered.
+ * Only relevant for "strict" parsing modes.
+ */
+export interface ValidationUnexpectedInputPodIssue extends ValidationBaseIssue {
+  code: typeof IssueCode.unexpected_input_pod;
+  podName: string;
 }
 
 /**

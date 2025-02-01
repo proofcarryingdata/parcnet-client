@@ -43,16 +43,7 @@ export const assertPODSpec = (() => {
     input.isMemberOf.every(
       (elem: any) =>
         Array.isArray(elem) &&
-        elem.every(
-          (elem: any) =>
-            undefined !== elem &&
-            (null === elem ||
-              "string" === typeof elem ||
-              "bigint" === typeof elem ||
-              "boolean" === typeof elem ||
-              elem instanceof Uint8Array ||
-              elem instanceof Date)
-        )
+        elem.every((elem: any) => "string" === typeof elem)
     );
   const _io4 = (input: any): boolean =>
     Array.isArray(input.entries) &&
@@ -62,16 +53,7 @@ export const assertPODSpec = (() => {
     input.isNotMemberOf.every(
       (elem: any) =>
         Array.isArray(elem) &&
-        elem.every(
-          (elem: any) =>
-            undefined !== elem &&
-            (null === elem ||
-              "string" === typeof elem ||
-              "bigint" === typeof elem ||
-              "boolean" === typeof elem ||
-              elem instanceof Uint8Array ||
-              elem instanceof Date)
-        )
+        elem.every((elem: any) => "string" === typeof elem)
     );
   const _io5 = (input: any): boolean =>
     "string" === typeof input.entry &&
@@ -79,38 +61,48 @@ export const assertPODSpec = (() => {
     "object" === typeof input.inRange && null !== input.inRange &&
     _io6(input.inRange);
   const _io6 = (input: any): boolean =>
-    null !== input.min &&
-    undefined !== input.min &&
-    ("bigint" === typeof input.min || input.min instanceof Date) &&
-    null !== input.max && undefined !== input.max &&
-    ("bigint" === typeof input.max || input.max instanceof Date);
+    "string" === typeof input.min && "string" === typeof input.max;
   const _io7 = (input: any): boolean =>
     "string" === typeof input.entry &&
     "notInRange" === input.type &&
     "object" === typeof input.notInRange && null !== input.notInRange &&
-    _io8(input.notInRange);
+    _io6(input.notInRange);
   const _io8 = (input: any): boolean =>
-    null !== input.min &&
-    undefined !== input.min &&
-    ("bigint" === typeof input.min || input.min instanceof Date) &&
-    null !== input.max && undefined !== input.max &&
-    ("bigint" === typeof input.max || input.max instanceof Date);
-  const _io9 = (input: any): boolean =>
     "string" === typeof input.entry &&
     "equalsEntry" === input.type &&
-    "string" === typeof input.equalsEntry;
-  const _io10 = (input: any): boolean =>
+    "string" === typeof input.otherEntry;
+  const _io9 = (input: any): boolean =>
     "string" === typeof input.entry &&
     "notEqualsEntry" === input.type &&
-    "string" === typeof input.notEqualsEntry;
+    "string" === typeof input.otherEntry;
+  const _io10 = (input: any): boolean =>
+    "string" === typeof input.entry &&
+    "greaterThan" === input.type &&
+    "string" === typeof input.otherEntry;
+  const _io11 = (input: any): boolean =>
+    "string" === typeof input.entry &&
+    "greaterThanEq" === input.type &&
+    "string" === typeof input.otherEntry;
+  const _io12 = (input: any): boolean =>
+    "string" === typeof input.entry &&
+    "lessThan" === input.type &&
+    "string" === typeof input.otherEntry;
+  const _io13 = (input: any): boolean =>
+    "string" === typeof input.entry &&
+    "lessThanEq" === input.type &&
+    "string" === typeof input.otherEntry;
   const _iu0 = (input: any): any =>
     (() => {
       if ("isMemberOf" === input.type) return _io3(input);
       else if ("isNotMemberOf" === input.type) return _io4(input);
       else if ("inRange" === input.type) return _io5(input);
       else if ("notInRange" === input.type) return _io7(input);
-      else if ("equalsEntry" === input.type) return _io9(input);
-      else if ("notEqualsEntry" === input.type) return _io10(input);
+      else if ("lessThanEq" === input.type) return _io13(input);
+      else if ("lessThan" === input.type) return _io12(input);
+      else if ("greaterThanEq" === input.type) return _io11(input);
+      else if ("greaterThan" === input.type) return _io10(input);
+      else if ("notEqualsEntry" === input.type) return _io9(input);
+      else if ("equalsEntry" === input.type) return _io8(input);
       else return false;
     })();
   const _ao0 = (
@@ -222,7 +214,7 @@ export const assertPODSpec = (() => {
                   key
                 ),
               expected:
-                "(InRange<any, string> | IsMemberOf<any, Array<string>> | IsNotMemberOf<any, Array<string>> | NotInRange<any, string> | __type.o2 | __type.o3)",
+                "(EqualsEntry<any, string, string> | GreaterThan<any, string, string> | GreaterThanEq<any, string, string> | InRange<any, string> | IsMemberOf<any, Array<string>> | IsNotMemberOf<any, Array<string>> | LessThan<any, string, string> | LessThanEq<any, string, string> | NotEqualsEntry<any, string, string> | NotInRange<any, string>)",
               value: value
             },
             _errorFactory
@@ -245,7 +237,7 @@ export const assertPODSpec = (() => {
                 key
               ),
             expected:
-              "(InRange<any, string> | IsMemberOf<any, Array<string>> | IsNotMemberOf<any, Array<string>> | NotInRange<any, string> | __type.o2 | __type.o3)",
+              "(EqualsEntry<any, string, string> | GreaterThan<any, string, string> | GreaterThanEq<any, string, string> | InRange<any, string> | IsMemberOf<any, Array<string>> | IsNotMemberOf<any, Array<string>> | LessThan<any, string, string> | LessThanEq<any, string, string> | NotEqualsEntry<any, string, string> | NotInRange<any, string>)",
             value: value
           },
           _errorFactory
@@ -309,8 +301,7 @@ export const assertPODSpec = (() => {
         {
           method: "typia.createAssert",
           path: _path + ".isMemberOf",
-          expected:
-            "Array<Array<string | bigint | boolean | Uint8Array | Date | null>>",
+          expected: "Array<Array<string>>",
           value: input.isMemberOf
         },
         _errorFactory
@@ -323,53 +314,32 @@ export const assertPODSpec = (() => {
               {
                 method: "typia.createAssert",
                 path: _path + ".isMemberOf[" + _index8 + "]",
-                expected:
-                  "Array<string | bigint | boolean | Uint8Array | Date | null>",
+                expected: "Array<string>",
                 value: elem
               },
               _errorFactory
             )) &&
             elem.every(
               (elem: any, _index9: number) =>
-                (undefined !== elem ||
-                  __typia_transform__assertGuard._assertGuard(
-                    _exceptionable,
-                    {
-                      method: "typia.createAssert",
-                      path:
-                        _path + ".isMemberOf[" + _index8 + "][" + _index9 + "]",
-                      expected:
-                        "(Date | Uint8Array | bigint | boolean | null | string)",
-                      value: elem
-                    },
-                    _errorFactory
-                  )) &&
-                (null === elem ||
-                  "string" === typeof elem ||
-                  "bigint" === typeof elem ||
-                  "boolean" === typeof elem ||
-                  elem instanceof Uint8Array ||
-                  elem instanceof Date ||
-                  __typia_transform__assertGuard._assertGuard(
-                    _exceptionable,
-                    {
-                      method: "typia.createAssert",
-                      path:
-                        _path + ".isMemberOf[" + _index8 + "][" + _index9 + "]",
-                      expected:
-                        "(Date | Uint8Array | bigint | boolean | null | string)",
-                      value: elem
-                    },
-                    _errorFactory
-                  ))
+                "string" === typeof elem ||
+                __typia_transform__assertGuard._assertGuard(
+                  _exceptionable,
+                  {
+                    method: "typia.createAssert",
+                    path:
+                      _path + ".isMemberOf[" + _index8 + "][" + _index9 + "]",
+                    expected: "string",
+                    value: elem
+                  },
+                  _errorFactory
+                )
             )) ||
           __typia_transform__assertGuard._assertGuard(
             _exceptionable,
             {
               method: "typia.createAssert",
               path: _path + ".isMemberOf[" + _index8 + "]",
-              expected:
-                "Array<string | bigint | boolean | Uint8Array | Date | null>",
+              expected: "Array<string>",
               value: elem
             },
             _errorFactory
@@ -380,8 +350,7 @@ export const assertPODSpec = (() => {
         {
           method: "typia.createAssert",
           path: _path + ".isMemberOf",
-          expected:
-            "Array<Array<string | bigint | boolean | Uint8Array | Date | null>>",
+          expected: "Array<Array<string>>",
           value: input.isMemberOf
         },
         _errorFactory
@@ -443,8 +412,7 @@ export const assertPODSpec = (() => {
         {
           method: "typia.createAssert",
           path: _path + ".isNotMemberOf",
-          expected:
-            "Array<Array<string | bigint | boolean | Uint8Array | Date | null>>",
+          expected: "Array<Array<string>>",
           value: input.isNotMemberOf
         },
         _errorFactory
@@ -457,63 +425,37 @@ export const assertPODSpec = (() => {
               {
                 method: "typia.createAssert",
                 path: _path + ".isNotMemberOf[" + _index11 + "]",
-                expected:
-                  "Array<string | bigint | boolean | Uint8Array | Date | null>",
+                expected: "Array<string>",
                 value: elem
               },
               _errorFactory
             )) &&
             elem.every(
               (elem: any, _index12: number) =>
-                (undefined !== elem ||
-                  __typia_transform__assertGuard._assertGuard(
-                    _exceptionable,
-                    {
-                      method: "typia.createAssert",
-                      path:
-                        _path +
-                        ".isNotMemberOf[" +
-                        _index11 +
-                        "][" +
-                        _index12 +
-                        "]",
-                      expected:
-                        "(Date | Uint8Array | bigint | boolean | null | string)",
-                      value: elem
-                    },
-                    _errorFactory
-                  )) &&
-                (null === elem ||
-                  "string" === typeof elem ||
-                  "bigint" === typeof elem ||
-                  "boolean" === typeof elem ||
-                  elem instanceof Uint8Array ||
-                  elem instanceof Date ||
-                  __typia_transform__assertGuard._assertGuard(
-                    _exceptionable,
-                    {
-                      method: "typia.createAssert",
-                      path:
-                        _path +
-                        ".isNotMemberOf[" +
-                        _index11 +
-                        "][" +
-                        _index12 +
-                        "]",
-                      expected:
-                        "(Date | Uint8Array | bigint | boolean | null | string)",
-                      value: elem
-                    },
-                    _errorFactory
-                  ))
+                "string" === typeof elem ||
+                __typia_transform__assertGuard._assertGuard(
+                  _exceptionable,
+                  {
+                    method: "typia.createAssert",
+                    path:
+                      _path +
+                      ".isNotMemberOf[" +
+                      _index11 +
+                      "][" +
+                      _index12 +
+                      "]",
+                    expected: "string",
+                    value: elem
+                  },
+                  _errorFactory
+                )
             )) ||
           __typia_transform__assertGuard._assertGuard(
             _exceptionable,
             {
               method: "typia.createAssert",
               path: _path + ".isNotMemberOf[" + _index11 + "]",
-              expected:
-                "Array<string | bigint | boolean | Uint8Array | Date | null>",
+              expected: "Array<string>",
               value: elem
             },
             _errorFactory
@@ -524,8 +466,7 @@ export const assertPODSpec = (() => {
         {
           method: "typia.createAssert",
           path: _path + ".isNotMemberOf",
-          expected:
-            "Array<Array<string | bigint | boolean | Uint8Array | Date | null>>",
+          expected: "Array<Array<string>>",
           value: input.isNotMemberOf
         },
         _errorFactory
@@ -563,7 +504,7 @@ export const assertPODSpec = (() => {
         {
           method: "typia.createAssert",
           path: _path + ".inRange",
-          expected: "__type",
+          expected: "RangePersistent",
           value: input.inRange
         },
         _errorFactory
@@ -574,7 +515,7 @@ export const assertPODSpec = (() => {
         {
           method: "typia.createAssert",
           path: _path + ".inRange",
-          expected: "__type",
+          expected: "RangePersistent",
           value: input.inRange
         },
         _errorFactory
@@ -584,70 +525,24 @@ export const assertPODSpec = (() => {
     _path: string,
     _exceptionable: boolean = true
   ): boolean =>
-    (null !== input.min ||
+    ("string" === typeof input.min ||
       __typia_transform__assertGuard._assertGuard(
         _exceptionable,
         {
           method: "typia.createAssert",
           path: _path + ".min",
-          expected: "(Date | bigint)",
+          expected: "string",
           value: input.min
         },
         _errorFactory
       )) &&
-    (undefined !== input.min ||
-      __typia_transform__assertGuard._assertGuard(
-        _exceptionable,
-        {
-          method: "typia.createAssert",
-          path: _path + ".min",
-          expected: "(Date | bigint)",
-          value: input.min
-        },
-        _errorFactory
-      )) &&
-    ("bigint" === typeof input.min ||
-      input.min instanceof Date ||
-      __typia_transform__assertGuard._assertGuard(
-        _exceptionable,
-        {
-          method: "typia.createAssert",
-          path: _path + ".min",
-          expected: "(Date | bigint)",
-          value: input.min
-        },
-        _errorFactory
-      )) &&
-    (null !== input.max ||
+    ("string" === typeof input.max ||
       __typia_transform__assertGuard._assertGuard(
         _exceptionable,
         {
           method: "typia.createAssert",
           path: _path + ".max",
-          expected: "(Date | bigint)",
-          value: input.max
-        },
-        _errorFactory
-      )) &&
-      (undefined !== input.max ||
-        __typia_transform__assertGuard._assertGuard(
-          _exceptionable,
-          {
-            method: "typia.createAssert",
-            path: _path + ".max",
-            expected: "(Date | bigint)",
-            value: input.max
-          },
-          _errorFactory
-        )) &&
-    ("bigint" === typeof input.max ||
-      input.max instanceof Date ||
-      __typia_transform__assertGuard._assertGuard(
-        _exceptionable,
-        {
-          method: "typia.createAssert",
-          path: _path + ".max",
-          expected: "(Date | bigint)",
+          expected: "string",
           value: input.max
         },
         _errorFactory
@@ -685,96 +580,23 @@ export const assertPODSpec = (() => {
         {
           method: "typia.createAssert",
           path: _path + ".notInRange",
-          expected: "__type.o1",
+          expected: "RangePersistent",
           value: input.notInRange
         },
         _errorFactory
       )) &&
-      _ao8(input.notInRange, _path + ".notInRange", true && _exceptionable)) ||
+      _ao6(input.notInRange, _path + ".notInRange", true && _exceptionable)) ||
       __typia_transform__assertGuard._assertGuard(
         _exceptionable,
         {
           method: "typia.createAssert",
           path: _path + ".notInRange",
-          expected: "__type.o1",
+          expected: "RangePersistent",
           value: input.notInRange
         },
         _errorFactory
       ));
   const _ao8 = (
-    input: any,
-    _path: string,
-    _exceptionable: boolean = true
-  ): boolean =>
-    (null !== input.min ||
-      __typia_transform__assertGuard._assertGuard(
-        _exceptionable,
-        {
-          method: "typia.createAssert",
-          path: _path + ".min",
-          expected: "(Date | bigint)",
-          value: input.min
-        },
-        _errorFactory
-      )) &&
-    (undefined !== input.min ||
-      __typia_transform__assertGuard._assertGuard(
-        _exceptionable,
-        {
-          method: "typia.createAssert",
-          path: _path + ".min",
-          expected: "(Date | bigint)",
-          value: input.min
-        },
-        _errorFactory
-      )) &&
-    ("bigint" === typeof input.min ||
-      input.min instanceof Date ||
-      __typia_transform__assertGuard._assertGuard(
-        _exceptionable,
-        {
-          method: "typia.createAssert",
-          path: _path + ".min",
-          expected: "(Date | bigint)",
-          value: input.min
-        },
-        _errorFactory
-      )) &&
-    (null !== input.max ||
-      __typia_transform__assertGuard._assertGuard(
-        _exceptionable,
-        {
-          method: "typia.createAssert",
-          path: _path + ".max",
-          expected: "(Date | bigint)",
-          value: input.max
-        },
-        _errorFactory
-      )) &&
-      (undefined !== input.max ||
-        __typia_transform__assertGuard._assertGuard(
-          _exceptionable,
-          {
-            method: "typia.createAssert",
-            path: _path + ".max",
-            expected: "(Date | bigint)",
-            value: input.max
-          },
-          _errorFactory
-        )) &&
-    ("bigint" === typeof input.max ||
-      input.max instanceof Date ||
-      __typia_transform__assertGuard._assertGuard(
-        _exceptionable,
-        {
-          method: "typia.createAssert",
-          path: _path + ".max",
-          expected: "(Date | bigint)",
-          value: input.max
-        },
-        _errorFactory
-      ));
-  const _ao9 = (
     input: any,
     _path: string,
     _exceptionable: boolean = true
@@ -801,18 +623,18 @@ export const assertPODSpec = (() => {
         },
         _errorFactory
       )) &&
-    ("string" === typeof input.equalsEntry ||
+    ("string" === typeof input.otherEntry ||
       __typia_transform__assertGuard._assertGuard(
         _exceptionable,
         {
           method: "typia.createAssert",
-          path: _path + ".equalsEntry",
+          path: _path + ".otherEntry",
           expected: "string",
-          value: input.equalsEntry
+          value: input.otherEntry
         },
         _errorFactory
       ));
-  const _ao10 = (
+  const _ao9 = (
     input: any,
     _path: string,
     _exceptionable: boolean = true
@@ -839,14 +661,166 @@ export const assertPODSpec = (() => {
         },
         _errorFactory
       )) &&
-    ("string" === typeof input.notEqualsEntry ||
+    ("string" === typeof input.otherEntry ||
       __typia_transform__assertGuard._assertGuard(
         _exceptionable,
         {
           method: "typia.createAssert",
-          path: _path + ".notEqualsEntry",
+          path: _path + ".otherEntry",
           expected: "string",
-          value: input.notEqualsEntry
+          value: input.otherEntry
+        },
+        _errorFactory
+      ));
+  const _ao10 = (
+    input: any,
+    _path: string,
+    _exceptionable: boolean = true
+  ): boolean =>
+    ("string" === typeof input.entry ||
+      __typia_transform__assertGuard._assertGuard(
+        _exceptionable,
+        {
+          method: "typia.createAssert",
+          path: _path + ".entry",
+          expected: "string",
+          value: input.entry
+        },
+        _errorFactory
+      )) &&
+    ("greaterThan" === input.type ||
+      __typia_transform__assertGuard._assertGuard(
+        _exceptionable,
+        {
+          method: "typia.createAssert",
+          path: _path + ".type",
+          expected: '"greaterThan"',
+          value: input.type
+        },
+        _errorFactory
+      )) &&
+    ("string" === typeof input.otherEntry ||
+      __typia_transform__assertGuard._assertGuard(
+        _exceptionable,
+        {
+          method: "typia.createAssert",
+          path: _path + ".otherEntry",
+          expected: "string",
+          value: input.otherEntry
+        },
+        _errorFactory
+      ));
+  const _ao11 = (
+    input: any,
+    _path: string,
+    _exceptionable: boolean = true
+  ): boolean =>
+    ("string" === typeof input.entry ||
+      __typia_transform__assertGuard._assertGuard(
+        _exceptionable,
+        {
+          method: "typia.createAssert",
+          path: _path + ".entry",
+          expected: "string",
+          value: input.entry
+        },
+        _errorFactory
+      )) &&
+    ("greaterThanEq" === input.type ||
+      __typia_transform__assertGuard._assertGuard(
+        _exceptionable,
+        {
+          method: "typia.createAssert",
+          path: _path + ".type",
+          expected: '"greaterThanEq"',
+          value: input.type
+        },
+        _errorFactory
+      )) &&
+    ("string" === typeof input.otherEntry ||
+      __typia_transform__assertGuard._assertGuard(
+        _exceptionable,
+        {
+          method: "typia.createAssert",
+          path: _path + ".otherEntry",
+          expected: "string",
+          value: input.otherEntry
+        },
+        _errorFactory
+      ));
+  const _ao12 = (
+    input: any,
+    _path: string,
+    _exceptionable: boolean = true
+  ): boolean =>
+    ("string" === typeof input.entry ||
+      __typia_transform__assertGuard._assertGuard(
+        _exceptionable,
+        {
+          method: "typia.createAssert",
+          path: _path + ".entry",
+          expected: "string",
+          value: input.entry
+        },
+        _errorFactory
+      )) &&
+    ("lessThan" === input.type ||
+      __typia_transform__assertGuard._assertGuard(
+        _exceptionable,
+        {
+          method: "typia.createAssert",
+          path: _path + ".type",
+          expected: '"lessThan"',
+          value: input.type
+        },
+        _errorFactory
+      )) &&
+    ("string" === typeof input.otherEntry ||
+      __typia_transform__assertGuard._assertGuard(
+        _exceptionable,
+        {
+          method: "typia.createAssert",
+          path: _path + ".otherEntry",
+          expected: "string",
+          value: input.otherEntry
+        },
+        _errorFactory
+      ));
+  const _ao13 = (
+    input: any,
+    _path: string,
+    _exceptionable: boolean = true
+  ): boolean =>
+    ("string" === typeof input.entry ||
+      __typia_transform__assertGuard._assertGuard(
+        _exceptionable,
+        {
+          method: "typia.createAssert",
+          path: _path + ".entry",
+          expected: "string",
+          value: input.entry
+        },
+        _errorFactory
+      )) &&
+    ("lessThanEq" === input.type ||
+      __typia_transform__assertGuard._assertGuard(
+        _exceptionable,
+        {
+          method: "typia.createAssert",
+          path: _path + ".type",
+          expected: '"lessThanEq"',
+          value: input.type
+        },
+        _errorFactory
+      )) &&
+    ("string" === typeof input.otherEntry ||
+      __typia_transform__assertGuard._assertGuard(
+        _exceptionable,
+        {
+          method: "typia.createAssert",
+          path: _path + ".otherEntry",
+          expected: "string",
+          value: input.otherEntry
         },
         _errorFactory
       ));
@@ -864,10 +838,18 @@ export const assertPODSpec = (() => {
         return _ao5(input, _path, true && _exceptionable);
       else if ("notInRange" === input.type)
         return _ao7(input, _path, true && _exceptionable);
-      else if ("equalsEntry" === input.type)
-        return _ao9(input, _path, true && _exceptionable);
-      else if ("notEqualsEntry" === input.type)
+      else if ("lessThanEq" === input.type)
+        return _ao13(input, _path, true && _exceptionable);
+      else if ("lessThan" === input.type)
+        return _ao12(input, _path, true && _exceptionable);
+      else if ("greaterThanEq" === input.type)
+        return _ao11(input, _path, true && _exceptionable);
+      else if ("greaterThan" === input.type)
         return _ao10(input, _path, true && _exceptionable);
+      else if ("notEqualsEntry" === input.type)
+        return _ao9(input, _path, true && _exceptionable);
+      else if ("equalsEntry" === input.type)
+        return _ao8(input, _path, true && _exceptionable);
       else
         return __typia_transform__assertGuard._assertGuard(
           _exceptionable,
@@ -875,7 +857,7 @@ export const assertPODSpec = (() => {
             method: "typia.createAssert",
             path: _path,
             expected:
-              "(IsMemberOf<any, Array<string>> | IsNotMemberOf<any, Array<string>> | InRange<any, string> | NotInRange<any, string> | __type.o2 | __type.o3)",
+              "(IsMemberOf<any, Array<string>> | IsNotMemberOf<any, Array<string>> | InRange<any, string> | NotInRange<any, string> | LessThanEq<any, string, string> | LessThan<any, string, string> | GreaterThanEq<any, string, string> | GreaterThan<any, string, string> | NotEqualsEntry<any, string, string> | EqualsEntry<any, string, string>)",
             value: input
           },
           _errorFactory

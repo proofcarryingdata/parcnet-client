@@ -4,22 +4,23 @@ import {
   type PODValue,
   type PODContent,
   type PODStringValue,
-  type PODName
+  type PODName,
+  type PODIntValue
 } from "@pcd/pod";
 import { PODSpecBuilder, type PODSpec } from "../builders/pod.js";
 import type { EntryTypes } from "../builders/types/entries.js";
 import type { StatementMap } from "../builders/types/statements.js";
 import type { ValidateResult } from "./validate/types.js";
 import { FAILURE, SUCCESS } from "./validate/result.js";
-import {
-  IssueCode,
-  type ValidationMissingEntryIssue,
-  type ValidationTypeMismatchIssue,
-  type ValidationUnexpectedInputEntryIssue
-} from "./validate/issues.js";
 import { checkIsMemberOf } from "./validate/checks/isMemberOf.js";
 import { checkIsNotMemberOf } from "./validate/checks/isNotMemberOf.js";
 import { assertPODSpec } from "../generated/podspec.js";
+import { EntrySourcePodSpec } from "./validate/EntrySource.js";
+import { assert } from "vitest";
+import { checkInRange } from "./validate/checks/inRange.js";
+import { checkNotInRange } from "./validate/checks/notInRange.js";
+import { checkEqualsEntry } from "./validate/checks/equalsEntry.js";
+import { checkNotEqualsEntry } from "./validate/checks/notEqualsEntry.js";
 
 /**
  @TOOO
@@ -51,7 +52,7 @@ type PODEntriesFromEntryTypes<E extends EntryTypes> = {
   [K in keyof E]: Extract<PODValue, { type: E[K] }>;
 };
 
-interface ValidateOptions {
+export interface ValidateOptions {
   /**
    * If true, the validation will exit as soon as the first error is encountered.
    */
@@ -128,7 +129,7 @@ export function validatePOD<E extends EntryTypes, S extends StatementMap>(
     // If we haven't seen this spec before, we need to validate it
     try {
       assertPODSpec(spec);
-
+      // TODO check statement configuration
       // If we successfully validated the spec, we can cache the result
       SpecValidatorState.set(spec, true);
     } catch (e) {
@@ -137,49 +138,16 @@ export function validatePOD<E extends EntryTypes, S extends StatementMap>(
     }
   }
 
-  const podEntries = pod.content.asEntries();
-
   const issues = [];
   const path: string[] = [];
 
-  for (const [key, entryType] of Object.entries(spec.entries)) {
-    if (!(key in podEntries)) {
-      const issue = {
-        code: IssueCode.missing_entry,
-        path: [...path, key],
-        key
-      } satisfies ValidationMissingEntryIssue;
-      if (options.strict) {
-        return FAILURE([issue]);
-      } else {
-        issues.push(issue);
-      }
-    }
-    if (podEntries[key]?.type !== entryType) {
-      const issue = {
-        code: IssueCode.type_mismatch,
-        path: [...path, key],
-        expectedType: entryType
-      } satisfies ValidationTypeMismatchIssue;
-      if (options.strict) {
-        return FAILURE([issue]);
-      } else {
-        issues.push(issue);
-      }
-    }
-  }
+  const entrySource = new EntrySourcePodSpec(spec, pod);
 
-  if (options.strict) {
-    for (const key in podEntries) {
-      if (!(key in spec.entries)) {
-        const issue = {
-          code: IssueCode.unexpected_input_entry,
-          path: [...path, key],
-          key
-        } satisfies ValidationUnexpectedInputEntryIssue;
-        return FAILURE([issue]);
-      }
-    }
+  issues.push(...entrySource.audit(path, options));
+  if (issues.length > 0) {
+    // If we have missing, malformed, or unexpected entries, we should return
+    // before trying to validate the statements.
+    return FAILURE(issues);
   }
 
   for (const [key, statement] of Object.entries(spec.statements)) {
@@ -190,8 +158,7 @@ export function validatePOD<E extends EntryTypes, S extends StatementMap>(
             statement,
             key,
             path,
-            podEntries,
-            spec.entries,
+            entrySource,
             options.exitOnError ?? false
           )
         );
@@ -202,12 +169,56 @@ export function validatePOD<E extends EntryTypes, S extends StatementMap>(
             statement,
             key,
             path,
-            podEntries,
-            spec.entries,
+            entrySource,
             options.exitOnError ?? false
           )
         );
         break;
+      case "inRange":
+        issues.push(
+          ...checkInRange(
+            statement,
+            key,
+            path,
+            entrySource,
+            options.exitOnError ?? false
+          )
+        );
+        break;
+      case "notInRange":
+        issues.push(
+          ...checkNotInRange(
+            statement,
+            key,
+            path,
+            entrySource,
+            options.exitOnError ?? false
+          )
+        );
+        break;
+      case "equalsEntry":
+        issues.push(
+          ...checkEqualsEntry(
+            statement,
+            key,
+            path,
+            entrySource,
+            options.exitOnError ?? false
+          )
+        );
+        break;
+      case "notEqualsEntry":
+        issues.push(
+          ...checkNotEqualsEntry(
+            statement,
+            key,
+            path,
+            entrySource,
+            options.exitOnError ?? false
+          )
+        );
+        break;
+
       default:
         // prettier-ignore
         statement.type satisfies never;
@@ -232,7 +243,10 @@ if (import.meta.vitest) {
   const signPOD = (entries: PODEntries) => POD.sign(entries, privKey);
 
   test("validatePOD", () => {
-    const myPOD = signPOD({ foo: { type: "string", value: "foo" } });
+    const myPOD = signPOD({
+      foo: { type: "string", value: "foo" },
+      num: { type: "int", value: 50n }
+    });
     const myPodSpecBuilder = PODSpecBuilder.create()
       .entry("foo", "string")
       .isMemberOf(["foo"], ["foo", "bar"]);
@@ -267,5 +281,19 @@ if (import.meta.vitest) {
         secondBuilder.omitStatements(["foo_isMemberOf_1"]).spec()
       ).isValid
     ).toBe(true);
+
+    {
+      const result = validatePOD(
+        myPOD,
+        secondBuilder
+          .omitStatements(["foo_isMemberOf_1"])
+          .entry("num", "int")
+          .inRange("num", { min: 0n, max: 100n })
+          .spec()
+      );
+      assert(result.isValid);
+      const pod = result.value;
+      pod.content.asEntries().num satisfies PODIntValue;
+    }
   });
 }
