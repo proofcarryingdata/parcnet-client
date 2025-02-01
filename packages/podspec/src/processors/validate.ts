@@ -12,15 +12,19 @@ import type { EntryTypes } from "../builders/types/entries.js";
 import type { StatementMap } from "../builders/types/statements.js";
 import type { ValidateResult } from "./validate/types.js";
 import { FAILURE, SUCCESS } from "./validate/result.js";
-import { checkIsMemberOf } from "./validate/checks/isMemberOf.js";
-import { checkIsNotMemberOf } from "./validate/checks/isNotMemberOf.js";
+import { checkIsMemberOf } from "./validate/checks/checkIsMemberOf.js";
+import { checkIsNotMemberOf } from "./validate/checks/checkIsNotMemberOf.js";
 import { assertPODSpec } from "../generated/podspec.js";
 import { EntrySourcePodSpec } from "./validate/EntrySource.js";
 import { assert } from "vitest";
-import { checkInRange } from "./validate/checks/inRange.js";
-import { checkNotInRange } from "./validate/checks/notInRange.js";
-import { checkEqualsEntry } from "./validate/checks/equalsEntry.js";
-import { checkNotEqualsEntry } from "./validate/checks/notEqualsEntry.js";
+import { checkInRange } from "./validate/checks/checkInRange.js";
+import { checkNotInRange } from "./validate/checks/checkNotInRange.js";
+import { checkEqualsEntry } from "./validate/checks/checkEqualsEntry.js";
+import { checkNotEqualsEntry } from "./validate/checks/checkNotEqualsEntry.js";
+import { checkGreaterThan } from "./validate/checks/checkGreaterThan.js";
+import { checkGreaterThanEq } from "./validate/checks/checkGreaterThanEq.js";
+import { checkLessThan } from "./validate/checks/checkLessThan.js";
+import { checkLessThanEq } from "./validate/checks/checkLessThanEq.js";
 
 /**
  @TOOO
@@ -79,7 +83,7 @@ interface PODValidator<E extends EntryTypes> {
   strictAssert(pod: POD): asserts pod is StrongPOD<PODEntriesFromEntryTypes<E>>;
 }
 
-function validate<E extends EntryTypes, S extends StatementMap>(
+export function validate<E extends EntryTypes, S extends StatementMap>(
   spec: PODSpec<E, S>
 ): PODValidator<E> {
   // @TODO maybe typia's clone is better
@@ -218,11 +222,53 @@ export function validatePOD<E extends EntryTypes, S extends StatementMap>(
           )
         );
         break;
-
+      case "greaterThan":
+        issues.push(
+          ...checkGreaterThan(
+            statement,
+            key,
+            path,
+            entrySource,
+            options.exitOnError ?? false
+          )
+        );
+        break;
+      case "greaterThanEq":
+        issues.push(
+          ...checkGreaterThanEq(
+            statement,
+            key,
+            path,
+            entrySource,
+            options.exitOnError ?? false
+          )
+        );
+        break;
+      case "lessThan":
+        issues.push(
+          ...checkLessThan(
+            statement,
+            key,
+            path,
+            entrySource,
+            options.exitOnError ?? false
+          )
+        );
+        break;
+      case "lessThanEq":
+        issues.push(
+          ...checkLessThanEq(
+            statement,
+            key,
+            path,
+            entrySource,
+            options.exitOnError ?? false
+          )
+        );
+        break;
       default:
         // prettier-ignore
-        statement.type satisfies never;
-      // maybe throw an exception here
+        statement satisfies never;
     }
     if (options.exitOnError && issues.length > 0) {
       return FAILURE(issues);

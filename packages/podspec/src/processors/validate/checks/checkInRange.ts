@@ -18,19 +18,18 @@ export function checkInRange(
 ): ValidationBaseIssue[] {
   const entryName = statement.entry;
   const entry = entrySource.getEntry(entryName);
+  const issues = [];
 
   // TODO need an issue type for statement referring to a non-existent entry
   // or entry of the wrong type
   if (entry === undefined) {
-    const issues = [
-      {
-        code: IssueCode.invalid_statement,
-        statementName: statementName,
-        statementType: statement.type,
-        entries: [entryName],
-        path: [...path, statementName]
-      } satisfies ValidationInvalidStatementIssue
-    ];
+    issues.push({
+      code: IssueCode.invalid_statement,
+      statementName: statementName,
+      statementType: statement.type,
+      entries: [entryName],
+      path: [...path, statementName]
+    } satisfies ValidationInvalidStatementIssue);
     return issues;
   }
 
@@ -55,7 +54,14 @@ export function checkInRange(
         } satisfies ValidationStatementNegativeResultIssue as ValidationBaseIssue
       ];
     }
+  } else {
+    issues.push({
+      code: IssueCode.invalid_statement,
+      statementName: statementName,
+      statementType: statement.type,
+      entries: [entryName],
+      path: [...path, statementName]
+    } satisfies ValidationInvalidStatementIssue);
   }
-
-  return [];
+  return issues;
 }
