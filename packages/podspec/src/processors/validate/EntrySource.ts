@@ -1,18 +1,18 @@
 import type { POD, PODEntries, PODName, PODValue } from "@pcd/pod";
+import type { NamedPODSpecs, PODGroupSpec } from "../../builders/group.js";
 import type { PODSpec } from "../../builders/pod.js";
 import type { EntryTypes } from "../../builders/types/entries.js";
 import type { StatementMap } from "../../builders/types/statements.js";
-import type { NamedPODSpecs, PODGroupSpec } from "../../builders/group.js";
+import type { ValidateOptions } from "../validate.js";
 import {
+  IssueCode,
   type ValidationBaseIssue,
   type ValidationMissingEntryIssue,
   type ValidationMissingPodIssue,
   type ValidationTypeMismatchIssue,
   type ValidationUnexpectedInputEntryIssue,
   type ValidationUnexpectedInputPodIssue,
-  IssueCode,
 } from "./issues.js";
-import type { ValidateOptions } from "../validate.js";
 
 export interface EntrySource {
   getEntry(entryName: string): PODValue | undefined;
@@ -29,7 +29,7 @@ function auditEntries(
   const issues = [];
 
   for (const [key, entryType] of Object.entries(spec.entries)) {
-    if (!(key in podEntries)) {
+    if (!Object.prototype.hasOwnProperty.call(podEntries, key)) {
       issues.push({
         code: IssueCode.missing_entry,
         path: [...path, key],
@@ -52,8 +52,8 @@ function auditEntries(
   }
 
   if (strict) {
-    for (const key in podEntries) {
-      if (!(key in spec.entries)) {
+    for (const key of Object.keys(podEntries)) {
+      if (!Object.prototype.hasOwnProperty.call(spec.entries, key)) {
         issues.push({
           code: IssueCode.unexpected_input_entry,
           path: [...path, key],
@@ -151,7 +151,9 @@ export class EntrySourcePodGroupSpec implements EntrySource {
 
     if (options.strict) {
       for (const podName of Object.keys(this.pods)) {
-        if (!(podName in this.podGroupSpec.pods)) {
+        if (
+          !Object.prototype.hasOwnProperty.call(this.podGroupSpec.pods, podName)
+        ) {
           issues.push({
             code: IssueCode.unexpected_input_pod,
             path: [...path, podName],

@@ -19,37 +19,37 @@ export default tseslint.config(
       "**/vite.config.ts",
       "**/vitest.workspace.ts",
       "**/tailwind.config.ts",
-      "**/tsup.config.ts"
-    ] // global ignore with single ignore key
+      "**/tsup.config.ts",
+    ], // global ignore with single ignore key
   },
   {
     languageOptions: {
       parserOptions: {
-        projectService: true
-      }
-    }
+        projectService: true,
+      },
+    },
   },
   {
     files: ["**/*.js", "**/*.mjs"],
-    extends: [tseslint.configs.disableTypeChecked]
+    extends: [tseslint.configs.disableTypeChecked],
   },
   {
     plugins: {
       "chai-friendly": pluginChaiFriendly,
       "react-hooks": hooksPlugin,
       turbo: eslintPluginTurbo,
-      import: eslintPluginImport
+      import: eslintPluginImport,
     },
     rules: {
       ...hooksPlugin.configs.recommended.rules,
-      "turbo/no-undeclared-env-vars": "error"
-    }
+      "turbo/no-undeclared-env-vars": "error",
+    },
   },
   {
     rules: {
-      "import/extensions": ["error", "always"]
+      "import/extensions": ["error", "always"],
     },
-    files: ["./packages/**"]
+    files: ["./packages/**"],
   },
   {
     rules: {
@@ -63,8 +63,8 @@ export default tseslint.config(
           argsIgnorePattern: "^_",
           varsIgnorePattern: "^_",
           destructuredArrayIgnorePattern: "^_",
-          caughtErrorsIgnorePattern: "^_"
-        }
+          caughtErrorsIgnorePattern: "^_",
+        },
       ],
       "no-case-declarations": "off",
       "react-hooks/rules-of-hooks": "error",
@@ -75,7 +75,9 @@ export default tseslint.config(
       "@typescript-eslint/consistent-type-imports": "error",
       "@typescript-eslint/no-import-type-side-effects": "error",
       "no-unexpected-multiline": "off",
-      "no-restricted-globals": ["error", "origin"]
-    }
+      "no-restricted-globals": ["error", "origin"],
+      "no-restricted-syntax": ["error", "BinaryExpression[operator='in']"],
+      "guard-for-in": "error",
+    },
   }
 );

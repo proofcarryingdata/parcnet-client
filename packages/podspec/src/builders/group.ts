@@ -1,40 +1,40 @@
 import {
-  checkPODName,
+  type PODName,
   POD_DATE_MAX,
   POD_DATE_MIN,
   POD_INT_MAX,
   POD_INT_MIN,
-  type PODName,
+  checkPODName,
 } from "@pcd/pod";
-import type {
-  EntryTypes,
-  VirtualEntries,
-  EntryKeys,
-  PODValueTypeFromTypeName,
-  PODValueTupleForNamedEntries,
-  PODValueType,
-  EntriesOfType,
-} from "./types/entries.js";
-import type {
-  StatementMap,
-  IsMemberOf,
-  IsNotMemberOf,
-  InRange,
-  NotInRange,
-  EqualsEntry,
-  NotEqualsEntry,
-  GreaterThan,
-  GreaterThanEq,
-  LessThan,
-  LessThanEq,
-  SupportsRangeChecks,
-} from "./types/statements.js";
+import { type PODSpec, virtualEntries } from "./pod.js";
 import {
   convertValuesToStringTuples,
   supportsRangeChecks,
   validateRange,
 } from "./shared.js";
-import { virtualEntries, type PODSpec } from "./pod.js";
+import type {
+  EntriesOfType,
+  EntryKeys,
+  EntryTypes,
+  PODValueTupleForNamedEntries,
+  PODValueType,
+  PODValueTypeFromTypeName,
+  VirtualEntries,
+} from "./types/entries.js";
+import type {
+  EqualsEntry,
+  GreaterThan,
+  GreaterThanEq,
+  InRange,
+  IsMemberOf,
+  IsNotMemberOf,
+  LessThan,
+  LessThanEq,
+  NotEqualsEntry,
+  NotInRange,
+  StatementMap,
+  SupportsRangeChecks,
+} from "./types/statements.js";
 
 export type NamedPODSpecs = Record<PODName, PODSpec<EntryTypes, StatementMap>>;
 
@@ -112,7 +112,7 @@ export class PODGroupSpecBuilder<
     Spec extends PODSpec<EntryTypes, StatementMap>,
     NewPods extends AddPOD<P, N, Spec>,
   >(name: N, spec: Spec): PODGroupSpecBuilder<NewPods, S> {
-    if (name in this.#spec.pods) {
+    if (Object.prototype.hasOwnProperty.call(this.#spec.pods, name)) {
       throw new Error(`POD "${name}" already exists`);
     }
 
@@ -129,7 +129,8 @@ export class PODGroupSpecBuilder<
     names: [...N],
     values: N["length"] extends 1
       ? PODValueTypeFromTypeName<EntryType<P, N[0] & keyof AllPODEntries<P>>>[]
-      : PODValueTupleForNamedEntries<AllPODEntries<P>, N>[]
+      : PODValueTupleForNamedEntries<AllPODEntries<P>, N>[],
+    customStatementName?: string
   ): PODGroupSpecBuilder<P, S> {
     // Check for duplicate names
     const uniqueNames = new Set(names);
@@ -155,7 +156,7 @@ export class PODGroupSpecBuilder<
     );
 
     for (const name of names) {
-      if (!(name in allEntries)) {
+      if (!Object.prototype.hasOwnProperty.call(allEntries, name)) {
         throw new Error(`Entry "${name}" does not exist`);
       }
     }
@@ -170,11 +171,13 @@ export class PODGroupSpecBuilder<
       ),
     };
 
-    const baseName = `${names.join("_")}_isMemberOf`;
+    const baseName = customStatementName ?? `${names.join("_")}_isMemberOf`;
     let statementName = baseName;
     let suffix = 1;
 
-    while (statementName in this.#spec.statements) {
+    while (
+      Object.prototype.hasOwnProperty.call(this.#spec.statements, statementName)
+    ) {
       statementName = `${baseName}_${suffix++}`;
     }
 
@@ -191,7 +194,8 @@ export class PODGroupSpecBuilder<
     names: [...N],
     values: N["length"] extends 1
       ? PODValueTypeFromTypeName<EntryType<P, N[0] & keyof AllPODEntries<P>>>[]
-      : PODValueTupleForNamedEntries<AllPODEntries<P>, N>[]
+      : PODValueTupleForNamedEntries<AllPODEntries<P>, N>[],
+    customStatementName?: string
   ): PODGroupSpecBuilder<P, S> {
     // Check for duplicate names
     const uniqueNames = new Set(names);
@@ -217,7 +221,7 @@ export class PODGroupSpecBuilder<
     );
 
     for (const name of names) {
-      if (!(name in allEntries)) {
+      if (!Object.prototype.hasOwnProperty.call(allEntries, name)) {
         throw new Error(`Entry "${name}" does not exist`);
       }
     }
@@ -232,11 +236,13 @@ export class PODGroupSpecBuilder<
       ),
     };
 
-    const baseName = `${names.join("_")}_isNotMemberOf`;
+    const baseName = customStatementName ?? `${names.join("_")}_isNotMemberOf`;
     let statementName = baseName;
     let suffix = 1;
 
-    while (statementName in this.#spec.statements) {
+    while (
+      Object.prototype.hasOwnProperty.call(this.#spec.statements, statementName)
+    ) {
       statementName = `${baseName}_${suffix++}`;
     }
 
@@ -257,15 +263,19 @@ export class PODGroupSpecBuilder<
     range: {
       min: AllPODEntries<P>[N] extends "date" ? Date : bigint;
       max: AllPODEntries<P>[N] extends "date" ? Date : bigint;
-    }
+    },
+    customStatementName?: string
   ): PODGroupSpecBuilder<P, S> {
     // Check that the entry exists
     const [podName, entryName] = name.split(".");
     if (
       podName === undefined ||
       entryName === undefined ||
-      !(podName in this.#spec.pods) ||
-      !(entryName in this.#spec.pods[podName]!.entries)
+      !Object.prototype.hasOwnProperty.call(this.#spec.pods, podName) ||
+      !Object.prototype.hasOwnProperty.call(
+        this.#spec.pods[podName]!.entries,
+        entryName
+      )
     ) {
       throw new Error(`Entry "${name}" does not exist`);
     }
@@ -316,11 +326,13 @@ export class PODGroupSpecBuilder<
       },
     };
 
-    const baseName = `${name}_inRange`;
+    const baseName = customStatementName ?? `${name}_inRange`;
     let statementName = baseName;
     let suffix = 1;
 
-    while (statementName in this.#spec.statements) {
+    while (
+      Object.prototype.hasOwnProperty.call(this.#spec.statements, statementName)
+    ) {
       statementName = `${baseName}_${suffix++}`;
     }
 
@@ -341,15 +353,19 @@ export class PODGroupSpecBuilder<
     range: {
       min: AllPODEntries<P>[N] extends "date" ? Date : bigint;
       max: AllPODEntries<P>[N] extends "date" ? Date : bigint;
-    }
+    },
+    customStatementName?: string
   ): PODGroupSpecBuilder<P, S> {
     // Check that the entry exists
     const [podName, entryName] = name.split(".");
     if (
       podName === undefined ||
       entryName === undefined ||
-      !(podName in this.#spec.pods) ||
-      !(entryName in this.#spec.pods[podName]!.entries)
+      !Object.prototype.hasOwnProperty.call(this.#spec.pods, podName) ||
+      !Object.prototype.hasOwnProperty.call(
+        this.#spec.pods[podName]!.entries,
+        entryName
+      )
     ) {
       throw new Error(`Entry "${name}" does not exist`);
     }
@@ -400,11 +416,13 @@ export class PODGroupSpecBuilder<
       },
     };
 
-    const baseName = `${name}_notInRange`;
+    const baseName = customStatementName ?? `${name}_notInRange`;
     let statementName = baseName;
     let suffix = 1;
 
-    while (statementName in this.#spec.statements) {
+    while (
+      Object.prototype.hasOwnProperty.call(this.#spec.statements, statementName)
+    ) {
       statementName = `${baseName}_${suffix++}`;
     }
 
@@ -420,23 +438,33 @@ export class PODGroupSpecBuilder<
   public greaterThan<
     N1 extends keyof AllPODEntries<P> & string,
     N2 extends keyof EntriesOfType<AllPODEntries<P>, EntryType<P, N1>> & string,
-  >(name1: N1, name2: N2): PODGroupSpecBuilder<P, S> {
+  >(
+    name1: N1,
+    name2: N2,
+    customStatementName?: string
+  ): PODGroupSpecBuilder<P, S> {
     // Check that both entries exist
     const [pod1, entry1] = name1.split(".");
     const [pod2, entry2] = name2.split(".");
     if (
       pod1 === undefined ||
       entry1 === undefined ||
-      !(pod1 in this.#spec.pods) ||
-      !(entry1 in this.#spec.pods[pod1]!.entries)
+      !Object.prototype.hasOwnProperty.call(this.#spec.pods, pod1) ||
+      !Object.prototype.hasOwnProperty.call(
+        this.#spec.pods[pod1]!.entries,
+        entry1
+      )
     ) {
       throw new Error(`Entry "${name1}" does not exist`);
     }
     if (
       pod2 === undefined ||
       entry2 === undefined ||
-      !(pod2 in this.#spec.pods) ||
-      !(entry2 in this.#spec.pods[pod2]!.entries)
+      !Object.prototype.hasOwnProperty.call(this.#spec.pods, pod2) ||
+      !Object.prototype.hasOwnProperty.call(
+        this.#spec.pods[pod2]!.entries,
+        entry2
+      )
     ) {
       throw new Error(`Entry "${name2}" does not exist`);
     }
@@ -457,11 +485,13 @@ export class PODGroupSpecBuilder<
       otherEntry: name2,
     };
 
-    const baseName = `${name1}_${name2}_greaterThan`;
+    const baseName = customStatementName ?? `${name1}_${name2}_greaterThan`;
     let statementName = baseName;
     let suffix = 1;
 
-    while (statementName in this.#spec.statements) {
+    while (
+      Object.prototype.hasOwnProperty.call(this.#spec.statements, statementName)
+    ) {
       statementName = `${baseName}_${suffix++}`;
     }
 
@@ -477,23 +507,33 @@ export class PODGroupSpecBuilder<
   public greaterThanEq<
     N1 extends keyof AllPODEntries<P> & string,
     N2 extends keyof EntriesOfType<AllPODEntries<P>, EntryType<P, N1>> & string,
-  >(name1: N1, name2: N2): PODGroupSpecBuilder<P, S> {
+  >(
+    name1: N1,
+    name2: N2,
+    customStatementName?: string
+  ): PODGroupSpecBuilder<P, S> {
     // Check that both entries exist
     const [pod1, entry1] = name1.split(".");
     const [pod2, entry2] = name2.split(".");
     if (
       pod1 === undefined ||
       entry1 === undefined ||
-      !(pod1 in this.#spec.pods) ||
-      !(entry1 in this.#spec.pods[pod1]!.entries)
+      !Object.prototype.hasOwnProperty.call(this.#spec.pods, pod1) ||
+      !Object.prototype.hasOwnProperty.call(
+        this.#spec.pods[pod1]!.entries,
+        entry1
+      )
     ) {
       throw new Error(`Entry "${name1}" does not exist`);
     }
     if (
       pod2 === undefined ||
       entry2 === undefined ||
-      !(pod2 in this.#spec.pods) ||
-      !(entry2 in this.#spec.pods[pod2]!.entries)
+      !Object.prototype.hasOwnProperty.call(this.#spec.pods, pod2) ||
+      !Object.prototype.hasOwnProperty.call(
+        this.#spec.pods[pod2]!.entries,
+        entry2
+      )
     ) {
       throw new Error(`Entry "${name2}" does not exist`);
     }
@@ -514,11 +554,13 @@ export class PODGroupSpecBuilder<
       otherEntry: name2,
     };
 
-    const baseName = `${name1}_${name2}_greaterThanEq`;
+    const baseName = customStatementName ?? `${name1}_${name2}_greaterThanEq`;
     let statementName = baseName;
     let suffix = 1;
 
-    while (statementName in this.#spec.statements) {
+    while (
+      Object.prototype.hasOwnProperty.call(this.#spec.statements, statementName)
+    ) {
       statementName = `${baseName}_${suffix++}`;
     }
 
@@ -534,23 +576,33 @@ export class PODGroupSpecBuilder<
   public lessThan<
     N1 extends keyof AllPODEntries<P> & string,
     N2 extends keyof EntriesOfType<AllPODEntries<P>, EntryType<P, N1>> & string,
-  >(name1: N1, name2: N2): PODGroupSpecBuilder<P, S> {
+  >(
+    name1: N1,
+    name2: N2,
+    customStatementName?: string
+  ): PODGroupSpecBuilder<P, S> {
     // Check that both entries exist
     const [pod1, entry1] = name1.split(".");
     const [pod2, entry2] = name2.split(".");
     if (
       pod1 === undefined ||
       entry1 === undefined ||
-      !(pod1 in this.#spec.pods) ||
-      !(entry1 in this.#spec.pods[pod1]!.entries)
+      !Object.prototype.hasOwnProperty.call(this.#spec.pods, pod1) ||
+      !Object.prototype.hasOwnProperty.call(
+        this.#spec.pods[pod1]!.entries,
+        entry1
+      )
     ) {
       throw new Error(`Entry "${name1}" does not exist`);
     }
     if (
       pod2 === undefined ||
       entry2 === undefined ||
-      !(pod2 in this.#spec.pods) ||
-      !(entry2 in this.#spec.pods[pod2]!.entries)
+      !Object.prototype.hasOwnProperty.call(this.#spec.pods, pod2) ||
+      !Object.prototype.hasOwnProperty.call(
+        this.#spec.pods[pod2]!.entries,
+        entry2
+      )
     ) {
       throw new Error(`Entry "${name2}" does not exist`);
     }
@@ -571,11 +623,13 @@ export class PODGroupSpecBuilder<
       otherEntry: name2,
     };
 
-    const baseName = `${name1}_${name2}_lessThan`;
+    const baseName = customStatementName ?? `${name1}_${name2}_lessThan`;
     let statementName = baseName;
     let suffix = 1;
 
-    while (statementName in this.#spec.statements) {
+    while (
+      Object.prototype.hasOwnProperty.call(this.#spec.statements, statementName)
+    ) {
       statementName = `${baseName}_${suffix++}`;
     }
 
@@ -591,23 +645,33 @@ export class PODGroupSpecBuilder<
   public lessThanEq<
     N1 extends keyof AllPODEntries<P> & string,
     N2 extends keyof EntriesOfType<AllPODEntries<P>, EntryType<P, N1>> & string,
-  >(name1: N1, name2: N2): PODGroupSpecBuilder<P, S> {
+  >(
+    name1: N1,
+    name2: N2,
+    customStatementName?: string
+  ): PODGroupSpecBuilder<P, S> {
     // Check that both entries exist
     const [pod1, entry1] = name1.split(".");
     const [pod2, entry2] = name2.split(".");
     if (
       pod1 === undefined ||
       entry1 === undefined ||
-      !(pod1 in this.#spec.pods) ||
-      !(entry1 in this.#spec.pods[pod1]!.entries)
+      !Object.prototype.hasOwnProperty.call(this.#spec.pods, pod1) ||
+      !Object.prototype.hasOwnProperty.call(
+        this.#spec.pods[pod1]!.entries,
+        entry1
+      )
     ) {
       throw new Error(`Entry "${name1}" does not exist`);
     }
     if (
       pod2 === undefined ||
       entry2 === undefined ||
-      !(pod2 in this.#spec.pods) ||
-      !(entry2 in this.#spec.pods[pod2]!.entries)
+      !Object.prototype.hasOwnProperty.call(this.#spec.pods, pod2) ||
+      !Object.prototype.hasOwnProperty.call(
+        this.#spec.pods[pod2]!.entries,
+        entry2
+      )
     ) {
       throw new Error(`Entry "${name2}" does not exist`);
     }
@@ -628,11 +692,13 @@ export class PODGroupSpecBuilder<
       otherEntry: name2,
     };
 
-    const baseName = `${name1}_${name2}_lessThanEq`;
+    const baseName = customStatementName ?? `${name1}_${name2}_lessThanEq`;
     let statementName = baseName;
     let suffix = 1;
 
-    while (statementName in this.#spec.statements) {
+    while (
+      Object.prototype.hasOwnProperty.call(this.#spec.statements, statementName)
+    ) {
       statementName = `${baseName}_${suffix++}`;
     }
 
@@ -648,23 +714,33 @@ export class PODGroupSpecBuilder<
   public equalsEntry<
     N1 extends keyof AllPODEntries<P> & string,
     N2 extends keyof EntriesOfType<AllPODEntries<P>, EntryType<P, N1>> & string,
-  >(name1: N1, name2: N2): PODGroupSpecBuilder<P, S> {
+  >(
+    name1: N1,
+    name2: N2,
+    customStatementName?: string
+  ): PODGroupSpecBuilder<P, S> {
     // Check that both entries exist
     const [pod1, entry1] = name1.split(".");
     const [pod2, entry2] = name2.split(".");
     if (
       pod1 === undefined ||
       entry1 === undefined ||
-      !(pod1 in this.#spec.pods) ||
-      !(entry1 in this.#spec.pods[pod1]!.entries)
+      !Object.prototype.hasOwnProperty.call(this.#spec.pods, pod1) ||
+      !Object.prototype.hasOwnProperty.call(
+        this.#spec.pods[pod1]!.entries,
+        entry1
+      )
     ) {
       throw new Error(`Entry "${name1}" does not exist`);
     }
     if (
       pod2 === undefined ||
       entry2 === undefined ||
-      !(pod2 in this.#spec.pods) ||
-      !(entry2 in this.#spec.pods[pod2]!.entries)
+      !Object.prototype.hasOwnProperty.call(this.#spec.pods, pod2) ||
+      !Object.prototype.hasOwnProperty.call(
+        this.#spec.pods[pod2]!.entries,
+        entry2
+      )
     ) {
       throw new Error(`Entry "${name2}" does not exist`);
     }
@@ -685,11 +761,13 @@ export class PODGroupSpecBuilder<
       otherEntry: name2,
     };
 
-    const baseName = `${name1}_${name2}_equalsEntry`;
+    const baseName = customStatementName ?? `${name1}_${name2}_equalsEntry`;
     let statementName = baseName;
     let suffix = 1;
 
-    while (statementName in this.#spec.statements) {
+    while (
+      Object.prototype.hasOwnProperty.call(this.#spec.statements, statementName)
+    ) {
       statementName = `${baseName}_${suffix++}`;
     }
 
@@ -705,23 +783,33 @@ export class PODGroupSpecBuilder<
   public notEqualsEntry<
     N1 extends keyof AllPODEntries<P> & string,
     N2 extends keyof EntriesOfType<AllPODEntries<P>, EntryType<P, N1>> & string,
-  >(name1: N1, name2: N2): PODGroupSpecBuilder<P, S> {
+  >(
+    name1: N1,
+    name2: N2,
+    customStatementName?: string
+  ): PODGroupSpecBuilder<P, S> {
     // Check that both entries exist
     const [pod1, entry1] = name1.split(".");
     const [pod2, entry2] = name2.split(".");
     if (
       pod1 === undefined ||
       entry1 === undefined ||
-      !(pod1 in this.#spec.pods) ||
-      !(entry1 in this.#spec.pods[pod1]!.entries)
+      !Object.prototype.hasOwnProperty.call(this.#spec.pods, pod1) ||
+      !Object.prototype.hasOwnProperty.call(
+        this.#spec.pods[pod1]!.entries,
+        entry1
+      )
     ) {
       throw new Error(`Entry "${name1}" does not exist`);
     }
     if (
       pod2 === undefined ||
       entry2 === undefined ||
-      !(pod2 in this.#spec.pods) ||
-      !(entry2 in this.#spec.pods[pod2]!.entries)
+      !Object.prototype.hasOwnProperty.call(this.#spec.pods, pod2) ||
+      !Object.prototype.hasOwnProperty.call(
+        this.#spec.pods[pod2]!.entries,
+        entry2
+      )
     ) {
       throw new Error(`Entry "${name2}" does not exist`);
     }
@@ -742,11 +830,13 @@ export class PODGroupSpecBuilder<
       otherEntry: name2,
     };
 
-    const baseName = `${name1}_${name2}_notEqualsEntry`;
+    const baseName = customStatementName ?? `${name1}_${name2}_notEqualsEntry`;
     let statementName = baseName;
     let suffix = 1;
 
-    while (statementName in this.#spec.statements) {
+    while (
+      Object.prototype.hasOwnProperty.call(this.#spec.statements, statementName)
+    ) {
       statementName = `${baseName}_${suffix++}`;
     }
 

@@ -1,22 +1,23 @@
 import {
-  type PODEntries,
   POD,
-  type PODValue,
-  type PODStringValue,
+  type PODEntries,
   type PODIntValue,
+  type PODStringValue,
+  type PODValue,
 } from "@pcd/pod";
-import { describe, it, expect, assert } from "vitest";
-import { PODSpecBuilder, validatePOD } from "../../../src/index.js";
+import { assert, describe, expect, it } from "vitest";
+import { PODSpecBuilder } from "../../../src/index.js";
+import { validate } from "../../../src/processors/validate.js";
+import { generateKeyPair } from "../../utils.js";
 
 describe("validator", () => {
   it("should be a test", () => {
     expect(true).toBe(true);
   });
 
-  const privKey =
-    "f72c3def0a54280ded2990a66fabcf717130c6f2bb595004658ec77774b98924";
+  const { privateKey } = generateKeyPair();
 
-  const signPOD = (entries: PODEntries) => POD.sign(entries, privKey);
+  const signPOD = (entries: PODEntries) => POD.sign(entries, privateKey);
 
   it("validatePOD", () => {
     const myPOD = signPOD({
@@ -28,9 +29,9 @@ describe("validator", () => {
       .isMemberOf(["foo"], ["foo", "bar"]);
 
     // This should pass because the entry "foo" is in the list ["foo", "bar"]
-    expect(validatePOD(myPOD, myPodSpecBuilder.spec()).isValid).toBe(true);
+    expect(validate(myPodSpecBuilder.spec()).check(myPOD)).toBe(true);
 
-    const result = validatePOD(myPOD, myPodSpecBuilder.spec());
+    const result = validate(myPodSpecBuilder.spec()).validate(myPOD);
     if (result.isValid) {
       const pod = result.value;
       // After validation, the entries are strongly typed
@@ -48,25 +49,23 @@ describe("validator", () => {
 
     // This should fail because the entry "foo" is not in the list ["baz", "quux"]
     const secondBuilder = myPodSpecBuilder.isMemberOf(["foo"], ["baz", "quux"]);
-    expect(validatePOD(myPOD, secondBuilder.spec()).isValid).toBe(false);
+    expect(validate(secondBuilder.spec()).check(myPOD)).toBe(false);
 
     // If we omit the new statement, it should pass
     expect(
-      validatePOD(
-        myPOD,
-        secondBuilder.omitStatements(["foo_isMemberOf_1"]).spec()
-      ).isValid
+      validate(secondBuilder.omitStatements(["foo_isMemberOf_1"]).spec()).check(
+        myPOD
+      )
     ).toBe(true);
 
     {
-      const result = validatePOD(
-        myPOD,
+      const result = validate(
         secondBuilder
           .omitStatements(["foo_isMemberOf_1"])
           .entry("num", "int")
           .inRange("num", { min: 0n, max: 100n })
           .spec()
-      );
+      ).validate(myPOD);
       assert(result.isValid);
       const pod = result.value;
       pod.content.asEntries().num satisfies PODIntValue;

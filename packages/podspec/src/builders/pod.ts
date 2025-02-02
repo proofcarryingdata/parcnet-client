@@ -151,7 +151,7 @@ export class PODSpecBuilder<
     V extends PODValueType,
     NewEntries extends AddEntry<E, K, V>,
   >(key: Exclude<K, keyof E>, type: V): PODSpecBuilder<NewEntries, S> {
-    if (key in this.#spec.entries) {
+    if (Object.prototype.hasOwnProperty.call(this.#spec.entries, key)) {
       throw new Error(`Entry "${key}" already exists`);
     }
 
@@ -305,7 +305,8 @@ export class PODSpecBuilder<
       ? PODValueTypeFromTypeName<
           (E & VirtualEntries)[N[0] & keyof (E & VirtualEntries)]
         >[]
-      : PODValueTupleForNamedEntries<E & VirtualEntries, N>[]
+      : PODValueTupleForNamedEntries<E & VirtualEntries, N>[],
+    customStatementName?: string
   ): PODSpecBuilder<
     E,
     S & {
@@ -327,7 +328,7 @@ export class PODSpecBuilder<
     };
 
     for (const name of names) {
-      if (!(name in allEntries)) {
+      if (!Object.prototype.hasOwnProperty.call(allEntries, name)) {
         throw new Error(`Entry "${name}" does not exist`);
       }
     }
@@ -351,11 +352,13 @@ export class PODSpecBuilder<
       isMemberOf: convertValuesToStringTuples<N>(names, values, allEntries),
     };
 
-    const baseName = `${names.join("_")}_isMemberOf`;
+    const baseName = customStatementName ?? `${names.join("_")}_isMemberOf`;
     let statementName = baseName;
     let suffix = 1;
 
-    while (statementName in this.#spec.statements) {
+    while (
+      Object.prototype.hasOwnProperty.call(this.#spec.statements, statementName)
+    ) {
       statementName = `${baseName}_${suffix++}`;
     }
 
@@ -389,14 +392,15 @@ export class PODSpecBuilder<
       ? PODValueTypeFromTypeName<
           (E & VirtualEntries)[N[0] & keyof (E & VirtualEntries)]
         >[]
-      : PODValueTupleForNamedEntries<E & VirtualEntries, N>[]
+      : PODValueTupleForNamedEntries<E & VirtualEntries, N>[],
+    customStatementName?: string
   ): PODSpecBuilder<
     E,
     S & { [K in StatementName<N, "isNotMemberOf", S>]: IsNotMemberOf<E, N> }
   > {
     // Check that all names exist in entries
     for (const name of names) {
-      if (!(name in this.#spec.entries)) {
+      if (!Object.prototype.hasOwnProperty.call(this.#spec.entries, name)) {
         throw new Error(`Entry "${name}" does not exist`);
       }
     }
@@ -413,7 +417,7 @@ export class PODSpecBuilder<
     };
 
     for (const name of names) {
-      if (!(name in allEntries)) {
+      if (!Object.prototype.hasOwnProperty.call(allEntries, name)) {
         throw new Error(`Entry "${name}" does not exist`);
       }
     }
@@ -437,11 +441,13 @@ export class PODSpecBuilder<
       isNotMemberOf: convertValuesToStringTuples<N>(names, values, allEntries),
     };
 
-    const baseName = `${names.join("_")}_isNotMemberOf`;
+    const baseName = customStatementName ?? `${names.join("_")}_isNotMemberOf`;
     let statementName = baseName;
     let suffix = 1;
 
-    while (statementName in this.#spec.statements) {
+    while (
+      Object.prototype.hasOwnProperty.call(this.#spec.statements, statementName)
+    ) {
       statementName = `${baseName}_${suffix++}`;
     }
 
@@ -468,13 +474,17 @@ export class PODSpecBuilder<
     range: {
       min: E[N] extends "date" ? Date : bigint;
       max: E[N] extends "date" ? Date : bigint;
-    }
+    },
+    customStatementName?: string
   ): PODSpecBuilder<
     E,
     S & { [K in StatementName<[N & string], "inRange", S>]: InRange<E, N> }
   > {
     // Check that the entry exists
-    if (!(name in this.#spec.entries) && !(name in virtualEntries)) {
+    if (
+      !Object.prototype.hasOwnProperty.call(this.#spec.entries, name) &&
+      !Object.prototype.hasOwnProperty.call(virtualEntries, name)
+    ) {
       throw new Error(`Entry "${name}" does not exist`);
     }
 
@@ -524,11 +534,13 @@ export class PODSpecBuilder<
       },
     };
 
-    const baseName = `${name}_inRange`;
+    const baseName = customStatementName ?? `${name}_inRange`;
     let statementName = baseName;
     let suffix = 1;
 
-    while (statementName in this.#spec.statements) {
+    while (
+      Object.prototype.hasOwnProperty.call(this.#spec.statements, statementName)
+    ) {
       statementName = `${baseName}_${suffix++}`;
     }
 
@@ -555,7 +567,8 @@ export class PODSpecBuilder<
     range: {
       min: E[N] extends "date" ? Date : bigint;
       max: E[N] extends "date" ? Date : bigint;
-    }
+    },
+    customStatementName?: string
   ): PODSpecBuilder<
     E,
     S & {
@@ -563,7 +576,10 @@ export class PODSpecBuilder<
     }
   > {
     // Check that the entry exists
-    if (!(name in this.#spec.entries) && !(name in virtualEntries)) {
+    if (
+      !Object.prototype.hasOwnProperty.call(this.#spec.entries, name) &&
+      !Object.prototype.hasOwnProperty.call(virtualEntries, name)
+    ) {
       throw new Error(`Entry "${name}" does not exist`);
     }
 
@@ -614,11 +630,13 @@ export class PODSpecBuilder<
       },
     };
 
-    const baseName = `${name}_notInRange`;
+    const baseName = customStatementName ?? `${name}_notInRange`;
     let statementName = baseName;
     let suffix = 1;
 
-    while (statementName in this.#spec.statements) {
+    while (
+      Object.prototype.hasOwnProperty.call(this.#spec.statements, statementName)
+    ) {
       statementName = `${baseName}_${suffix++}`;
     }
 
@@ -640,7 +658,8 @@ export class PODSpecBuilder<
       string,
   >(
     name1: N1,
-    name2: Exclude<N2, N1>
+    name2: Exclude<N2, N1>,
+    customStatementName?: string
   ): PODSpecBuilder<
     E,
     S & {
@@ -648,10 +667,16 @@ export class PODSpecBuilder<
     }
   > {
     // Check that both names exist in entries
-    if (!(name1 in this.#spec.entries) && !(name1 in virtualEntries)) {
+    if (
+      !Object.prototype.hasOwnProperty.call(this.#spec.entries, name1) &&
+      !Object.prototype.hasOwnProperty.call(virtualEntries, name1)
+    ) {
       throw new Error(`Entry "${name1}" does not exist`);
     }
-    if (!(name2 in this.#spec.entries) && !(name2 in virtualEntries)) {
+    if (
+      !Object.prototype.hasOwnProperty.call(this.#spec.entries, name2) &&
+      !Object.prototype.hasOwnProperty.call(virtualEntries, name2)
+    ) {
       throw new Error(`Entry "${name2}" does not exist`);
     }
     if ((name1 as string) === (name2 as string)) {
@@ -667,11 +692,13 @@ export class PODSpecBuilder<
       otherEntry: name2,
     } satisfies EqualsEntry<E, N1, N2>;
 
-    const baseName = `${name1}_${name2}_equalsEntry`;
+    const baseName = customStatementName ?? `${name1}_${name2}_equalsEntry`;
     let statementName = baseName;
     let suffix = 1;
 
-    while (statementName in this.#spec.statements) {
+    while (
+      Object.prototype.hasOwnProperty.call(this.#spec.statements, statementName)
+    ) {
       statementName = `${baseName}_${suffix++}`;
     }
 
@@ -693,7 +720,8 @@ export class PODSpecBuilder<
       string,
   >(
     name1: N1,
-    name2: Exclude<N2, N1>
+    name2: Exclude<N2, N1>,
+    customStatementName?: string
   ): PODSpecBuilder<
     E,
     S & {
@@ -705,10 +733,16 @@ export class PODSpecBuilder<
     }
   > {
     // Check that both names exist in entries
-    if (!(name1 in this.#spec.entries) && !(name1 in virtualEntries)) {
+    if (
+      !Object.prototype.hasOwnProperty.call(this.#spec.entries, name1) &&
+      !Object.prototype.hasOwnProperty.call(virtualEntries, name1)
+    ) {
       throw new Error(`Entry "${name1}" does not exist`);
     }
-    if (!(name2 in this.#spec.entries) && !(name2 in virtualEntries)) {
+    if (
+      !Object.prototype.hasOwnProperty.call(this.#spec.entries, name2) &&
+      !Object.prototype.hasOwnProperty.call(virtualEntries, name2)
+    ) {
       throw new Error(`Entry "${name2}" does not exist`);
     }
     if ((name1 as string) === (name2 as string)) {
@@ -724,11 +758,13 @@ export class PODSpecBuilder<
       otherEntry: name2,
     } satisfies NotEqualsEntry<E, N1, N2>;
 
-    const baseName = `${name1}_${name2}_notEqualsEntry`;
+    const baseName = customStatementName ?? `${name1}_${name2}_notEqualsEntry`;
     let statementName = baseName;
     let suffix = 1;
 
-    while (statementName in this.#spec.statements) {
+    while (
+      Object.prototype.hasOwnProperty.call(this.#spec.statements, statementName)
+    ) {
       statementName = `${baseName}_${suffix++}`;
     }
 
@@ -750,7 +786,8 @@ export class PODSpecBuilder<
       string,
   >(
     name1: N1,
-    name2: Exclude<N2, N1>
+    name2: Exclude<N2, N1>,
+    customStatementName?: string
   ): PODSpecBuilder<
     E,
     S & {
@@ -758,10 +795,16 @@ export class PODSpecBuilder<
     }
   > {
     // Check that both names exist in entries
-    if (!(name1 in this.#spec.entries) && !(name1 in virtualEntries)) {
+    if (
+      !Object.prototype.hasOwnProperty.call(this.#spec.entries, name1) &&
+      !Object.prototype.hasOwnProperty.call(virtualEntries, name1)
+    ) {
       throw new Error(`Entry "${name1}" does not exist`);
     }
-    if (!(name2 in this.#spec.entries) && !(name2 in virtualEntries)) {
+    if (
+      !Object.prototype.hasOwnProperty.call(this.#spec.entries, name2) &&
+      !Object.prototype.hasOwnProperty.call(virtualEntries, name2)
+    ) {
       throw new Error(`Entry "${name2}" does not exist`);
     }
     if ((name1 as string) === (name2 as string)) {
@@ -777,11 +820,13 @@ export class PODSpecBuilder<
       otherEntry: name2,
     } satisfies GreaterThan<E, N1, N2>;
 
-    const baseName = `${name1}_${name2}_greaterThan`;
+    const baseName = customStatementName ?? `${name1}_${name2}_greaterThan`;
     let statementName = baseName;
     let suffix = 1;
 
-    while (statementName in this.#spec.statements) {
+    while (
+      Object.prototype.hasOwnProperty.call(this.#spec.statements, statementName)
+    ) {
       statementName = `${baseName}_${suffix++}`;
     }
 
@@ -803,7 +848,8 @@ export class PODSpecBuilder<
       string,
   >(
     name1: N1,
-    name2: Exclude<N2, N1>
+    name2: Exclude<N2, N1>,
+    customStatementName?: string
   ): PODSpecBuilder<
     E,
     S & {
@@ -815,10 +861,16 @@ export class PODSpecBuilder<
     }
   > {
     // Check that both names exist in entries
-    if (!(name1 in this.#spec.entries) && !(name1 in virtualEntries)) {
+    if (
+      !Object.prototype.hasOwnProperty.call(this.#spec.entries, name1) &&
+      !Object.prototype.hasOwnProperty.call(virtualEntries, name1)
+    ) {
       throw new Error(`Entry "${name1}" does not exist`);
     }
-    if (!(name2 in this.#spec.entries) && !(name2 in virtualEntries)) {
+    if (
+      !Object.prototype.hasOwnProperty.call(this.#spec.entries, name2) &&
+      !Object.prototype.hasOwnProperty.call(virtualEntries, name2)
+    ) {
       throw new Error(`Entry "${name2}" does not exist`);
     }
     if ((name1 as string) === (name2 as string)) {
@@ -834,11 +886,13 @@ export class PODSpecBuilder<
       otherEntry: name2,
     } satisfies GreaterThanEq<E, N1, N2>;
 
-    const baseName = `${name1}_${name2}_greaterThanEq`;
+    const baseName = customStatementName ?? `${name1}_${name2}_greaterThanEq`;
     let statementName = baseName;
     let suffix = 1;
 
-    while (statementName in this.#spec.statements) {
+    while (
+      Object.prototype.hasOwnProperty.call(this.#spec.statements, statementName)
+    ) {
       statementName = `${baseName}_${suffix++}`;
     }
 
@@ -860,7 +914,8 @@ export class PODSpecBuilder<
       string,
   >(
     name1: N1,
-    name2: Exclude<N2, N1>
+    name2: Exclude<N2, N1>,
+    customStatementName?: string
   ): PODSpecBuilder<
     E,
     S & {
@@ -868,10 +923,16 @@ export class PODSpecBuilder<
     }
   > {
     // Check that both names exist in entries
-    if (!(name1 in this.#spec.entries) && !(name1 in virtualEntries)) {
+    if (
+      !Object.prototype.hasOwnProperty.call(this.#spec.entries, name1) &&
+      !Object.prototype.hasOwnProperty.call(virtualEntries, name1)
+    ) {
       throw new Error(`Entry "${name1}" does not exist`);
     }
-    if (!(name2 in this.#spec.entries) && !(name2 in virtualEntries)) {
+    if (
+      !Object.prototype.hasOwnProperty.call(this.#spec.entries, name2) &&
+      !Object.prototype.hasOwnProperty.call(virtualEntries, name2)
+    ) {
       throw new Error(`Entry "${name2}" does not exist`);
     }
     if ((name1 as string) === (name2 as string)) {
@@ -887,11 +948,13 @@ export class PODSpecBuilder<
       otherEntry: name2,
     } satisfies LessThan<E, N1, N2>;
 
-    const baseName = `${name1}_${name2}_lessThan`;
+    const baseName = customStatementName ?? `${name1}_${name2}_lessThan`;
     let statementName = baseName;
     let suffix = 1;
 
-    while (statementName in this.#spec.statements) {
+    while (
+      Object.prototype.hasOwnProperty.call(this.#spec.statements, statementName)
+    ) {
       statementName = `${baseName}_${suffix++}`;
     }
 
@@ -913,7 +976,8 @@ export class PODSpecBuilder<
       string,
   >(
     name1: N1,
-    name2: Exclude<N2, N1>
+    name2: Exclude<N2, N1>,
+    customStatementName?: string
   ): PODSpecBuilder<
     E,
     S & {
@@ -921,10 +985,16 @@ export class PODSpecBuilder<
     }
   > {
     // Check that both names exist in entries
-    if (!(name1 in this.#spec.entries) && !(name1 in virtualEntries)) {
+    if (
+      !Object.prototype.hasOwnProperty.call(this.#spec.entries, name1) &&
+      !Object.prototype.hasOwnProperty.call(virtualEntries, name1)
+    ) {
       throw new Error(`Entry "${name1}" does not exist`);
     }
-    if (!(name2 in this.#spec.entries) && !(name2 in virtualEntries)) {
+    if (
+      !Object.prototype.hasOwnProperty.call(this.#spec.entries, name2) &&
+      !Object.prototype.hasOwnProperty.call(virtualEntries, name2)
+    ) {
       throw new Error(`Entry "${name2}" does not exist`);
     }
     if ((name1 as string) === (name2 as string)) {
@@ -940,11 +1010,13 @@ export class PODSpecBuilder<
       otherEntry: name2,
     } satisfies LessThanEq<E, N1, N2>;
 
-    const baseName = `${name1}_${name2}_lessThanEq`;
+    const baseName = customStatementName ?? `${name1}_${name2}_lessThanEq`;
     let statementName = baseName;
     let suffix = 1;
 
-    while (statementName in this.#spec.statements) {
+    while (
+      Object.prototype.hasOwnProperty.call(this.#spec.statements, statementName)
+    ) {
       statementName = `${baseName}_${suffix++}`;
     }
 
