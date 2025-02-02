@@ -60,7 +60,7 @@ export interface ValidateOptions {
 
 const DEFAULT_VALIDATE_OPTIONS: ValidateOptions = {
   exitOnError: false,
-  strict: false
+  strict: false,
 };
 
 interface PODValidator<E extends EntryTypes> {
@@ -109,10 +109,10 @@ export function validate<E extends EntryTypes, S extends StatementMap>(
     strictAssert: (pod) => {
       const result = validatePOD(pod, spec, {
         strict: true,
-        exitOnError: true
+        exitOnError: true,
       });
       if (!result.isValid) throw new Error("POD is not valid");
-    }
+    },
   };
 }
 

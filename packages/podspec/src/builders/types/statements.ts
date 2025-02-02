@@ -3,7 +3,7 @@ import type {
   EntryKeys,
   PODValueTupleForNamedEntries,
   EntriesOfType,
-  VirtualEntries
+  VirtualEntries,
 } from "./entries.js";
 
 /****************************************************************************
@@ -12,19 +12,19 @@ import type {
 
 export type MembershipListInput<
   E extends EntryTypes,
-  N extends EntryKeys<E>
+  N extends EntryKeys<E>,
 > = PODValueTupleForNamedEntries<E, N>[];
 
 export type MembershipListPersistent<
   E extends EntryTypes,
-  N extends EntryKeys<E>
+  N extends EntryKeys<E>,
 > = { [K in keyof N]: string }[];
 
 type Concrete<T> = T extends object ? { [K in keyof T]: T[K] } : T;
 
 export type IsMemberOf<
   E extends EntryTypes,
-  N extends EntryKeys<E> & string[]
+  N extends EntryKeys<E> & string[],
 > = {
   entries: N;
   type: "isMemberOf";
@@ -33,7 +33,7 @@ export type IsMemberOf<
 
 export type IsNotMemberOf<
   E extends EntryTypes,
-  N extends EntryKeys<E> & string[]
+  N extends EntryKeys<E> & string[],
 > = {
   entries: N;
   type: "isNotMemberOf";
@@ -46,7 +46,7 @@ export type SupportsRangeChecks = "int" | "boolean" | "date";
 export type RangeInput<
   E extends EntryTypes,
   N extends keyof EntriesOfType<E & VirtualEntries, SupportsRangeChecks> &
-    string
+    string,
 > = {
   min: E[N] extends "date" ? Date : bigint;
   max: E[N] extends "date" ? Date : bigint;
@@ -60,7 +60,7 @@ export type RangePersistent = {
 export type InRange<
   E extends EntryTypes,
   N extends keyof EntriesOfType<E & VirtualEntries, SupportsRangeChecks> &
-    string
+    string,
 > = {
   entry: N;
   type: "inRange";
@@ -70,7 +70,7 @@ export type InRange<
 export type NotInRange<
   E extends EntryTypes,
   N extends keyof EntriesOfType<E & VirtualEntries, SupportsRangeChecks> &
-    string
+    string,
 > = {
   entry: N;
   type: "notInRange";
@@ -80,7 +80,7 @@ export type NotInRange<
 export type EqualsEntry<
   E extends EntryTypes,
   N1 extends keyof (E & VirtualEntries) & string,
-  N2 extends keyof (E & VirtualEntries) & string
+  N2 extends keyof (E & VirtualEntries) & string,
 > = {
   entry: N1;
   type: "equalsEntry";
@@ -90,7 +90,7 @@ export type EqualsEntry<
 export type NotEqualsEntry<
   E extends EntryTypes,
   N1 extends keyof (E & VirtualEntries) & string,
-  N2 extends keyof (E & VirtualEntries) & string
+  N2 extends keyof (E & VirtualEntries) & string,
 > = {
   entry: N1;
   type: "notEqualsEntry";
@@ -100,7 +100,7 @@ export type NotEqualsEntry<
 export type GreaterThan<
   E extends EntryTypes,
   N1 extends keyof (E & VirtualEntries) & string,
-  N2 extends keyof (E & VirtualEntries) & string
+  N2 extends keyof (E & VirtualEntries) & string,
 > = {
   entry: N1;
   type: "greaterThan";
@@ -110,7 +110,7 @@ export type GreaterThan<
 export type GreaterThanEq<
   E extends EntryTypes,
   N1 extends keyof (E & VirtualEntries) & string,
-  N2 extends keyof (E & VirtualEntries) & string
+  N2 extends keyof (E & VirtualEntries) & string,
 > = {
   entry: N1;
   type: "greaterThanEq";
@@ -120,7 +120,7 @@ export type GreaterThanEq<
 export type LessThan<
   E extends EntryTypes,
   N1 extends keyof (E & VirtualEntries) & string,
-  N2 extends keyof (E & VirtualEntries) & string
+  N2 extends keyof (E & VirtualEntries) & string,
 > = {
   entry: N1;
   type: "lessThan";
@@ -130,7 +130,7 @@ export type LessThan<
 export type LessThanEq<
   E extends EntryTypes,
   N1 extends keyof (E & VirtualEntries) & string,
-  N2 extends keyof (E & VirtualEntries) & string
+  N2 extends keyof (E & VirtualEntries) & string,
 > = {
   entry: N1;
   type: "lessThanEq";
@@ -168,7 +168,7 @@ export type StatementMap = Record<string, Statements>;
 // Utility types for statement naming
 type JoinWithUnderscore<T extends readonly string[]> = T extends readonly [
   infer F extends string,
-  ...infer R extends string[]
+  ...infer R extends string[],
 ]
   ? R["length"] extends 0
     ? F
@@ -177,12 +177,12 @@ type JoinWithUnderscore<T extends readonly string[]> = T extends readonly [
 
 type BaseStatementName<
   N extends readonly string[],
-  S extends Statements["type"]
+  S extends Statements["type"],
 > = `${JoinWithUnderscore<N>}_${S}`;
 
 type NextAvailableSuffix<
   Base extends string,
-  S extends StatementMap
+  S extends StatementMap,
 > = Base extends keyof S
   ? `${Base}_1` extends keyof S
     ? `${Base}_2` extends keyof S
@@ -194,5 +194,5 @@ type NextAvailableSuffix<
 export type StatementName<
   N extends readonly string[],
   S extends Statements["type"],
-  Map extends StatementMap
+  Map extends StatementMap,
 > = NextAvailableSuffix<BaseStatementName<N, S>, Map>;

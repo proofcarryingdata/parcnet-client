@@ -8,7 +8,7 @@ export type EntryKeys<E extends EntryTypes> = (keyof E & string)[];
 
 export type PODValueTupleForNamedEntries<
   E extends EntryTypes,
-  Names extends EntryKeys<E>
+  Names extends EntryKeys<E>,
 > = {
   [K in keyof Names]: PODValueTypeFromTypeName<E[Names[K] & keyof E]>;
 };
@@ -24,6 +24,6 @@ export type EntriesOfType<E extends EntryTypes, T extends PODValueType> = {
 
 export type VirtualEntries = {
   $contentID: "string";
-  $signature: "string";
+  //$signature: "string";
   $signerPublicKey: "eddsa_pubkey";
 };

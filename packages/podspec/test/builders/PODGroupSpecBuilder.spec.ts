@@ -22,14 +22,13 @@ describe("PODGroupSpecBuilder", () => {
       "foo.my_num": "int",
       "foo.$signerPublicKey": "eddsa_pubkey",
       "foo.$contentID": "string",
-      "foo.$signature": "string"
     });
 
     expect(groupWithPod.spec()).toEqual({
       pods: {
-        foo: podBuilder.spec()
+        foo: podBuilder.spec(),
       },
-      statements: {}
+      statements: {},
     });
 
     const groupWithPodAndStatement = groupWithPod.isMemberOf(
@@ -40,15 +39,15 @@ describe("PODGroupSpecBuilder", () => {
 
     expect(spec3).toEqual({
       pods: {
-        foo: podBuilder.spec()
+        foo: podBuilder.spec(),
       },
       statements: {
         "foo.my_string_isMemberOf": {
           entries: ["foo.my_string"],
           isMemberOf: [["hello"]],
-          type: "isMemberOf"
-        }
-      }
+          type: "isMemberOf",
+        },
+      },
     });
   });
 
@@ -69,8 +68,7 @@ describe("PODGroupSpecBuilder", () => {
       "foo.my_num": "int",
       "foo.my_other_num": "int",
       "foo.$contentID": "string",
-      "foo.$signature": "string",
-      "foo.$signerPublicKey": "eddsa_pubkey"
+      "foo.$signerPublicKey": "eddsa_pubkey",
     });
 
     groupWithPod.equalsEntry("foo.my_num", "foo.my_other_num");

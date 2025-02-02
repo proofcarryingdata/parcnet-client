@@ -3,7 +3,7 @@ import {
   POD,
   type PODValue,
   type PODStringValue,
-  type PODIntValue
+  type PODIntValue,
 } from "@pcd/pod";
 import { describe, it, expect, assert } from "vitest";
 import { PODSpecBuilder, validatePOD } from "../../../src/index.js";
@@ -21,7 +21,7 @@ describe("validator", () => {
   it("validatePOD", () => {
     const myPOD = signPOD({
       foo: { type: "string", value: "foo" },
-      num: { type: "int", value: 50n }
+      num: { type: "int", value: 50n },
     });
     const myPodSpecBuilder = PODSpecBuilder.create()
       .entry("foo", "string")

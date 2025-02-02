@@ -11,8 +11,8 @@ export const assertPODSpec = (() => {
     false === Array.isArray(input.entries) &&
     _io1(input.entries) &&
     "object" === typeof input.statements &&
-      null !== input.statements &&
-      false === Array.isArray(input.statements) &&
+    null !== input.statements &&
+    false === Array.isArray(input.statements) &&
     _io2(input.statements);
   const _io1 = (input: any): boolean =>
     Object.keys(input).every((key: any) => {
@@ -58,14 +58,16 @@ export const assertPODSpec = (() => {
   const _io5 = (input: any): boolean =>
     "string" === typeof input.entry &&
     "inRange" === input.type &&
-    "object" === typeof input.inRange && null !== input.inRange &&
+    "object" === typeof input.inRange &&
+    null !== input.inRange &&
     _io6(input.inRange);
   const _io6 = (input: any): boolean =>
     "string" === typeof input.min && "string" === typeof input.max;
   const _io7 = (input: any): boolean =>
     "string" === typeof input.entry &&
     "notInRange" === input.type &&
-    "object" === typeof input.notInRange && null !== input.notInRange &&
+    "object" === typeof input.notInRange &&
+    null !== input.notInRange &&
     _io6(input.notInRange);
   const _io8 = (input: any): boolean =>
     "string" === typeof input.entry &&
@@ -119,7 +121,7 @@ export const assertPODSpec = (() => {
           method: "typia.createAssert",
           path: _path + ".entries",
           expected: "EntryTypes",
-          value: input.entries
+          value: input.entries,
         },
         _errorFactory
       )) &&
@@ -130,7 +132,7 @@ export const assertPODSpec = (() => {
           method: "typia.createAssert",
           path: _path + ".entries",
           expected: "EntryTypes",
-          value: input.entries
+          value: input.entries,
         },
         _errorFactory
       )) &&
@@ -143,7 +145,7 @@ export const assertPODSpec = (() => {
           method: "typia.createAssert",
           path: _path + ".statements",
           expected: "StatementMap",
-          value: input.statements
+          value: input.statements,
         },
         _errorFactory
       )) &&
@@ -154,7 +156,7 @@ export const assertPODSpec = (() => {
           method: "typia.createAssert",
           path: _path + ".statements",
           expected: "StatementMap",
-          value: input.statements
+          value: input.statements,
         },
         _errorFactory
       ));
@@ -187,7 +189,7 @@ export const assertPODSpec = (() => {
               ),
             expected:
               '("boolean" | "bytes" | "cryptographic" | "date" | "eddsa_pubkey" | "int" | "null" | "string")',
-            value: value
+            value: value,
           },
           _errorFactory
         )
@@ -215,7 +217,7 @@ export const assertPODSpec = (() => {
                 ),
               expected:
                 "(EqualsEntry<any, string, string> | GreaterThan<any, string, string> | GreaterThanEq<any, string, string> | InRange<any, string> | IsMemberOf<any, Array<string>> | IsNotMemberOf<any, Array<string>> | LessThan<any, string, string> | LessThanEq<any, string, string> | NotEqualsEntry<any, string, string> | NotInRange<any, string>)",
-              value: value
+              value: value,
             },
             _errorFactory
           )) &&
@@ -238,7 +240,7 @@ export const assertPODSpec = (() => {
               ),
             expected:
               "(EqualsEntry<any, string, string> | GreaterThan<any, string, string> | GreaterThanEq<any, string, string> | InRange<any, string> | IsMemberOf<any, Array<string>> | IsNotMemberOf<any, Array<string>> | LessThan<any, string, string> | LessThanEq<any, string, string> | NotEqualsEntry<any, string, string> | NotInRange<any, string>)",
-            value: value
+            value: value,
           },
           _errorFactory
         )
@@ -256,7 +258,7 @@ export const assertPODSpec = (() => {
           method: "typia.createAssert",
           path: _path + ".entries",
           expected: "Array<string>",
-          value: input.entries
+          value: input.entries,
         },
         _errorFactory
       )) &&
@@ -269,7 +271,7 @@ export const assertPODSpec = (() => {
               method: "typia.createAssert",
               path: _path + ".entries[" + _index7 + "]",
               expected: "string",
-              value: elem
+              value: elem,
             },
             _errorFactory
           )
@@ -280,7 +282,7 @@ export const assertPODSpec = (() => {
           method: "typia.createAssert",
           path: _path + ".entries",
           expected: "Array<string>",
-          value: input.entries
+          value: input.entries,
         },
         _errorFactory
       )) &&
@@ -291,7 +293,7 @@ export const assertPODSpec = (() => {
           method: "typia.createAssert",
           path: _path + ".type",
           expected: '"isMemberOf"',
-          value: input.type
+          value: input.type,
         },
         _errorFactory
       )) &&
@@ -302,7 +304,7 @@ export const assertPODSpec = (() => {
           method: "typia.createAssert",
           path: _path + ".isMemberOf",
           expected: "Array<Array<string>>",
-          value: input.isMemberOf
+          value: input.isMemberOf,
         },
         _errorFactory
       )) &&
@@ -315,7 +317,7 @@ export const assertPODSpec = (() => {
                 method: "typia.createAssert",
                 path: _path + ".isMemberOf[" + _index8 + "]",
                 expected: "Array<string>",
-                value: elem
+                value: elem,
               },
               _errorFactory
             )) &&
@@ -329,7 +331,7 @@ export const assertPODSpec = (() => {
                     path:
                       _path + ".isMemberOf[" + _index8 + "][" + _index9 + "]",
                     expected: "string",
-                    value: elem
+                    value: elem,
                   },
                   _errorFactory
                 )
@@ -340,7 +342,7 @@ export const assertPODSpec = (() => {
               method: "typia.createAssert",
               path: _path + ".isMemberOf[" + _index8 + "]",
               expected: "Array<string>",
-              value: elem
+              value: elem,
             },
             _errorFactory
           )
@@ -351,7 +353,7 @@ export const assertPODSpec = (() => {
           method: "typia.createAssert",
           path: _path + ".isMemberOf",
           expected: "Array<Array<string>>",
-          value: input.isMemberOf
+          value: input.isMemberOf,
         },
         _errorFactory
       ));
@@ -367,7 +369,7 @@ export const assertPODSpec = (() => {
           method: "typia.createAssert",
           path: _path + ".entries",
           expected: "Array<string>",
-          value: input.entries
+          value: input.entries,
         },
         _errorFactory
       )) &&
@@ -380,7 +382,7 @@ export const assertPODSpec = (() => {
               method: "typia.createAssert",
               path: _path + ".entries[" + _index10 + "]",
               expected: "string",
-              value: elem
+              value: elem,
             },
             _errorFactory
           )
@@ -391,7 +393,7 @@ export const assertPODSpec = (() => {
           method: "typia.createAssert",
           path: _path + ".entries",
           expected: "Array<string>",
-          value: input.entries
+          value: input.entries,
         },
         _errorFactory
       )) &&
@@ -402,7 +404,7 @@ export const assertPODSpec = (() => {
           method: "typia.createAssert",
           path: _path + ".type",
           expected: '"isNotMemberOf"',
-          value: input.type
+          value: input.type,
         },
         _errorFactory
       )) &&
@@ -413,7 +415,7 @@ export const assertPODSpec = (() => {
           method: "typia.createAssert",
           path: _path + ".isNotMemberOf",
           expected: "Array<Array<string>>",
-          value: input.isNotMemberOf
+          value: input.isNotMemberOf,
         },
         _errorFactory
       )) &&
@@ -426,7 +428,7 @@ export const assertPODSpec = (() => {
                 method: "typia.createAssert",
                 path: _path + ".isNotMemberOf[" + _index11 + "]",
                 expected: "Array<string>",
-                value: elem
+                value: elem,
               },
               _errorFactory
             )) &&
@@ -445,7 +447,7 @@ export const assertPODSpec = (() => {
                       _index12 +
                       "]",
                     expected: "string",
-                    value: elem
+                    value: elem,
                   },
                   _errorFactory
                 )
@@ -456,7 +458,7 @@ export const assertPODSpec = (() => {
               method: "typia.createAssert",
               path: _path + ".isNotMemberOf[" + _index11 + "]",
               expected: "Array<string>",
-              value: elem
+              value: elem,
             },
             _errorFactory
           )
@@ -467,7 +469,7 @@ export const assertPODSpec = (() => {
           method: "typia.createAssert",
           path: _path + ".isNotMemberOf",
           expected: "Array<Array<string>>",
-          value: input.isNotMemberOf
+          value: input.isNotMemberOf,
         },
         _errorFactory
       ));
@@ -483,7 +485,7 @@ export const assertPODSpec = (() => {
           method: "typia.createAssert",
           path: _path + ".entry",
           expected: "string",
-          value: input.entry
+          value: input.entry,
         },
         _errorFactory
       )) &&
@@ -494,7 +496,7 @@ export const assertPODSpec = (() => {
           method: "typia.createAssert",
           path: _path + ".type",
           expected: '"inRange"',
-          value: input.type
+          value: input.type,
         },
         _errorFactory
       )) &&
@@ -505,7 +507,7 @@ export const assertPODSpec = (() => {
           method: "typia.createAssert",
           path: _path + ".inRange",
           expected: "RangePersistent",
-          value: input.inRange
+          value: input.inRange,
         },
         _errorFactory
       )) &&
@@ -516,7 +518,7 @@ export const assertPODSpec = (() => {
           method: "typia.createAssert",
           path: _path + ".inRange",
           expected: "RangePersistent",
-          value: input.inRange
+          value: input.inRange,
         },
         _errorFactory
       ));
@@ -532,7 +534,7 @@ export const assertPODSpec = (() => {
           method: "typia.createAssert",
           path: _path + ".min",
           expected: "string",
-          value: input.min
+          value: input.min,
         },
         _errorFactory
       )) &&
@@ -543,7 +545,7 @@ export const assertPODSpec = (() => {
           method: "typia.createAssert",
           path: _path + ".max",
           expected: "string",
-          value: input.max
+          value: input.max,
         },
         _errorFactory
       ));
@@ -559,7 +561,7 @@ export const assertPODSpec = (() => {
           method: "typia.createAssert",
           path: _path + ".entry",
           expected: "string",
-          value: input.entry
+          value: input.entry,
         },
         _errorFactory
       )) &&
@@ -570,7 +572,7 @@ export const assertPODSpec = (() => {
           method: "typia.createAssert",
           path: _path + ".type",
           expected: '"notInRange"',
-          value: input.type
+          value: input.type,
         },
         _errorFactory
       )) &&
@@ -581,7 +583,7 @@ export const assertPODSpec = (() => {
           method: "typia.createAssert",
           path: _path + ".notInRange",
           expected: "RangePersistent",
-          value: input.notInRange
+          value: input.notInRange,
         },
         _errorFactory
       )) &&
@@ -592,7 +594,7 @@ export const assertPODSpec = (() => {
           method: "typia.createAssert",
           path: _path + ".notInRange",
           expected: "RangePersistent",
-          value: input.notInRange
+          value: input.notInRange,
         },
         _errorFactory
       ));
@@ -608,7 +610,7 @@ export const assertPODSpec = (() => {
           method: "typia.createAssert",
           path: _path + ".entry",
           expected: "string",
-          value: input.entry
+          value: input.entry,
         },
         _errorFactory
       )) &&
@@ -619,7 +621,7 @@ export const assertPODSpec = (() => {
           method: "typia.createAssert",
           path: _path + ".type",
           expected: '"equalsEntry"',
-          value: input.type
+          value: input.type,
         },
         _errorFactory
       )) &&
@@ -630,7 +632,7 @@ export const assertPODSpec = (() => {
           method: "typia.createAssert",
           path: _path + ".otherEntry",
           expected: "string",
-          value: input.otherEntry
+          value: input.otherEntry,
         },
         _errorFactory
       ));
@@ -646,7 +648,7 @@ export const assertPODSpec = (() => {
           method: "typia.createAssert",
           path: _path + ".entry",
           expected: "string",
-          value: input.entry
+          value: input.entry,
         },
         _errorFactory
       )) &&
@@ -657,7 +659,7 @@ export const assertPODSpec = (() => {
           method: "typia.createAssert",
           path: _path + ".type",
           expected: '"notEqualsEntry"',
-          value: input.type
+          value: input.type,
         },
         _errorFactory
       )) &&
@@ -668,7 +670,7 @@ export const assertPODSpec = (() => {
           method: "typia.createAssert",
           path: _path + ".otherEntry",
           expected: "string",
-          value: input.otherEntry
+          value: input.otherEntry,
         },
         _errorFactory
       ));
@@ -684,7 +686,7 @@ export const assertPODSpec = (() => {
           method: "typia.createAssert",
           path: _path + ".entry",
           expected: "string",
-          value: input.entry
+          value: input.entry,
         },
         _errorFactory
       )) &&
@@ -695,7 +697,7 @@ export const assertPODSpec = (() => {
           method: "typia.createAssert",
           path: _path + ".type",
           expected: '"greaterThan"',
-          value: input.type
+          value: input.type,
         },
         _errorFactory
       )) &&
@@ -706,7 +708,7 @@ export const assertPODSpec = (() => {
           method: "typia.createAssert",
           path: _path + ".otherEntry",
           expected: "string",
-          value: input.otherEntry
+          value: input.otherEntry,
         },
         _errorFactory
       ));
@@ -722,7 +724,7 @@ export const assertPODSpec = (() => {
           method: "typia.createAssert",
           path: _path + ".entry",
           expected: "string",
-          value: input.entry
+          value: input.entry,
         },
         _errorFactory
       )) &&
@@ -733,7 +735,7 @@ export const assertPODSpec = (() => {
           method: "typia.createAssert",
           path: _path + ".type",
           expected: '"greaterThanEq"',
-          value: input.type
+          value: input.type,
         },
         _errorFactory
       )) &&
@@ -744,7 +746,7 @@ export const assertPODSpec = (() => {
           method: "typia.createAssert",
           path: _path + ".otherEntry",
           expected: "string",
-          value: input.otherEntry
+          value: input.otherEntry,
         },
         _errorFactory
       ));
@@ -760,7 +762,7 @@ export const assertPODSpec = (() => {
           method: "typia.createAssert",
           path: _path + ".entry",
           expected: "string",
-          value: input.entry
+          value: input.entry,
         },
         _errorFactory
       )) &&
@@ -771,7 +773,7 @@ export const assertPODSpec = (() => {
           method: "typia.createAssert",
           path: _path + ".type",
           expected: '"lessThan"',
-          value: input.type
+          value: input.type,
         },
         _errorFactory
       )) &&
@@ -782,7 +784,7 @@ export const assertPODSpec = (() => {
           method: "typia.createAssert",
           path: _path + ".otherEntry",
           expected: "string",
-          value: input.otherEntry
+          value: input.otherEntry,
         },
         _errorFactory
       ));
@@ -798,7 +800,7 @@ export const assertPODSpec = (() => {
           method: "typia.createAssert",
           path: _path + ".entry",
           expected: "string",
-          value: input.entry
+          value: input.entry,
         },
         _errorFactory
       )) &&
@@ -809,7 +811,7 @@ export const assertPODSpec = (() => {
           method: "typia.createAssert",
           path: _path + ".type",
           expected: '"lessThanEq"',
-          value: input.type
+          value: input.type,
         },
         _errorFactory
       )) &&
@@ -820,7 +822,7 @@ export const assertPODSpec = (() => {
           method: "typia.createAssert",
           path: _path + ".otherEntry",
           expected: "string",
-          value: input.otherEntry
+          value: input.otherEntry,
         },
         _errorFactory
       ));
@@ -858,7 +860,7 @@ export const assertPODSpec = (() => {
             path: _path,
             expected:
               "(IsMemberOf<any, Array<string>> | IsNotMemberOf<any, Array<string>> | InRange<any, string> | NotInRange<any, string> | LessThanEq<any, string, string> | LessThan<any, string, string> | GreaterThanEq<any, string, string> | GreaterThan<any, string, string> | NotEqualsEntry<any, string, string> | EqualsEntry<any, string, string>)",
-            value: input
+            value: input,
           },
           _errorFactory
         );
@@ -880,7 +882,7 @@ export const assertPODSpec = (() => {
               method: "typia.createAssert",
               path: _path + "",
               expected: "PODSpec<EntryTypes, StatementMap>",
-              value: input
+              value: input,
             },
             _errorFactory
           )) &&
@@ -891,7 +893,7 @@ export const assertPODSpec = (() => {
             method: "typia.createAssert",
             path: _path + "",
             expected: "PODSpec<EntryTypes, StatementMap>",
-            value: input
+            value: input,
           },
           _errorFactory
         ))(input, "$input", true);

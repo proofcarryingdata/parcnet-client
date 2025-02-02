@@ -6,7 +6,7 @@ import type {
   PODEdDSAPublicKeyValue,
   PODIntValue,
   PODNullValue,
-  PODStringValue
+  PODStringValue,
 } from "@pcd/pod";
 
 // Some terse utility functions for converting native JavaScript values, or

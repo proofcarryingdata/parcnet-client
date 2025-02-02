@@ -4,7 +4,7 @@ import {
   POD_DATE_MIN,
   POD_INT_MAX,
   POD_INT_MIN,
-  type PODName
+  type PODName,
 } from "@pcd/pod";
 import type {
   EntryTypes,
@@ -13,7 +13,7 @@ import type {
   PODValueTypeFromTypeName,
   PODValueTupleForNamedEntries,
   PODValueType,
-  EntriesOfType
+  EntriesOfType,
 } from "./types/entries.js";
 import type {
   StatementMap,
@@ -27,12 +27,12 @@ import type {
   GreaterThanEq,
   LessThan,
   LessThanEq,
-  SupportsRangeChecks
+  SupportsRangeChecks,
 } from "./types/statements.js";
 import {
   convertValuesToStringTuples,
   supportsRangeChecks,
-  validateRange
+  validateRange,
 } from "./shared.js";
 import { virtualEntries, type PODSpec } from "./pod.js";
 
@@ -64,7 +64,7 @@ type MustBePODValueType<T> = T extends PODValueType ? T : never;
 
 type EntryType<
   P extends NamedPODSpecs,
-  K extends keyof AllPODEntries<P>
+  K extends keyof AllPODEntries<P>,
 > = MustBePODValueType<AllPODEntries<P>[K]>;
 
 type Evaluate<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
@@ -72,7 +72,7 @@ type Evaluate<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
 type AddPOD<
   PODs extends NamedPODSpecs,
   N extends PODName,
-  Spec extends PODSpec<EntryTypes, StatementMap>
+  Spec extends PODSpec<EntryTypes, StatementMap>,
 > = Evaluate<{
   [K in keyof PODs | N]: K extends N ? Spec : PODs[K & keyof PODs];
 }>;
@@ -87,7 +87,7 @@ type AddPOD<
 // the first.
 export class PODGroupSpecBuilder<
   P extends NamedPODSpecs,
-  S extends StatementMap
+  S extends StatementMap,
 > {
   readonly #spec: PODGroupSpec<P, S>;
 
@@ -99,7 +99,7 @@ export class PODGroupSpecBuilder<
   public static create(): PODGroupSpecBuilder<{}, {}> {
     return new PODGroupSpecBuilder({
       pods: {},
-      statements: {}
+      statements: {},
     });
   }
 
@@ -110,7 +110,7 @@ export class PODGroupSpecBuilder<
   public pod<
     N extends PODName,
     Spec extends PODSpec<EntryTypes, StatementMap>,
-    NewPods extends AddPOD<P, N, Spec>
+    NewPods extends AddPOD<P, N, Spec>,
   >(name: N, spec: Spec): PODGroupSpecBuilder<NewPods, S> {
     if (name in this.#spec.pods) {
       throw new Error(`POD "${name}" already exists`);
@@ -121,7 +121,7 @@ export class PODGroupSpecBuilder<
 
     return new PODGroupSpecBuilder({
       ...this.#spec,
-      pods: { ...this.#spec.pods, [name]: spec } as unknown as NewPods
+      pods: { ...this.#spec.pods, [name]: spec } as unknown as NewPods,
     });
   }
 
@@ -142,15 +142,15 @@ export class PODGroupSpecBuilder<
         ...Object.entries(podSpec.entries).map(
           ([entryName, entryType]): [string, PODValueType] => [
             `${podName}.${entryName}`,
-            entryType
+            entryType,
           ]
         ),
         ...Object.entries(virtualEntries).map(
           ([entryName, entryType]): [string, PODValueType] => [
             `${podName}.${entryName}`,
-            entryType
+            entryType,
           ]
-        )
+        ),
       ])
     );
 
@@ -167,7 +167,7 @@ export class PODGroupSpecBuilder<
         names,
         values,
         allEntries as Record<N[number], PODValueType>
-      )
+      ),
     };
 
     const baseName = `${names.join("_")}_isMemberOf`;
@@ -182,8 +182,8 @@ export class PODGroupSpecBuilder<
       ...this.#spec,
       statements: {
         ...this.#spec.statements,
-        [statementName]: statement
-      }
+        [statementName]: statement,
+      },
     });
   }
 
@@ -204,15 +204,15 @@ export class PODGroupSpecBuilder<
         ...Object.entries(podSpec.entries).map(
           ([entryName, entryType]): [string, PODValueType] => [
             `${podName}.${entryName}`,
-            entryType
+            entryType,
           ]
         ),
         ...Object.entries(virtualEntries).map(
           ([entryName, entryType]): [string, PODValueType] => [
             `${podName}.${entryName}`,
-            entryType
+            entryType,
           ]
-        )
+        ),
       ])
     );
 
@@ -229,7 +229,7 @@ export class PODGroupSpecBuilder<
         names,
         values,
         allEntries as Record<N[number], PODValueType>
-      )
+      ),
     };
 
     const baseName = `${names.join("_")}_isNotMemberOf`;
@@ -244,14 +244,14 @@ export class PODGroupSpecBuilder<
       ...this.#spec,
       statements: {
         ...this.#spec.statements,
-        [statementName]: statement
-      }
+        [statementName]: statement,
+      },
     });
   }
 
   public inRange<
     N extends keyof EntriesOfType<AllPODEntries<P>, SupportsRangeChecks> &
-      string
+      string,
   >(
     name: N,
     range: {
@@ -312,8 +312,8 @@ export class PODGroupSpecBuilder<
         max:
           range.max instanceof Date
             ? range.max.getTime().toString()
-            : range.max.toString()
-      }
+            : range.max.toString(),
+      },
     };
 
     const baseName = `${name}_inRange`;
@@ -328,14 +328,14 @@ export class PODGroupSpecBuilder<
       ...this.#spec,
       statements: {
         ...this.#spec.statements,
-        [statementName]: statement
-      }
+        [statementName]: statement,
+      },
     });
   }
 
   public notInRange<
     N extends keyof EntriesOfType<AllPODEntries<P>, SupportsRangeChecks> &
-      string
+      string,
   >(
     name: N,
     range: {
@@ -396,8 +396,8 @@ export class PODGroupSpecBuilder<
         max:
           range.max instanceof Date
             ? range.max.getTime().toString()
-            : range.max.toString()
-      }
+            : range.max.toString(),
+      },
     };
 
     const baseName = `${name}_notInRange`;
@@ -412,14 +412,14 @@ export class PODGroupSpecBuilder<
       ...this.#spec,
       statements: {
         ...this.#spec.statements,
-        [statementName]: statement
-      }
+        [statementName]: statement,
+      },
     });
   }
 
   public greaterThan<
     N1 extends keyof AllPODEntries<P> & string,
-    N2 extends keyof EntriesOfType<AllPODEntries<P>, EntryType<P, N1>> & string
+    N2 extends keyof EntriesOfType<AllPODEntries<P>, EntryType<P, N1>> & string,
   >(name1: N1, name2: N2): PODGroupSpecBuilder<P, S> {
     // Check that both entries exist
     const [pod1, entry1] = name1.split(".");
@@ -454,7 +454,7 @@ export class PODGroupSpecBuilder<
     const statement: GreaterThan<AllPODEntries<P>, N1, N2> = {
       entry: name1,
       type: "greaterThan",
-      otherEntry: name2
+      otherEntry: name2,
     };
 
     const baseName = `${name1}_${name2}_greaterThan`;
@@ -469,14 +469,14 @@ export class PODGroupSpecBuilder<
       ...this.#spec,
       statements: {
         ...this.#spec.statements,
-        [statementName]: statement
-      }
+        [statementName]: statement,
+      },
     });
   }
 
   public greaterThanEq<
     N1 extends keyof AllPODEntries<P> & string,
-    N2 extends keyof EntriesOfType<AllPODEntries<P>, EntryType<P, N1>> & string
+    N2 extends keyof EntriesOfType<AllPODEntries<P>, EntryType<P, N1>> & string,
   >(name1: N1, name2: N2): PODGroupSpecBuilder<P, S> {
     // Check that both entries exist
     const [pod1, entry1] = name1.split(".");
@@ -511,7 +511,7 @@ export class PODGroupSpecBuilder<
     const statement: GreaterThanEq<AllPODEntries<P>, N1, N2> = {
       entry: name1,
       type: "greaterThanEq",
-      otherEntry: name2
+      otherEntry: name2,
     };
 
     const baseName = `${name1}_${name2}_greaterThanEq`;
@@ -526,14 +526,14 @@ export class PODGroupSpecBuilder<
       ...this.#spec,
       statements: {
         ...this.#spec.statements,
-        [statementName]: statement
-      }
+        [statementName]: statement,
+      },
     });
   }
 
   public lessThan<
     N1 extends keyof AllPODEntries<P> & string,
-    N2 extends keyof EntriesOfType<AllPODEntries<P>, EntryType<P, N1>> & string
+    N2 extends keyof EntriesOfType<AllPODEntries<P>, EntryType<P, N1>> & string,
   >(name1: N1, name2: N2): PODGroupSpecBuilder<P, S> {
     // Check that both entries exist
     const [pod1, entry1] = name1.split(".");
@@ -568,7 +568,7 @@ export class PODGroupSpecBuilder<
     const statement: LessThan<AllPODEntries<P>, N1, N2> = {
       entry: name1,
       type: "lessThan",
-      otherEntry: name2
+      otherEntry: name2,
     };
 
     const baseName = `${name1}_${name2}_lessThan`;
@@ -583,14 +583,14 @@ export class PODGroupSpecBuilder<
       ...this.#spec,
       statements: {
         ...this.#spec.statements,
-        [statementName]: statement
-      }
+        [statementName]: statement,
+      },
     });
   }
 
   public lessThanEq<
     N1 extends keyof AllPODEntries<P> & string,
-    N2 extends keyof EntriesOfType<AllPODEntries<P>, EntryType<P, N1>> & string
+    N2 extends keyof EntriesOfType<AllPODEntries<P>, EntryType<P, N1>> & string,
   >(name1: N1, name2: N2): PODGroupSpecBuilder<P, S> {
     // Check that both entries exist
     const [pod1, entry1] = name1.split(".");
@@ -625,7 +625,7 @@ export class PODGroupSpecBuilder<
     const statement: LessThanEq<AllPODEntries<P>, N1, N2> = {
       entry: name1,
       type: "lessThanEq",
-      otherEntry: name2
+      otherEntry: name2,
     };
 
     const baseName = `${name1}_${name2}_lessThanEq`;
@@ -640,14 +640,14 @@ export class PODGroupSpecBuilder<
       ...this.#spec,
       statements: {
         ...this.#spec.statements,
-        [statementName]: statement
-      }
+        [statementName]: statement,
+      },
     });
   }
 
   public equalsEntry<
     N1 extends keyof AllPODEntries<P> & string,
-    N2 extends keyof EntriesOfType<AllPODEntries<P>, EntryType<P, N1>> & string
+    N2 extends keyof EntriesOfType<AllPODEntries<P>, EntryType<P, N1>> & string,
   >(name1: N1, name2: N2): PODGroupSpecBuilder<P, S> {
     // Check that both entries exist
     const [pod1, entry1] = name1.split(".");
@@ -682,7 +682,7 @@ export class PODGroupSpecBuilder<
     const statement: EqualsEntry<AllPODEntries<P>, N1, N2> = {
       entry: name1,
       type: "equalsEntry",
-      otherEntry: name2
+      otherEntry: name2,
     };
 
     const baseName = `${name1}_${name2}_equalsEntry`;
@@ -697,14 +697,14 @@ export class PODGroupSpecBuilder<
       ...this.#spec,
       statements: {
         ...this.#spec.statements,
-        [statementName]: statement
-      }
+        [statementName]: statement,
+      },
     });
   }
 
   public notEqualsEntry<
     N1 extends keyof AllPODEntries<P> & string,
-    N2 extends keyof EntriesOfType<AllPODEntries<P>, EntryType<P, N1>> & string
+    N2 extends keyof EntriesOfType<AllPODEntries<P>, EntryType<P, N1>> & string,
   >(name1: N1, name2: N2): PODGroupSpecBuilder<P, S> {
     // Check that both entries exist
     const [pod1, entry1] = name1.split(".");
@@ -739,7 +739,7 @@ export class PODGroupSpecBuilder<
     const statement: NotEqualsEntry<AllPODEntries<P>, N1, N2> = {
       entry: name1,
       type: "notEqualsEntry",
-      otherEntry: name2
+      otherEntry: name2,
     };
 
     const baseName = `${name1}_${name2}_notEqualsEntry`;
@@ -754,8 +754,8 @@ export class PODGroupSpecBuilder<
       ...this.#spec,
       statements: {
         ...this.#spec.statements,
-        [statementName]: statement
-      }
+        [statementName]: statement,
+      },
     });
   }
 }

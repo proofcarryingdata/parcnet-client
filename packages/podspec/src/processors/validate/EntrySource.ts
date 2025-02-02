@@ -10,7 +10,7 @@ import {
   type ValidationTypeMismatchIssue,
   type ValidationUnexpectedInputEntryIssue,
   type ValidationUnexpectedInputPodIssue,
-  IssueCode
+  IssueCode,
 } from "./issues.js";
 import type { ValidateOptions } from "../validate.js";
 
@@ -33,7 +33,7 @@ function auditEntries(
       issues.push({
         code: IssueCode.missing_entry,
         path: [...path, key],
-        key
+        key,
       } satisfies ValidationMissingEntryIssue);
       if (exitOnError) {
         return issues;
@@ -43,7 +43,7 @@ function auditEntries(
       issues.push({
         code: IssueCode.type_mismatch,
         path: [...path, key],
-        expectedType: entryType
+        expectedType: entryType,
       } satisfies ValidationTypeMismatchIssue);
       if (exitOnError) {
         return issues;
@@ -57,7 +57,7 @@ function auditEntries(
         issues.push({
           code: IssueCode.unexpected_input_entry,
           path: [...path, key],
-          key
+          key,
         } satisfies ValidationUnexpectedInputEntryIssue);
         if (exitOnError) {
           return issues;
@@ -127,7 +127,7 @@ export class EntrySourcePodGroupSpec implements EntrySource {
         issues.push({
           code: IssueCode.missing_pod,
           path: [...path, podName],
-          podName
+          podName,
         } satisfies ValidationMissingPodIssue);
         if (options.exitOnError) {
           return issues;
@@ -155,7 +155,7 @@ export class EntrySourcePodGroupSpec implements EntrySource {
           issues.push({
             code: IssueCode.unexpected_input_pod,
             path: [...path, podName],
-            podName
+            podName,
           } satisfies ValidationUnexpectedInputPodIssue);
           if (options.exitOnError) {
             return issues;

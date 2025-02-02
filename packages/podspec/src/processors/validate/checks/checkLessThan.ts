@@ -23,7 +23,7 @@ export function checkLessThan(
       statementName: statementName,
       statementType: statement.type,
       entries: [statement.entry],
-      path: [...path, statementName]
+      path: [...path, statementName],
     });
     return issues;
   }
@@ -33,7 +33,7 @@ export function checkLessThan(
       statementName: statementName,
       statementType: statement.type,
       entries: [statement.otherEntry],
-      path: [...path, statementName]
+      path: [...path, statementName],
     });
     return issues;
   }
@@ -48,7 +48,7 @@ export function checkLessThan(
       statementName: statementName,
       statementType: statement.type,
       entries: [statement.entry, statement.otherEntry],
-      path: [...path, statementName]
+      path: [...path, statementName],
     });
     return issues;
   }
@@ -59,7 +59,7 @@ export function checkLessThan(
       statementName: statementName,
       statementType: statement.type,
       entries: [statement.entry],
-      path: [...path, statementName]
+      path: [...path, statementName],
     });
     return issues;
   }
@@ -70,7 +70,7 @@ export function checkLessThan(
       statementName: statementName,
       statementType: statement.type,
       entries: [statement.otherEntry],
-      path: [...path, statementName]
+      path: [...path, statementName],
     });
     return issues;
   }
@@ -81,7 +81,7 @@ export function checkLessThan(
       statementName: statementName,
       statementType: statement.type,
       entries: [statement.entry, statement.otherEntry],
-      path: [...path, statementName]
+      path: [...path, statementName],
     });
     return issues;
   }
@@ -94,7 +94,7 @@ export function checkLessThan(
       statementName: statementName,
       statementType: statement.type,
       entries: [statement.entry, statement.otherEntry],
-      path: [...path, statementName]
+      path: [...path, statementName],
     });
   }
   return issues;

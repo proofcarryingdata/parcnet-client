@@ -7,5 +7,5 @@ export {
   PODSpecBuilder,
   type PODGroupSpec,
   PODGroupSpecBuilder,
-  validatePOD
+  validatePOD,
 };

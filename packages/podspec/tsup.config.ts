@@ -8,6 +8,6 @@ export default defineConfig({
   splitting: false,
   minify: true,
   define: {
-    "import.meta.vitest": "undefined"
-  }
+    "import.meta.vitest": "undefined",
+  },
 });

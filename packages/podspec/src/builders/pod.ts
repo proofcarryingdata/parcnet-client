@@ -1,31 +1,18 @@
 import {
-  checkPODName,
   POD_DATE_MAX,
   POD_DATE_MIN,
   POD_INT_MAX,
-  POD_INT_MIN
+  POD_INT_MIN,
+  checkPODName,
 } from "@pcd/pod";
+import type { IsJsonSafe } from "../shared/jsonSafe.js";
 import {
+  canonicalizeJSON,
   convertValuesToStringTuples,
   deepFreeze,
   supportsRangeChecks,
-  validateRange
+  validateRange,
 } from "./shared.js";
-import type {
-  IsMemberOf,
-  IsNotMemberOf,
-  InRange,
-  NotInRange,
-  EqualsEntry,
-  NotEqualsEntry,
-  SupportsRangeChecks,
-  StatementName,
-  StatementMap,
-  GreaterThan,
-  GreaterThanEq,
-  LessThan,
-  LessThanEq
-} from "./types/statements.js";
 import type {
   EntriesOfType,
   EntryKeys,
@@ -33,15 +20,28 @@ import type {
   PODValueTupleForNamedEntries,
   PODValueType,
   PODValueTypeFromTypeName,
-  VirtualEntries
+  VirtualEntries,
 } from "./types/entries.js";
-import canonicalize from "canonicalize/lib/canonicalize.js";
-import type { IsJsonSafe } from "../shared/jsonSafe.js";
+import type {
+  EqualsEntry,
+  GreaterThan,
+  GreaterThanEq,
+  InRange,
+  IsMemberOf,
+  IsNotMemberOf,
+  LessThan,
+  LessThanEq,
+  NotEqualsEntry,
+  NotInRange,
+  StatementMap,
+  StatementName,
+  SupportsRangeChecks,
+} from "./types/statements.js";
 
 /**
  @todo
  - [x] add lessThan, greaterThan, lessThanEq, greaterThanEq
- - [ ] add omit
+ - [x] add omitEntries
  - [x] maybe add pick/omit for statements?
  - [x] add signerPublicKey support (done at type level, not run-time)
  - [ ] add constraints on signature
@@ -56,17 +56,10 @@ import type { IsJsonSafe } from "../shared/jsonSafe.js";
  - [ ] consider adding a hash to the spec to prevent tampering
  */
 
-function canonicalizeJSON(input: unknown): string | undefined {
-  // Something is screwy with the typings for canonicalize
-  return (canonicalize as unknown as (input: unknown) => string | undefined)(
-    input
-  );
-}
-
 export const virtualEntries: VirtualEntries = {
   $contentID: "string",
-  $signature: "string",
-  $signerPublicKey: "eddsa_pubkey"
+  //$signature: "string",
+  $signerPublicKey: "eddsa_pubkey",
 };
 
 export type PODSpec<E extends EntryTypes, S extends StatementMap> = {
@@ -113,13 +106,13 @@ type Concrete<T> = T extends object ? { [K in keyof T]: T[K] } : T;
 type AddEntry<
   E extends EntryTypes,
   K extends keyof E,
-  V extends PODValueType
+  V extends PODValueType,
 > = Concrete<E & { [P in K]: V }>;
 
 export class PODSpecBuilder<
   E extends EntryTypes,
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  S extends StatementMap = {}
+  S extends StatementMap = {},
 > {
   readonly #spec: PODSpec<E, S>;
 
@@ -130,7 +123,7 @@ export class PODSpecBuilder<
   public static create() {
     return new PODSpecBuilder({
       entries: {},
-      statements: {}
+      statements: {},
     });
   }
 
@@ -146,7 +139,7 @@ export class PODSpecBuilder<
     return JSON.stringify(
       {
         ...this.#spec,
-        hash: canonicalized /* TODO hashing! */
+        hash: canonicalized /* TODO hashing! */,
       },
       null,
       2
@@ -156,7 +149,7 @@ export class PODSpecBuilder<
   public entry<
     K extends string,
     V extends PODValueType,
-    NewEntries extends AddEntry<E, K, V>
+    NewEntries extends AddEntry<E, K, V>,
   >(key: Exclude<K, keyof E>, type: V): PODSpecBuilder<NewEntries, S> {
     if (key in this.#spec.entries) {
       throw new Error(`Entry "${key}" already exists`);
@@ -169,16 +162,16 @@ export class PODSpecBuilder<
       ...this.#spec,
       entries: {
         ...this.#spec.entries,
-        [key]: type
+        [key]: type,
       } as NewEntries,
-      statements: this.#spec.statements
+      statements: this.#spec.statements,
     });
   }
 
   /**
    * Pick entries by key
    */
-  public pick<K extends keyof E & string>(
+  public pickEntries<K extends keyof E & string>(
     keys: K[]
   ): PODSpecBuilder<Pick<E, K>, Concrete<NonOverlappingStatements<S, K[]>>> {
     return new PODSpecBuilder({
@@ -217,7 +210,51 @@ export class PODSpecBuilder<
               );
           }
         })
-      ) as Concrete<NonOverlappingStatements<S, K[]>>
+      ) as Concrete<NonOverlappingStatements<S, K[]>>,
+    });
+  }
+
+  public omitEntries<K extends keyof E & string>(
+    keys: K[]
+  ): PODSpecBuilder<Omit<E, K>, Concrete<NonOverlappingStatements<S, K[]>>> {
+    return new PODSpecBuilder({
+      ...this.#spec,
+      entries: Object.fromEntries(
+        Object.entries(this.#spec.entries).filter(
+          ([key]) => !keys.includes(key as K)
+        )
+      ) as Omit<E, K>,
+      statements: Object.fromEntries(
+        Object.entries(this.#spec.statements).filter(([_key, statement]) => {
+          const statementType = statement.type;
+          switch (statementType) {
+            case "isMemberOf":
+            case "isNotMemberOf":
+              return (statement.entries as EntryKeys<E>).every(
+                (entry) => !keys.includes(entry as K)
+              );
+            case "inRange":
+            case "notInRange":
+              return keys.includes(statement.entry as K);
+            case "equalsEntry":
+            case "notEqualsEntry":
+            case "greaterThan":
+            case "greaterThanEq":
+            case "lessThan":
+            case "lessThanEq":
+              return (
+                !keys.includes(statement.entry as K) &&
+                !keys.includes(statement.otherEntry as K)
+              );
+
+            default:
+              const _exhaustiveCheck: never = statement;
+              throw new Error(
+                `Unsupported statement type: ${statementType as string}`
+              );
+          }
+        })
+      ) as Concrete<NonOverlappingStatements<S, K[]>>,
     });
   }
 
@@ -230,7 +267,7 @@ export class PODSpecBuilder<
         Object.entries(this.#spec.statements).filter(([key]) =>
           keys.includes(key as K)
         )
-      ) as Concrete<Pick<S, K>>
+      ) as Concrete<Pick<S, K>>,
     });
   }
 
@@ -243,7 +280,7 @@ export class PODSpecBuilder<
         Object.entries(this.#spec.statements).filter(
           ([key]) => !keys.includes(key as K)
         )
-      ) as Concrete<Omit<S, K>>
+      ) as Concrete<Omit<S, K>>,
     });
   }
 
@@ -286,7 +323,7 @@ export class PODSpecBuilder<
 
     const allEntries = {
       ...this.#spec.entries,
-      ...virtualEntries
+      ...virtualEntries,
     };
 
     for (const name of names) {
@@ -311,7 +348,7 @@ export class PODSpecBuilder<
     const statement: IsMemberOf<E & VirtualEntries, N> = {
       entries: names,
       type: "isMemberOf",
-      isMemberOf: convertValuesToStringTuples<N>(names, values, allEntries)
+      isMemberOf: convertValuesToStringTuples<N>(names, values, allEntries),
     };
 
     const baseName = `${names.join("_")}_isMemberOf`;
@@ -326,8 +363,8 @@ export class PODSpecBuilder<
       ...this.#spec,
       statements: {
         ...this.#spec.statements,
-        [statementName]: statement
-      }
+        [statementName]: statement,
+      },
     });
   }
 
@@ -372,7 +409,7 @@ export class PODSpecBuilder<
 
     const allEntries = {
       ...this.#spec.entries,
-      ...virtualEntries
+      ...virtualEntries,
     };
 
     for (const name of names) {
@@ -397,7 +434,7 @@ export class PODSpecBuilder<
     const statement: IsNotMemberOf<E & VirtualEntries, N> = {
       entries: names,
       type: "isNotMemberOf",
-      isNotMemberOf: convertValuesToStringTuples<N>(names, values, allEntries)
+      isNotMemberOf: convertValuesToStringTuples<N>(names, values, allEntries),
     };
 
     const baseName = `${names.join("_")}_isNotMemberOf`;
@@ -412,8 +449,8 @@ export class PODSpecBuilder<
       ...this.#spec,
       statements: {
         ...this.#spec.statements,
-        [statementName]: statement
-      }
+        [statementName]: statement,
+      },
     });
   }
 
@@ -425,7 +462,7 @@ export class PODSpecBuilder<
    * @returns A new PODSpecBuilder with the statement added
    */
   public inRange<
-    N extends keyof EntriesOfType<E, SupportsRangeChecks> & string
+    N extends keyof EntriesOfType<E, SupportsRangeChecks> & string,
   >(
     name: N,
     range: {
@@ -483,8 +520,8 @@ export class PODSpecBuilder<
         max:
           range.max instanceof Date
             ? range.max.getTime().toString()
-            : range.max.toString()
-      }
+            : range.max.toString(),
+      },
     };
 
     const baseName = `${name}_inRange`;
@@ -499,8 +536,8 @@ export class PODSpecBuilder<
       ...this.#spec,
       statements: {
         ...this.#spec.statements,
-        [statementName]: statement
-      }
+        [statementName]: statement,
+      },
     });
   }
 
@@ -512,7 +549,7 @@ export class PODSpecBuilder<
    * @returns A new PODSpecBuilder with the statement added
    */
   public notInRange<
-    N extends keyof EntriesOfType<E, SupportsRangeChecks> & string
+    N extends keyof EntriesOfType<E, SupportsRangeChecks> & string,
   >(
     name: N,
     range: {
@@ -573,8 +610,8 @@ export class PODSpecBuilder<
         max:
           range.max instanceof Date
             ? range.max.getTime().toString()
-            : range.max.toString()
-      }
+            : range.max.toString(),
+      },
     };
 
     const baseName = `${name}_notInRange`;
@@ -589,8 +626,8 @@ export class PODSpecBuilder<
       ...this.#spec,
       statements: {
         ...this.#spec.statements,
-        [statementName]: statement
-      }
+        [statementName]: statement,
+      },
     });
   }
 
@@ -600,7 +637,7 @@ export class PODSpecBuilder<
       E & VirtualEntries,
       (E & VirtualEntries)[N1]
     > &
-      string
+      string,
   >(
     name1: N1,
     name2: Exclude<N2, N1>
@@ -627,7 +664,7 @@ export class PODSpecBuilder<
     const statement = {
       entry: name1,
       type: "equalsEntry",
-      otherEntry: name2
+      otherEntry: name2,
     } satisfies EqualsEntry<E, N1, N2>;
 
     const baseName = `${name1}_${name2}_equalsEntry`;
@@ -642,8 +679,8 @@ export class PODSpecBuilder<
       ...this.#spec,
       statements: {
         ...this.#spec.statements,
-        [statementName]: statement
-      }
+        [statementName]: statement,
+      },
     });
   }
 
@@ -653,7 +690,7 @@ export class PODSpecBuilder<
       E & VirtualEntries,
       (E & VirtualEntries)[N1]
     > &
-      string
+      string,
   >(
     name1: N1,
     name2: Exclude<N2, N1>
@@ -684,7 +721,7 @@ export class PODSpecBuilder<
     const statement = {
       entry: name1,
       type: "notEqualsEntry",
-      otherEntry: name2
+      otherEntry: name2,
     } satisfies NotEqualsEntry<E, N1, N2>;
 
     const baseName = `${name1}_${name2}_notEqualsEntry`;
@@ -699,8 +736,8 @@ export class PODSpecBuilder<
       ...this.#spec,
       statements: {
         ...this.#spec.statements,
-        [statementName]: statement
-      }
+        [statementName]: statement,
+      },
     });
   }
 
@@ -710,7 +747,7 @@ export class PODSpecBuilder<
       E & VirtualEntries,
       (E & VirtualEntries)[N1]
     > &
-      string
+      string,
   >(
     name1: N1,
     name2: Exclude<N2, N1>
@@ -737,7 +774,7 @@ export class PODSpecBuilder<
     const statement = {
       entry: name1,
       type: "greaterThan",
-      otherEntry: name2
+      otherEntry: name2,
     } satisfies GreaterThan<E, N1, N2>;
 
     const baseName = `${name1}_${name2}_greaterThan`;
@@ -752,8 +789,8 @@ export class PODSpecBuilder<
       ...this.#spec,
       statements: {
         ...this.#spec.statements,
-        [statementName]: statement
-      }
+        [statementName]: statement,
+      },
     });
   }
 
@@ -763,7 +800,7 @@ export class PODSpecBuilder<
       E & VirtualEntries,
       (E & VirtualEntries)[N1]
     > &
-      string
+      string,
   >(
     name1: N1,
     name2: Exclude<N2, N1>
@@ -794,7 +831,7 @@ export class PODSpecBuilder<
     const statement = {
       entry: name1,
       type: "greaterThanEq",
-      otherEntry: name2
+      otherEntry: name2,
     } satisfies GreaterThanEq<E, N1, N2>;
 
     const baseName = `${name1}_${name2}_greaterThanEq`;
@@ -809,8 +846,8 @@ export class PODSpecBuilder<
       ...this.#spec,
       statements: {
         ...this.#spec.statements,
-        [statementName]: statement
-      }
+        [statementName]: statement,
+      },
     });
   }
 
@@ -820,7 +857,7 @@ export class PODSpecBuilder<
       E & VirtualEntries,
       (E & VirtualEntries)[N1]
     > &
-      string
+      string,
   >(
     name1: N1,
     name2: Exclude<N2, N1>
@@ -847,7 +884,7 @@ export class PODSpecBuilder<
     const statement = {
       entry: name1,
       type: "lessThan",
-      otherEntry: name2
+      otherEntry: name2,
     } satisfies LessThan<E, N1, N2>;
 
     const baseName = `${name1}_${name2}_lessThan`;
@@ -862,8 +899,8 @@ export class PODSpecBuilder<
       ...this.#spec,
       statements: {
         ...this.#spec.statements,
-        [statementName]: statement
-      }
+        [statementName]: statement,
+      },
     });
   }
 
@@ -873,7 +910,7 @@ export class PODSpecBuilder<
       E & VirtualEntries,
       (E & VirtualEntries)[N1]
     > &
-      string
+      string,
   >(
     name1: N1,
     name2: Exclude<N2, N1>
@@ -900,7 +937,7 @@ export class PODSpecBuilder<
     const statement = {
       entry: name1,
       type: "lessThanEq",
-      otherEntry: name2
+      otherEntry: name2,
     } satisfies LessThanEq<E, N1, N2>;
 
     const baseName = `${name1}_${name2}_lessThanEq`;
@@ -915,8 +952,8 @@ export class PODSpecBuilder<
       ...this.#spec,
       statements: {
         ...this.#spec.statements,
-        [statementName]: statement
-      }
+        [statementName]: statement,
+      },
     });
   }
 }

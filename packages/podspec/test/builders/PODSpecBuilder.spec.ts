@@ -12,7 +12,7 @@ describe("PODSpecBuilder", () => {
     const b = a.entry("a", "string").entry("b", "int");
     expect(b.spec().entries).toEqual({
       a: "string",
-      b: "int"
+      b: "int",
     });
 
     const c = b.isMemberOf(["a"], ["foo"]);
@@ -20,8 +20,8 @@ describe("PODSpecBuilder", () => {
       a_isMemberOf: {
         entries: ["a"],
         type: "isMemberOf",
-        isMemberOf: [["foo"]]
-      }
+        isMemberOf: [["foo"]],
+      },
     });
 
     const d = c.inRange("b", { min: 10n, max: 100n });
@@ -29,25 +29,25 @@ describe("PODSpecBuilder", () => {
       a_isMemberOf: {
         entries: ["a"],
         type: "isMemberOf",
-        isMemberOf: [["foo"]]
+        isMemberOf: [["foo"]],
       },
       b_inRange: {
         entry: "b",
         type: "inRange",
-        inRange: { min: "10", max: "100" }
-      }
+        inRange: { min: "10", max: "100" },
+      },
     });
 
     const e = d.isMemberOf(["a", "b"], [["foo", 10n]]);
     expect(e.spec().statements.a_b_isMemberOf.entries).toEqual(["a", "b"]);
 
-    const f = e.pick(["b"]);
+    const f = e.pickEntries(["b"]);
     expect(f.spec().statements).toEqual({
       b_inRange: {
         entry: "b",
         type: "inRange",
-        inRange: { min: "10", max: "100" }
-      }
+        inRange: { min: "10", max: "100" },
+      },
     });
 
     const g = e.entry("new", "string").equalsEntry("a", "new");
@@ -64,42 +64,42 @@ describe("PODSpecBuilder", () => {
       a_new_equalsEntry: {
         entry: "a",
         type: "equalsEntry",
-        otherEntry: "new"
-      }
+        otherEntry: "new",
+      },
     });
 
     expect(g.spec()).toEqual({
       entries: {
         a: "string",
         b: "int",
-        new: "string"
+        new: "string",
       },
       statements: {
         a_isMemberOf: {
           entries: ["a"],
           type: "isMemberOf",
-          isMemberOf: [["foo"]]
+          isMemberOf: [["foo"]],
         },
         a_b_isMemberOf: {
           entries: ["a", "b"],
           type: "isMemberOf",
           // Note that the values are strings here, because we convert them to
           // strings when persisting the spec.
-          isMemberOf: [["foo", "10"]]
+          isMemberOf: [["foo", "10"]],
         },
         b_inRange: {
           entry: "b",
           type: "inRange",
           // Note that the values are strings here, because we convert them to
           // strings when persisting the spec.
-          inRange: { min: "10", max: "100" }
+          inRange: { min: "10", max: "100" },
         },
         a_new_equalsEntry: {
           entry: "a",
           type: "equalsEntry",
-          otherEntry: "new"
-        }
-      }
+          otherEntry: "new",
+        },
+      },
     } satisfies typeof _GSpec);
 
     const h = g.pickStatements(["a_isMemberOf"]);
@@ -107,8 +107,8 @@ describe("PODSpecBuilder", () => {
       a_isMemberOf: {
         entries: ["a"],
         type: "isMemberOf",
-        isMemberOf: [["foo"]]
-      }
+        isMemberOf: [["foo"]],
+      },
     });
   });
 });

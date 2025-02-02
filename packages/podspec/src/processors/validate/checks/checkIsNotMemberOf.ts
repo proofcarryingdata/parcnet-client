@@ -2,7 +2,7 @@ import {
   IssueCode,
   type ValidationBaseIssue,
   type ValidationInvalidStatementIssue,
-  type ValidationStatementNegativeResultIssue
+  type ValidationStatementNegativeResultIssue,
 } from "../issues.js";
 import type { IsNotMemberOf } from "../../../builders/types/statements.js";
 import { tupleToPODValueTypeValues, valueIsEqual } from "../utils.js";
@@ -22,8 +22,8 @@ function validateIsNotMemberOfStatement(
         statementName: statementName,
         statementType: statement.type,
         entries: statement.entries,
-        path: [...path, statementName]
-      }
+        path: [...path, statementName],
+      },
     ];
   }
   return [];
@@ -80,7 +80,7 @@ export function checkIsNotMemberOf(
       statementName: statementName,
       statementType: statement.type,
       entries: statement.entries,
-      path: [...path, statementName]
+      path: [...path, statementName],
     } satisfies ValidationStatementNegativeResultIssue;
     if (exitOnError) {
       return [issue];

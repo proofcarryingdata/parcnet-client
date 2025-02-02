@@ -33,7 +33,7 @@
   },
   "javascript": {
     "formatter": {
-      "trailingCommas": "none"
+      "trailingCommas": "es5"
     }
   },
   "json": {

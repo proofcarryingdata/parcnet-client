@@ -3,7 +3,7 @@ import type { EntrySource } from "../EntrySource.js";
 import {
   IssueCode,
   type ValidationBaseIssue,
-  type ValidationStatementNegativeResultIssue
+  type ValidationStatementNegativeResultIssue,
 } from "../issues.js";
 import { valueIsEqual } from "../utils.js";
 
@@ -27,7 +27,7 @@ export function checkNotEqualsEntry(
       statementName: statementName,
       statementType: statement.type,
       entries: [statement.entry],
-      path: [...path, statementName]
+      path: [...path, statementName],
     });
     return issues;
   }
@@ -37,7 +37,7 @@ export function checkNotEqualsEntry(
       statementName: statementName,
       statementType: statement.type,
       entries: [statement.otherEntry],
-      path: [...path, statementName]
+      path: [...path, statementName],
     });
     return issues;
   }
@@ -51,7 +51,7 @@ export function checkNotEqualsEntry(
       statementName: statementName,
       statementType: statement.type,
       entries: [statement.entry, statement.otherEntry],
-      path: [...path, statementName]
+      path: [...path, statementName],
     });
     return issues;
   }
@@ -62,7 +62,7 @@ export function checkNotEqualsEntry(
       statementName: statementName,
       statementType: statement.type,
       entries: [statement.entry],
-      path: [...path, statementName]
+      path: [...path, statementName],
     });
     return issues;
   }
@@ -73,7 +73,7 @@ export function checkNotEqualsEntry(
       statementName: statementName,
       statementType: statement.type,
       entries: [statement.otherEntry],
-      path: [...path, statementName]
+      path: [...path, statementName],
     });
     return issues;
   }
@@ -86,7 +86,7 @@ export function checkNotEqualsEntry(
       statementName: statementName,
       statementType: statement.type,
       entries: [statement.entry, statement.otherEntry],
-      path: [...path, statementName]
+      path: [...path, statementName],
     } satisfies ValidationStatementNegativeResultIssue;
     return [issue];
   }

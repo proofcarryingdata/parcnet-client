@@ -10,7 +10,7 @@ export const IssueCode = {
   invalid_statement: "invalid_statement",
   unexpected_input_entry: "unexpected_input_entry",
   unexpected_input_pod: "unexpected_input_pod",
-  statement_negative_result: "statement_negative_result"
+  statement_negative_result: "statement_negative_result",
 } as const;
 
 /**

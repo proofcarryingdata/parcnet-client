@@ -4,7 +4,7 @@ import {
   IssueCode,
   type ValidationBaseIssue,
   type ValidationInvalidStatementIssue,
-  type ValidationStatementNegativeResultIssue
+  type ValidationStatementNegativeResultIssue,
 } from "../issues.js";
 import type { EntrySource } from "../EntrySource.js";
 
@@ -28,7 +28,7 @@ export function checkInRange(
       statementName: statementName,
       statementType: statement.type,
       entries: [entryName],
-      path: [...path, statementName]
+      path: [...path, statementName],
     } satisfies ValidationInvalidStatementIssue);
     return issues;
   }
@@ -50,8 +50,8 @@ export function checkInRange(
           statementName: statementName,
           statementType: statement.type,
           entries: [entryName],
-          path: [...path, statementName]
-        } satisfies ValidationStatementNegativeResultIssue as ValidationBaseIssue
+          path: [...path, statementName],
+        } satisfies ValidationStatementNegativeResultIssue as ValidationBaseIssue,
       ];
     }
   } else {
@@ -60,7 +60,7 @@ export function checkInRange(
       statementName: statementName,
       statementType: statement.type,
       entries: [entryName],
-      path: [...path, statementName]
+      path: [...path, statementName],
     } satisfies ValidationInvalidStatementIssue);
   }
   return issues;

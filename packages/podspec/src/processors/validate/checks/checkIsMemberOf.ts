@@ -1,7 +1,7 @@
 import type {
   ValidationBaseIssue,
   ValidationInvalidStatementIssue,
-  ValidationStatementNegativeResultIssue
+  ValidationStatementNegativeResultIssue,
 } from "../issues.js";
 import { IssueCode } from "../issues.js";
 import type { IsMemberOf } from "../../../builders/types/statements.js";
@@ -22,8 +22,8 @@ function validateIsMemberOfStatement(
         statementName: statementName,
         statementType: statement.type,
         entries: statement.entries,
-        path: [...path, statementName]
-      }
+        path: [...path, statementName],
+      },
     ];
   }
   return [];
@@ -79,7 +79,7 @@ export function checkIsMemberOf(
       statementName: statementName,
       statementType: statement.type,
       entries: statement.entries,
-      path: [...path, statementName]
+      path: [...path, statementName],
     } satisfies ValidationStatementNegativeResultIssue;
     if (exitOnError) {
       return [issue];

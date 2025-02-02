@@ -20,6 +20,6 @@ export function FAILURE(errors: ValidationBaseIssue[]): ValidateFailure {
 export function SUCCESS<T>(value: T): ValidateSuccess<T> {
   return {
     isValid: true,
-    value
+    value,
   };
 }

@@ -2,6 +2,7 @@ import { checkPODValue, type PODValue } from "@pcd/pod";
 import type { PODValueType } from "./types/entries.js";
 import { fromByteArray } from "base64-js";
 import type { SupportsRangeChecks } from "./types/statements.js";
+import canonicalize from "canonicalize";
 
 /**
  * Validates a range check.
@@ -54,7 +55,7 @@ export function deepFreeze<T>(obj: T): T {
     // Get all properties, including non-enumerable ones
     const properties = [
       ...Object.getOwnPropertyNames(obj),
-      ...Object.getOwnPropertySymbols(obj)
+      ...Object.getOwnPropertySymbols(obj),
     ];
 
     properties.forEach((prop) => {
@@ -129,4 +130,11 @@ export function supportsRangeChecks(
       (type) satisfies DoesNotSupportRangeChecks;
       return false;
   }
+}
+
+export function canonicalizeJSON(input: unknown): string | undefined {
+  // Something is screwy with the typings for canonicalize
+  return (canonicalize as unknown as (input: unknown) => string | undefined)(
+    input
+  );
 }
