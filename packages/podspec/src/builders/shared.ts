@@ -89,18 +89,28 @@ function valueToString(value: PODValue["value"]): string {
  */
 export function convertValuesToStringTuples<N extends string[]>(
   names: [...N],
-  values: N["length"] extends 1 ? PODValue["value"][] : PODValue["value"][][]
+  values: N["length"] extends 1 ? PODValue["value"][] : PODValue["value"][][],
+  entries: Record<N[number], PODValueType>
 ): { [K in keyof N]: string }[] {
   return names.length === 1
-    ? (values as PODValue["value"][]).map(
-        (v) => [valueToString(v)] as { [K in keyof N]: string }
-      )
-    : (values as PODValue["value"][][]).map(
-        (tuple) =>
-          tuple.map((v) => valueToString(v)) as {
-            [K in keyof N]: string;
-          }
-      );
+    ? (values as PODValue["value"][]).map((v) => {
+        const name = names[0];
+        const type = entries[name];
+        // TODO Maybe catch and rethrow an error with more context
+        checkPODValue(name, { value: v, type } as PODValue);
+        return [valueToString(v)] as { [K in keyof N]: string };
+      })
+    : (values as PODValue["value"][][]).map((tuple, index) => {
+        if (tuple.length !== names.length) {
+          throw new Error(`Tuple ${index} length does not match names length`);
+        }
+        return tuple.map((v, i) => {
+          const type = entries[names[i]];
+          // TODO Maybe catch and rethrow an error with more context
+          checkPODValue(names[i], { value: v, type } as PODValue);
+          return valueToString(v);
+        }) as { [K in keyof N]: string };
+      });
 }
 
 type DoesNotSupportRangeChecks = Exclude<PODValueType, SupportsRangeChecks>;

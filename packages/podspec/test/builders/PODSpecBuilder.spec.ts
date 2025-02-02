@@ -34,7 +34,7 @@ describe("PODSpecBuilder", () => {
       b_inRange: {
         entry: "b",
         type: "inRange",
-        inRange: { min: 10n, max: 100n }
+        inRange: { min: "10", max: "100" }
       }
     });
 
@@ -46,7 +46,7 @@ describe("PODSpecBuilder", () => {
       b_inRange: {
         entry: "b",
         type: "inRange",
-        inRange: { min: 10n, max: 100n }
+        inRange: { min: "10", max: "100" }
       }
     });
 
@@ -64,7 +64,7 @@ describe("PODSpecBuilder", () => {
       a_new_equalsEntry: {
         entry: "a",
         type: "equalsEntry",
-        equalsEntry: "new"
+        otherEntry: "new"
       }
     });
 

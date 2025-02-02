@@ -40,7 +40,7 @@ import type { IsJsonSafe } from "../shared/jsonSafe.js";
 
 /**
  @todo
- - [ ] add lessThan, greaterThan, lessThanEq, greaterThanEq
+ - [x] add lessThan, greaterThan, lessThanEq, greaterThanEq
  - [ ] add omit
  - [x] maybe add pick/omit for statements?
  - [x] add signerPublicKey support (done at type level, not run-time)
@@ -49,7 +49,7 @@ import type { IsJsonSafe } from "../shared/jsonSafe.js";
  - [ ] refactor types (also delete unused types in types dir)
  - [x] rename away from v2 suffix
  - [x] validate entry names
- - [ ] validate isMemberOf/isNotMemberOf parameters
+ - [x] validate isMemberOf/isNotMemberOf parameters
  - [ ] handle multiple/incompatible range checks on the same entry
  - [x] switch to using value types rather than PODValues (everywhere? maybe not membership lists)
  - [ ] better error messages
@@ -63,7 +63,7 @@ function canonicalizeJSON(input: unknown): string | undefined {
   );
 }
 
-const virtualEntries: VirtualEntries = {
+export const virtualEntries: VirtualEntries = {
   $contentID: "string",
   $signature: "string",
   $signerPublicKey: "eddsa_pubkey"
@@ -278,17 +278,21 @@ export class PODSpecBuilder<
       >;
     }
   > {
-    // Check that all names exist in entries
-    for (const name of names) {
-      if (!(name in this.#spec.entries) && !(name in virtualEntries)) {
-        throw new Error(`Entry "${name}" does not exist`);
-      }
-    }
-
     // Check for duplicate names
     const uniqueNames = new Set(names);
     if (uniqueNames.size !== names.length) {
       throw new Error("Duplicate entry names are not allowed");
+    }
+
+    const allEntries = {
+      ...this.#spec.entries,
+      ...virtualEntries
+    };
+
+    for (const name of names) {
+      if (!(name in allEntries)) {
+        throw new Error(`Entry "${name}" does not exist`);
+      }
     }
 
     /**
@@ -307,7 +311,7 @@ export class PODSpecBuilder<
     const statement: IsMemberOf<E & VirtualEntries, N> = {
       entries: names,
       type: "isMemberOf",
-      isMemberOf: convertValuesToStringTuples<N>(names, values)
+      isMemberOf: convertValuesToStringTuples<N>(names, values, allEntries)
     };
 
     const baseName = `${names.join("_")}_isMemberOf`;
@@ -366,6 +370,17 @@ export class PODSpecBuilder<
       throw new Error("Duplicate entry names are not allowed");
     }
 
+    const allEntries = {
+      ...this.#spec.entries,
+      ...virtualEntries
+    };
+
+    for (const name of names) {
+      if (!(name in allEntries)) {
+        throw new Error(`Entry "${name}" does not exist`);
+      }
+    }
+
     /**
      * We want type-safe inputs, but we want JSON-safe data to persist in the
      * spec. So, we convert the input values to strings - because we have the
@@ -382,7 +397,7 @@ export class PODSpecBuilder<
     const statement: IsNotMemberOf<E & VirtualEntries, N> = {
       entries: names,
       type: "isNotMemberOf",
-      isNotMemberOf: convertValuesToStringTuples<N>(names, values)
+      isNotMemberOf: convertValuesToStringTuples<N>(names, values, allEntries)
     };
 
     const baseName = `${names.join("_")}_isNotMemberOf`;

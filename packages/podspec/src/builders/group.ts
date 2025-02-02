@@ -34,7 +34,7 @@ import {
   supportsRangeChecks,
   validateRange
 } from "./shared.js";
-import type { PODSpec } from "./pod.js";
+import { virtualEntries, type PODSpec } from "./pod.js";
 
 export type NamedPODSpecs = Record<PODName, PODSpec<EntryTypes, StatementMap>>;
 
@@ -131,29 +131,43 @@ export class PODGroupSpecBuilder<
       ? PODValueTypeFromTypeName<EntryType<P, N[0] & keyof AllPODEntries<P>>>[]
       : PODValueTupleForNamedEntries<AllPODEntries<P>, N>[]
   ): PODGroupSpecBuilder<P, S> {
-    // Check that all names exist in entries
-    for (const name of names) {
-      const [podName, entryName] = name.split(".");
-      if (
-        podName === undefined ||
-        entryName === undefined ||
-        !(podName in this.#spec.pods) ||
-        !(entryName in this.#spec.pods[podName]!.entries)
-      ) {
-        throw new Error(`Entry "${name}" does not exist`);
-      }
-    }
-
     // Check for duplicate names
     const uniqueNames = new Set(names);
     if (uniqueNames.size !== names.length) {
       throw new Error("Duplicate entry names are not allowed");
     }
 
+    const allEntries = Object.fromEntries(
+      Object.entries(this.#spec.pods).flatMap(([podName, podSpec]) => [
+        ...Object.entries(podSpec.entries).map(
+          ([entryName, entryType]): [string, PODValueType] => [
+            `${podName}.${entryName}`,
+            entryType
+          ]
+        ),
+        ...Object.entries(virtualEntries).map(
+          ([entryName, entryType]): [string, PODValueType] => [
+            `${podName}.${entryName}`,
+            entryType
+          ]
+        )
+      ])
+    );
+
+    for (const name of names) {
+      if (!(name in allEntries)) {
+        throw new Error(`Entry "${name}" does not exist`);
+      }
+    }
+
     const statement: IsMemberOf<AllPODEntries<P>, N> = {
       entries: names,
       type: "isMemberOf",
-      isMemberOf: convertValuesToStringTuples<N>(names, values)
+      isMemberOf: convertValuesToStringTuples<N>(
+        names,
+        values,
+        allEntries as Record<N[number], PODValueType>
+      )
     };
 
     const baseName = `${names.join("_")}_isMemberOf`;
@@ -179,29 +193,43 @@ export class PODGroupSpecBuilder<
       ? PODValueTypeFromTypeName<EntryType<P, N[0] & keyof AllPODEntries<P>>>[]
       : PODValueTupleForNamedEntries<AllPODEntries<P>, N>[]
   ): PODGroupSpecBuilder<P, S> {
-    // Check that all names exist in entries
-    for (const name of names) {
-      const [podName, entryName] = name.split(".");
-      if (
-        podName === undefined ||
-        entryName === undefined ||
-        !(podName in this.#spec.pods) ||
-        !(entryName in this.#spec.pods[podName]!.entries)
-      ) {
-        throw new Error(`Entry "${name}" does not exist`);
-      }
-    }
-
     // Check for duplicate names
     const uniqueNames = new Set(names);
     if (uniqueNames.size !== names.length) {
       throw new Error("Duplicate entry names are not allowed");
     }
 
+    const allEntries = Object.fromEntries(
+      Object.entries(this.#spec.pods).flatMap(([podName, podSpec]) => [
+        ...Object.entries(podSpec.entries).map(
+          ([entryName, entryType]): [string, PODValueType] => [
+            `${podName}.${entryName}`,
+            entryType
+          ]
+        ),
+        ...Object.entries(virtualEntries).map(
+          ([entryName, entryType]): [string, PODValueType] => [
+            `${podName}.${entryName}`,
+            entryType
+          ]
+        )
+      ])
+    );
+
+    for (const name of names) {
+      if (!(name in allEntries)) {
+        throw new Error(`Entry "${name}" does not exist`);
+      }
+    }
+
     const statement: IsNotMemberOf<AllPODEntries<P>, N> = {
       entries: names,
       type: "isNotMemberOf",
-      isNotMemberOf: convertValuesToStringTuples<N>(names, values)
+      isNotMemberOf: convertValuesToStringTuples<N>(
+        names,
+        values,
+        allEntries as Record<N[number], PODValueType>
+      )
     };
 
     const baseName = `${names.join("_")}_isNotMemberOf`;

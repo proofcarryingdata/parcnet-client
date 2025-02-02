@@ -74,12 +74,27 @@ interface PODValidator<E extends EntryTypes> {
   strictAssert(pod: POD): asserts pod is StrongPOD<PODEntriesFromEntryTypes<E>>;
 }
 
+const SpecValidatorState = new WeakMap<
+  PODSpec<EntryTypes, StatementMap>,
+  boolean
+>();
+
 export function validate<E extends EntryTypes, S extends StatementMap>(
   spec: PODSpec<E, S>
 ): PODValidator<E> {
-  // @TODO maybe typia's clone is better
-  spec = structuredClone(spec);
-  assertPODSpec(spec);
+  const validSpec = SpecValidatorState.get(spec);
+  if (validSpec === undefined) {
+    // If we haven't seen this spec before, we need to validate it
+    try {
+      assertPODSpec(spec);
+      // TODO check statement configuration
+      // If we successfully validated the spec, we can cache the result
+      SpecValidatorState.set(spec, true);
+    } catch (e) {
+      SpecValidatorState.set(spec, false);
+      throw e;
+    }
+  }
 
   return {
     validate: (pod) => validatePOD(pod, spec, {}),
@@ -101,11 +116,6 @@ export function validate<E extends EntryTypes, S extends StatementMap>(
   };
 }
 
-const SpecValidatorState = new WeakMap<
-  PODSpec<EntryTypes, StatementMap>,
-  boolean
->();
-
 /**
  * Validate a POD against a PODSpec.
  *
@@ -114,25 +124,11 @@ const SpecValidatorState = new WeakMap<
  * @param options - The options to use for validation.
  * @returns true if the POD is valid, false otherwise.
  */
-export function validatePOD<E extends EntryTypes, S extends StatementMap>(
+function validatePOD<E extends EntryTypes, S extends StatementMap>(
   pod: POD,
   spec: PODSpec<E, S>,
   options: ValidateOptions = DEFAULT_VALIDATE_OPTIONS
 ): ValidateResult<StrongPOD<PODEntriesFromEntryTypes<E>>> {
-  const validSpec = SpecValidatorState.get(spec);
-  if (validSpec === undefined) {
-    // If we haven't seen this spec before, we need to validate it
-    try {
-      assertPODSpec(spec);
-      // TODO check statement configuration
-      // If we successfully validated the spec, we can cache the result
-      SpecValidatorState.set(spec, true);
-    } catch (e) {
-      SpecValidatorState.set(spec, false);
-      throw e;
-    }
-  }
-
   const issues = [];
   const path: string[] = [];
 
