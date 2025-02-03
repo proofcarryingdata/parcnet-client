@@ -1,21 +1,21 @@
-import type { POD, PODEntries, PODValue, PODContent, PODName } from "@pcd/pod";
+import type { POD, PODContent, PODEntries, PODName, PODValue } from "@pcd/pod";
 import type { PODSpec } from "../builders/pod.js";
 import type { EntryTypes } from "../builders/types/entries.js";
 import type { StatementMap } from "../builders/types/statements.js";
-import type { ValidateResult } from "./validate/types.js";
-import { FAILURE, SUCCESS } from "./validate/result.js";
-import { checkIsMemberOf } from "./validate/checks/checkIsMemberOf.js";
-import { checkIsNotMemberOf } from "./validate/checks/checkIsNotMemberOf.js";
 import { assertPODSpec } from "../generated/podspec.js";
 import { EntrySourcePodSpec } from "./validate/EntrySource.js";
-import { checkInRange } from "./validate/checks/checkInRange.js";
-import { checkNotInRange } from "./validate/checks/checkNotInRange.js";
 import { checkEqualsEntry } from "./validate/checks/checkEqualsEntry.js";
-import { checkNotEqualsEntry } from "./validate/checks/checkNotEqualsEntry.js";
 import { checkGreaterThan } from "./validate/checks/checkGreaterThan.js";
 import { checkGreaterThanEq } from "./validate/checks/checkGreaterThanEq.js";
+import { checkInRange } from "./validate/checks/checkInRange.js";
+import { checkIsMemberOf } from "./validate/checks/checkIsMemberOf.js";
+import { checkIsNotMemberOf } from "./validate/checks/checkIsNotMemberOf.js";
 import { checkLessThan } from "./validate/checks/checkLessThan.js";
 import { checkLessThanEq } from "./validate/checks/checkLessThanEq.js";
+import { checkNotEqualsEntry } from "./validate/checks/checkNotEqualsEntry.js";
+import { checkNotInRange } from "./validate/checks/checkNotInRange.js";
+import { FAILURE, SUCCESS } from "./validate/result.js";
+import type { ValidateResult } from "./validate/types.js";
 
 /**
  @TOOO

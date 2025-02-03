@@ -117,7 +117,7 @@ export interface ValidationStatementNegativeResultIssue
 export class ValidationError extends Error {
   issues: ValidationBaseIssue[] = [];
 
-  public get errors(): ValidationBaseIssue[] {
+  public errors(): ValidationBaseIssue[] {
     return this.issues;
   }
 

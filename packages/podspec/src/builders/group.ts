@@ -6,7 +6,7 @@ import {
   POD_INT_MIN,
   checkPODName,
 } from "@pcd/pod";
-import { type PODSpec, virtualEntries } from "./pod.js";
+import { type PODSpec, PODSpecBuilder, virtualEntries } from "./pod.js";
 import {
   convertValuesToStringTuples,
   supportsRangeChecks,
@@ -22,6 +22,7 @@ import type {
   VirtualEntries,
 } from "./types/entries.js";
 import type {
+  EntriesWithRangeChecks,
   EqualsEntry,
   GreaterThan,
   GreaterThanEq,
@@ -38,15 +39,12 @@ import type {
 
 export type NamedPODSpecs = Record<PODName, PODSpec<EntryTypes, StatementMap>>;
 
-// @TODO add group constraints, where instead of extending EntryListSpec,
-// we have some kind of group entry list, with each entry name prefixed
-// by the name of the POD it belongs to.
-
-// type GroupIsMemberOf<E extends EntryListSpec, N extends string[]> = {
-//   entry: N[number];
-//   type: "isMemberOf";
-//   isMemberOf: N[number];
-// };
+/**
+ @todo
+ - [ ] Maybe collapse the POD entries structure into a single object, rather
+ than nested PODs? Might improve reuse with PODSpecBuilder and make typing
+ easier.
+ */
 
 export type PODGroupSpec<P extends NamedPODSpecs, S extends StatementMap> = {
   pods: P;
@@ -96,10 +94,10 @@ export class PODGroupSpecBuilder<
   }
 
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  public static create(): PODGroupSpecBuilder<{}, {}> {
+  public static create(): PODGroupSpecBuilder<NamedPODSpecs, StatementMap> {
     return new PODGroupSpecBuilder({
-      pods: {},
-      statements: {},
+      pods: {} as NamedPODSpecs,
+      statements: {} as StatementMap,
     });
   }
 
@@ -261,8 +259,16 @@ export class PODGroupSpecBuilder<
   >(
     name: N,
     range: {
-      min: AllPODEntries<P>[N] extends "date" ? Date : bigint;
-      max: AllPODEntries<P>[N] extends "date" ? Date : bigint;
+      min: N extends keyof EntriesWithRangeChecks<AllPODEntries<P>>
+        ? AllPODEntries<P>[N] extends "date"
+          ? Date
+          : bigint
+        : Date | bigint;
+      max: N extends keyof EntriesWithRangeChecks<AllPODEntries<P>>
+        ? AllPODEntries<P>[N] extends "date"
+          ? Date
+          : bigint
+        : Date | bigint;
     },
     customStatementName?: string
   ): PODGroupSpecBuilder<P, S> {
@@ -312,7 +318,7 @@ export class PODGroupSpecBuilder<
     }
 
     const statement: InRange<AllPODEntries<P>, N> = {
-      entry: name,
+      entries: [name],
       type: "inRange",
       inRange: {
         min:
@@ -402,7 +408,7 @@ export class PODGroupSpecBuilder<
     }
 
     const statement: NotInRange<AllPODEntries<P>, N> = {
-      entry: name,
+      entries: [name],
       type: "notInRange",
       notInRange: {
         min:
@@ -480,9 +486,8 @@ export class PODGroupSpecBuilder<
     }
 
     const statement: GreaterThan<AllPODEntries<P>, N1, N2> = {
-      entry: name1,
+      entries: [name1, name2],
       type: "greaterThan",
-      otherEntry: name2,
     };
 
     const baseName = customStatementName ?? `${name1}_${name2}_greaterThan`;
@@ -549,9 +554,8 @@ export class PODGroupSpecBuilder<
     }
 
     const statement: GreaterThanEq<AllPODEntries<P>, N1, N2> = {
-      entry: name1,
+      entries: [name1, name2],
       type: "greaterThanEq",
-      otherEntry: name2,
     };
 
     const baseName = customStatementName ?? `${name1}_${name2}_greaterThanEq`;
@@ -618,9 +622,8 @@ export class PODGroupSpecBuilder<
     }
 
     const statement: LessThan<AllPODEntries<P>, N1, N2> = {
-      entry: name1,
+      entries: [name1, name2],
       type: "lessThan",
-      otherEntry: name2,
     };
 
     const baseName = customStatementName ?? `${name1}_${name2}_lessThan`;
@@ -687,9 +690,8 @@ export class PODGroupSpecBuilder<
     }
 
     const statement: LessThanEq<AllPODEntries<P>, N1, N2> = {
-      entry: name1,
+      entries: [name1, name2],
       type: "lessThanEq",
-      otherEntry: name2,
     };
 
     const baseName = customStatementName ?? `${name1}_${name2}_lessThanEq`;
@@ -756,9 +758,8 @@ export class PODGroupSpecBuilder<
     }
 
     const statement: EqualsEntry<AllPODEntries<P>, N1, N2> = {
-      entry: name1,
+      entries: [name1, name2],
       type: "equalsEntry",
-      otherEntry: name2,
     };
 
     const baseName = customStatementName ?? `${name1}_${name2}_equalsEntry`;
@@ -825,9 +826,8 @@ export class PODGroupSpecBuilder<
     }
 
     const statement: NotEqualsEntry<AllPODEntries<P>, N1, N2> = {
-      entry: name1,
+      entries: [name1, name2],
       type: "notEqualsEntry",
-      otherEntry: name2,
     };
 
     const baseName = customStatementName ?? `${name1}_${name2}_notEqualsEntry`;
@@ -848,4 +848,26 @@ export class PODGroupSpecBuilder<
       },
     });
   }
+}
+
+if (import.meta.vitest) {
+  const { describe, it } = import.meta.vitest;
+
+  describe("PODGroupSpecBuilder", () => {
+    it("should be able to create a builder", () => {
+      const pod = PODSpecBuilder.create()
+        .entry("my_string", "string")
+        .entry("my_int", "int")
+        .entry("mystery_name", "string");
+
+      const pod2 = PODSpecBuilder.create().entry("something_else", "boolean");
+
+      const _builder = PODGroupSpecBuilder.create().pod("foo", pod.spec());
+      // .inRange("foo.my_int", { min: 0n, max: 10n });
+
+      const _builder2 = PODGroupSpecBuilder.create()
+        .pod("mystery" as string, pod.spec())
+        .pod("mystery2" as string, pod2.spec());
+    });
+  });
 }

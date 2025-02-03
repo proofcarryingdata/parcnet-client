@@ -4,7 +4,7 @@ export type ClientConnectionInfo = {
 };
 
 export enum ClientConnectionErrorType {
-  PERMISSION_DENIED = "PERMISSION_DENIED"
+  PERMISSION_DENIED = "PERMISSION_DENIED",
 }
 
 export type ClientConnectionError = {

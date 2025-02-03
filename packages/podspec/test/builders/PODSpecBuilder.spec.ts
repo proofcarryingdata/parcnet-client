@@ -17,7 +17,7 @@ import { PODSpecBuilder } from "../../src/index.js";
     - [ ] greaterThanEq
     - [ ] lessThan
     - [ ] lessThanEq
-  - [ ] Custom statement names
+  - [x] Custom statement names
   - [ ] Pick entries
   - [ ] Pick statements
   - [ ] Omit entries
@@ -28,18 +28,16 @@ import { PODSpecBuilder } from "../../src/index.js";
 */
 
 describe("PODSpecBuilder", () => {
-  it("should be a test", () => {
-    expect(true).toBe(true);
-  });
-
   it("PODSpecBuilder", () => {
-    const a = PODSpecBuilder.create();
+    const a = PODSpecBuilder.create().entry("zzz", "string");
     const b = a.entry("a", "string").entry("b", "int");
     expect(b.spec().entries).toEqual({
       a: "string",
       b: "int",
+      zzz: "string",
     });
 
+    b.isMemberOf(["zzz"], ["fooo"]);
     const c = b.isMemberOf(["a"], ["foo"]);
     expect(c.spec().statements).toEqual({
       a_isMemberOf: {
@@ -57,7 +55,7 @@ describe("PODSpecBuilder", () => {
         isMemberOf: [["foo"]],
       },
       b_inRange: {
-        entry: "b",
+        entries: ["b"],
         type: "inRange",
         inRange: { min: "10", max: "100" },
       },
@@ -69,7 +67,7 @@ describe("PODSpecBuilder", () => {
     const f = e.pickEntries(["b"]);
     expect(f.spec().statements).toEqual({
       b_inRange: {
-        entry: "b",
+        entries: ["b"],
         type: "inRange",
         inRange: { min: "10", max: "100" },
       },
@@ -87,9 +85,8 @@ describe("PODSpecBuilder", () => {
 
     expect(g.spec().statements).toMatchObject({
       a_new_equalsEntry: {
-        entry: "a",
+        entries: ["a", "new"],
         type: "equalsEntry",
-        otherEntry: "new",
       },
     });
 
@@ -98,6 +95,7 @@ describe("PODSpecBuilder", () => {
         a: "string",
         b: "int",
         new: "string",
+        zzz: "string",
       },
       statements: {
         a_isMemberOf: {
@@ -113,16 +111,15 @@ describe("PODSpecBuilder", () => {
           isMemberOf: [["foo", "10"]],
         },
         b_inRange: {
-          entry: "b",
+          entries: ["b"],
           type: "inRange",
           // Note that the values are strings here, because we convert them to
           // strings when persisting the spec.
           inRange: { min: "10", max: "100" },
         },
         a_new_equalsEntry: {
-          entry: "a",
+          entries: ["a", "new"],
           type: "equalsEntry",
-          otherEntry: "new",
         },
       },
     } satisfies typeof _GSpec);
@@ -170,7 +167,6 @@ describe("PODSpecBuilder - Property tests", () => {
     fc.assert(
       fc.property(entryConfigs, (entries) => {
         // Add entries in original order
-        console.log(entries);
         const builder1 = entries.reduce(
           (b, { name, type }) => b.entry(name, type),
           PODSpecBuilder.create()
@@ -206,9 +202,7 @@ describe("PODSpecBuilder - Property tests", () => {
             .map((i) => entryNames[i % entryNames.length])
             .filter((name): name is string => name !== undefined);
 
-          // @ts-expect-error ignore this
           const picked = builder.pickEntries(pickedNames);
-          // @ts-expect-error ignore this
           const omitted = picked.omitEntries(pickedNames);
 
           // Omitting all picked entries should result in empty entries
@@ -247,8 +241,27 @@ describe("PODSpecBuilder - Property tests", () => {
     );
   });
 
+  // Test that automatic statement names are always unique
+  test("should generate unique automatic statement names", () => {
+    fc.assert(
+      fc.property(entryConfigs, (entries) => {
+        const builder = entries.reduce(
+          (b, { name }) =>
+            b.entry(name, "int").inRange(name, { min: 0n, max: 10n }),
+          PODSpecBuilder.create()
+        );
+
+        const spec = builder.spec();
+        const statementNames = Object.keys(spec.statements);
+        const uniqueNames = new Set(statementNames);
+
+        expect(statementNames.length).toBe(uniqueNames.size);
+      })
+    );
+  });
+
   // Test that custom statement names are always unique
-  test("should generate unique statement names", () => {
+  test("should generate unique custom statement names", () => {
     fc.assert(
       fc.property(entryConfigs, fc.string(), (entries, customName) => {
         const builder = entries.reduce(

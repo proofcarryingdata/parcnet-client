@@ -11,8 +11,9 @@ export function checkGreaterThan(
   entrySource: EntrySource,
   _exitOnError: boolean
 ) {
-  const entry1 = entrySource.getEntry(statement.entry);
-  const entry2 = entrySource.getEntry(statement.otherEntry);
+  const [leftEntry, rightEntry] = statement.entries;
+  const entry1 = entrySource.getEntry(leftEntry);
+  const entry2 = entrySource.getEntry(rightEntry);
 
   const issues = [];
 
@@ -22,7 +23,7 @@ export function checkGreaterThan(
       code: IssueCode.invalid_statement,
       statementName: statementName,
       statementType: statement.type,
-      entries: [statement.entry],
+      entries: statement.entries,
       path: [...path, statementName],
     });
     return issues;
@@ -32,14 +33,14 @@ export function checkGreaterThan(
       code: IssueCode.invalid_statement,
       statementName: statementName,
       statementType: statement.type,
-      entries: [statement.otherEntry],
+      entries: statement.entries,
       path: [...path, statementName],
     });
     return issues;
   }
 
-  const entry1Type = entrySource.getEntryTypeFromSpec(statement.entry);
-  const entry2Type = entrySource.getEntryTypeFromSpec(statement.otherEntry);
+  const entry1Type = entrySource.getEntryTypeFromSpec(leftEntry);
+  const entry2Type = entrySource.getEntryTypeFromSpec(rightEntry);
 
   // TODO this may be too restrictive
   if (entry1Type !== entry2Type) {
@@ -47,7 +48,7 @@ export function checkGreaterThan(
       code: IssueCode.invalid_statement,
       statementName: statementName,
       statementType: statement.type,
-      entries: [statement.entry, statement.otherEntry],
+      entries: statement.entries,
       path: [...path, statementName],
     });
     return issues;
@@ -58,7 +59,7 @@ export function checkGreaterThan(
       code: IssueCode.invalid_statement,
       statementName: statementName,
       statementType: statement.type,
-      entries: [statement.entry],
+      entries: statement.entries,
       path: [...path, statementName],
     });
     return issues;
@@ -69,7 +70,7 @@ export function checkGreaterThan(
       code: IssueCode.invalid_statement,
       statementName: statementName,
       statementType: statement.type,
-      entries: [statement.otherEntry],
+      entries: statement.entries,
       path: [...path, statementName],
     });
     return issues;
@@ -80,7 +81,7 @@ export function checkGreaterThan(
       code: IssueCode.invalid_statement,
       statementName: statementName,
       statementType: statement.type,
-      entries: [statement.entry, statement.otherEntry],
+      entries: statement.entries,
       path: [...path, statementName],
     });
     return issues;
@@ -93,7 +94,7 @@ export function checkGreaterThan(
       code: IssueCode.statement_negative_result,
       statementName: statementName,
       statementType: statement.type,
-      entries: [statement.entry, statement.otherEntry],
+      entries: statement.entries,
       path: [...path, statementName],
     });
   }

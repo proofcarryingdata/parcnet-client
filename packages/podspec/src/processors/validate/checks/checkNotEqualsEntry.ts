@@ -15,8 +15,9 @@ export function checkNotEqualsEntry(
   entrySource: EntrySource,
   _exitOnError: boolean
 ): ValidationBaseIssue[] {
-  const entry1 = entrySource.getEntry(statement.entry);
-  const entry2 = entrySource.getEntry(statement.otherEntry);
+  const [leftEntry, rightEntry] = statement.entries;
+  const entry1 = entrySource.getEntry(leftEntry);
+  const entry2 = entrySource.getEntry(rightEntry);
 
   const issues = [];
 
@@ -26,7 +27,7 @@ export function checkNotEqualsEntry(
       code: IssueCode.invalid_statement,
       statementName: statementName,
       statementType: statement.type,
-      entries: [statement.entry],
+      entries: statement.entries,
       path: [...path, statementName],
     });
     return issues;
@@ -36,21 +37,21 @@ export function checkNotEqualsEntry(
       code: IssueCode.invalid_statement,
       statementName: statementName,
       statementType: statement.type,
-      entries: [statement.otherEntry],
+      entries: statement.entries,
       path: [...path, statementName],
     });
     return issues;
   }
 
-  const entry1Type = entrySource.getEntryTypeFromSpec(statement.entry);
-  const entry2Type = entrySource.getEntryTypeFromSpec(statement.otherEntry);
+  const entry1Type = entrySource.getEntryTypeFromSpec(leftEntry);
+  const entry2Type = entrySource.getEntryTypeFromSpec(rightEntry);
 
   if (entry1Type !== entry2Type) {
     issues.push({
       code: IssueCode.invalid_statement,
       statementName: statementName,
       statementType: statement.type,
-      entries: [statement.entry, statement.otherEntry],
+      entries: statement.entries,
       path: [...path, statementName],
     });
     return issues;
@@ -61,7 +62,7 @@ export function checkNotEqualsEntry(
       code: IssueCode.invalid_statement,
       statementName: statementName,
       statementType: statement.type,
-      entries: [statement.entry],
+      entries: statement.entries,
       path: [...path, statementName],
     });
     return issues;
@@ -72,7 +73,7 @@ export function checkNotEqualsEntry(
       code: IssueCode.invalid_statement,
       statementName: statementName,
       statementType: statement.type,
-      entries: [statement.otherEntry],
+      entries: statement.entries,
       path: [...path, statementName],
     });
     return issues;
@@ -85,7 +86,7 @@ export function checkNotEqualsEntry(
       code: IssueCode.statement_negative_result,
       statementName: statementName,
       statementType: statement.type,
-      entries: [statement.entry, statement.otherEntry],
+      entries: statement.entries,
       path: [...path, statementName],
     } satisfies ValidationStatementNegativeResultIssue;
     return [issue];

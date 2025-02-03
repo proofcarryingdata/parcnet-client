@@ -1,12 +1,12 @@
 import { isPODArithmeticValue } from "@pcd/pod";
 import type { InRange } from "../../../builders/types/statements.js";
+import type { EntrySource } from "../EntrySource.js";
 import {
   IssueCode,
   type ValidationBaseIssue,
   type ValidationInvalidStatementIssue,
   type ValidationStatementNegativeResultIssue,
 } from "../issues.js";
-import type { EntrySource } from "../EntrySource.js";
 
 export function checkInRange(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -16,7 +16,7 @@ export function checkInRange(
   entrySource: EntrySource,
   _exitOnError: boolean
 ): ValidationBaseIssue[] {
-  const entryName = statement.entry;
+  const [entryName] = statement.entries;
   const entry = entrySource.getEntry(entryName);
   const issues = [];
 

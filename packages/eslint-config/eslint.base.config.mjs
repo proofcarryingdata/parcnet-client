@@ -76,8 +76,28 @@ export default tseslint.config(
       "@typescript-eslint/no-import-type-side-effects": "error",
       "no-unexpected-multiline": "off",
       "no-restricted-globals": ["error", "origin"],
-      "no-restricted-syntax": ["error", "BinaryExpression[operator='in']"],
-      "guard-for-in": "error",
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "BinaryExpression[operator='in']",
+          message:
+            "Don't use in operator. Use Object.prototype.hasOwnProperty.call instead.",
+        },
+        {
+          selector:
+            'Property:matches([kind = "get"], [kind = "set"]), MethodDefinition:matches([kind = "get"], [kind = "set"])',
+          message: "Don't use get and set accessors.",
+        },
+        {
+          selector: "ForInStatement",
+          message: "Don't use for-in loop.",
+        },
+        // Ban static `this`:
+        {
+          selector: "MethodDefinition[static = true] ThisExpression",
+          message: "Prefer using the class's name directly.",
+        },
+      ],
     },
   }
 );

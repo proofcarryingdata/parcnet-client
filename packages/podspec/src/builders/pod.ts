@@ -6,6 +6,7 @@ import {
   checkPODName,
 } from "@pcd/pod";
 import type { IsJsonSafe } from "../shared/jsonSafe.js";
+import type { IsLiteral } from "../shared/types.js";
 import {
   canonicalizeJSON,
   convertValuesToStringTuples,
@@ -23,6 +24,7 @@ import type {
   VirtualEntries,
 } from "./types/entries.js";
 import type {
+  EntriesWithRangeChecks,
   EqualsEntry,
   GreaterThan,
   GreaterThanEq,
@@ -35,7 +37,6 @@ import type {
   NotInRange,
   StatementMap,
   StatementName,
-  SupportsRangeChecks,
 } from "./types/statements.js";
 
 /**
@@ -54,6 +55,10 @@ import type {
  - [x] switch to using value types rather than PODValues (everywhere? maybe not membership lists)
  - [ ] better error messages
  - [ ] consider adding a hash to the spec to prevent tampering
+ - [ ] untyped entries?
+ - [ ] optional entries?
+ - [ ] solve the problem whereby some methods are incorrectly typed if we've
+ added loosely-typed entries (this seems to be a problem with omit/pick?)
  */
 
 export const virtualEntries: VirtualEntries = {
@@ -113,6 +118,7 @@ export class PODSpecBuilder<
   E extends EntryTypes,
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   S extends StatementMap = {},
+  LiteralMode extends boolean = true,
 > {
   readonly #spec: PODSpec<E, S>;
 
@@ -150,7 +156,14 @@ export class PODSpecBuilder<
     K extends string,
     V extends PODValueType,
     NewEntries extends AddEntry<E, K, V>,
-  >(key: Exclude<K, keyof E>, type: V): PODSpecBuilder<NewEntries, S> {
+    // If the key is not a string literal, we need to exit literal mode
+    NewLiteralMode extends boolean = IsLiteral<K> extends false
+      ? false
+      : LiteralMode,
+  >(
+    key: NewLiteralMode extends true ? Exclude<K, keyof E> : string,
+    type: V
+  ): PODSpecBuilder<NewEntries, S, NewLiteralMode> {
     if (Object.prototype.hasOwnProperty.call(this.#spec.entries, key)) {
       throw new Error(`Entry "${key}" already exists`);
     }
@@ -158,7 +171,7 @@ export class PODSpecBuilder<
     // Will throw if not a valid POD entry name
     checkPODName(key);
 
-    return new PODSpecBuilder({
+    return new PODSpecBuilder<NewEntries, S, NewLiteralMode>({
       ...this.#spec,
       entries: {
         ...this.#spec.entries,
@@ -171,7 +184,9 @@ export class PODSpecBuilder<
   /**
    * Pick entries by key
    */
-  public pickEntries<K extends keyof E & string>(
+  public pickEntries<
+    K extends (keyof E extends never ? string : keyof E) & string,
+  >(
     keys: K[]
   ): PODSpecBuilder<Pick<E, K>, Concrete<NonOverlappingStatements<S, K[]>>> {
     return new PODSpecBuilder({
@@ -182,39 +197,17 @@ export class PODSpecBuilder<
       ) as Pick<E, K>,
       statements: Object.fromEntries(
         Object.entries(this.#spec.statements).filter(([_key, statement]) => {
-          const statementType = statement.type;
-          switch (statementType) {
-            case "isMemberOf":
-            case "isNotMemberOf":
-              return (statement.entries as EntryKeys<E>).every((entry) =>
-                keys.includes(entry as K)
-              );
-            case "inRange":
-            case "notInRange":
-              return keys.includes(statement.entry as K);
-            case "equalsEntry":
-            case "notEqualsEntry":
-            case "greaterThan":
-            case "greaterThanEq":
-            case "lessThan":
-            case "lessThanEq":
-              return (
-                keys.includes(statement.entry as K) &&
-                keys.includes(statement.otherEntry as K)
-              );
-
-            default:
-              const _exhaustiveCheck: never = statement;
-              throw new Error(
-                `Unsupported statement type: ${statementType as string}`
-              );
-          }
+          return (statement.entries as EntryKeys<E>).every((entry) =>
+            keys.includes(entry as K)
+          );
         })
       ) as Concrete<NonOverlappingStatements<S, K[]>>,
     });
   }
 
-  public omitEntries<K extends keyof E & string>(
+  public omitEntries<
+    K extends (keyof E extends never ? string : keyof E) & string,
+  >(
     keys: K[]
   ): PODSpecBuilder<Omit<E, K>, Concrete<NonOverlappingStatements<S, K[]>>> {
     return new PODSpecBuilder({
@@ -226,33 +219,9 @@ export class PODSpecBuilder<
       ) as Omit<E, K>,
       statements: Object.fromEntries(
         Object.entries(this.#spec.statements).filter(([_key, statement]) => {
-          const statementType = statement.type;
-          switch (statementType) {
-            case "isMemberOf":
-            case "isNotMemberOf":
-              return (statement.entries as EntryKeys<E>).every(
-                (entry) => !keys.includes(entry as K)
-              );
-            case "inRange":
-            case "notInRange":
-              return keys.includes(statement.entry as K);
-            case "equalsEntry":
-            case "notEqualsEntry":
-            case "greaterThan":
-            case "greaterThanEq":
-            case "lessThan":
-            case "lessThanEq":
-              return (
-                !keys.includes(statement.entry as K) &&
-                !keys.includes(statement.otherEntry as K)
-              );
-
-            default:
-              const _exhaustiveCheck: never = statement;
-              throw new Error(
-                `Unsupported statement type: ${statementType as string}`
-              );
-          }
+          return (statement.entries as EntryKeys<E>).every(
+            (entry) => !keys.includes(entry as K)
+          );
         })
       ) as Concrete<NonOverlappingStatements<S, K[]>>,
     });
@@ -468,7 +437,7 @@ export class PODSpecBuilder<
    * @returns A new PODSpecBuilder with the statement added
    */
   public inRange<
-    N extends keyof EntriesOfType<E, SupportsRangeChecks> & string,
+    N extends keyof EntriesWithRangeChecks<E & VirtualEntries> & string,
   >(
     name: N,
     range: {
@@ -478,7 +447,12 @@ export class PODSpecBuilder<
     customStatementName?: string
   ): PODSpecBuilder<
     E,
-    S & { [K in StatementName<[N & string], "inRange", S>]: InRange<E, N> }
+    S & {
+      [K in StatementName<[N & string], "inRange", S>]: InRange<
+        E & VirtualEntries,
+        N
+      >;
+    }
   > {
     // Check that the entry exists
     if (
@@ -519,8 +493,8 @@ export class PODSpecBuilder<
         throw new Error(`Unsupported entry type: ${name}`);
     }
 
-    const statement: InRange<E, N> = {
-      entry: name,
+    const statement: InRange<E & VirtualEntries, N> = {
+      entries: [name],
       type: "inRange",
       inRange: {
         min:
@@ -561,7 +535,7 @@ export class PODSpecBuilder<
    * @returns A new PODSpecBuilder with the statement added
    */
   public notInRange<
-    N extends keyof EntriesOfType<E, SupportsRangeChecks> & string,
+    N extends keyof EntriesWithRangeChecks<E & VirtualEntries> & string,
   >(
     name: N,
     range: {
@@ -572,7 +546,10 @@ export class PODSpecBuilder<
   ): PODSpecBuilder<
     E,
     S & {
-      [K in StatementName<[N & string], "notInRange", S>]: NotInRange<E, N>;
+      [K in StatementName<[N & string], "notInRange", S>]: NotInRange<
+        E & VirtualEntries,
+        N
+      >;
     }
   > {
     // Check that the entry exists
@@ -615,8 +592,8 @@ export class PODSpecBuilder<
         throw new Error(`Unsupported entry type: ${name}`);
     }
 
-    const statement: NotInRange<E, N> = {
-      entry: name,
+    const statement: NotInRange<E & VirtualEntries, N> = {
+      entries: [name],
       type: "notInRange",
       notInRange: {
         min:
@@ -687,9 +664,8 @@ export class PODSpecBuilder<
     }
 
     const statement = {
-      entry: name1,
+      entries: [name1, name2],
       type: "equalsEntry",
-      otherEntry: name2,
     } satisfies EqualsEntry<E, N1, N2>;
 
     const baseName = customStatementName ?? `${name1}_${name2}_equalsEntry`;
@@ -753,9 +729,8 @@ export class PODSpecBuilder<
     }
 
     const statement = {
-      entry: name1,
+      entries: [name1, name2],
       type: "notEqualsEntry",
-      otherEntry: name2,
     } satisfies NotEqualsEntry<E, N1, N2>;
 
     const baseName = customStatementName ?? `${name1}_${name2}_notEqualsEntry`;
@@ -815,9 +790,8 @@ export class PODSpecBuilder<
     }
 
     const statement = {
-      entry: name1,
+      entries: [name1, name2],
       type: "greaterThan",
-      otherEntry: name2,
     } satisfies GreaterThan<E, N1, N2>;
 
     const baseName = customStatementName ?? `${name1}_${name2}_greaterThan`;
@@ -881,9 +855,8 @@ export class PODSpecBuilder<
     }
 
     const statement = {
-      entry: name1,
+      entries: [name1, name2],
       type: "greaterThanEq",
-      otherEntry: name2,
     } satisfies GreaterThanEq<E, N1, N2>;
 
     const baseName = customStatementName ?? `${name1}_${name2}_greaterThanEq`;
@@ -943,9 +916,8 @@ export class PODSpecBuilder<
     }
 
     const statement = {
-      entry: name1,
+      entries: [name1, name2],
       type: "lessThan",
-      otherEntry: name2,
     } satisfies LessThan<E, N1, N2>;
 
     const baseName = customStatementName ?? `${name1}_${name2}_lessThan`;
@@ -1005,9 +977,8 @@ export class PODSpecBuilder<
     }
 
     const statement = {
-      entry: name1,
+      entries: [name1, name2],
       type: "lessThanEq",
-      otherEntry: name2,
     } satisfies LessThanEq<E, N1, N2>;
 
     const baseName = customStatementName ?? `${name1}_${name2}_lessThanEq`;
@@ -1028,4 +999,72 @@ export class PODSpecBuilder<
       },
     });
   }
+}
+
+if (import.meta.vitest) {
+  const { describe, it, expect } = import.meta.vitest;
+
+  describe("PODSpecBuilder", () => {
+    it("should be able to create a builder", () => {
+      const builder = PODSpecBuilder.create();
+      expect(builder).toBeDefined();
+
+      const builderWithEntries = builder
+        .entry("my_string", "string")
+        .entry("my_int", "int")
+        .entry("my_cryptographic", "cryptographic")
+        .entry("my_bytes", "bytes")
+        .entry("my_date", "date")
+        .entry("my_null", "null")
+        .entry("my_eddsa_pubkey", "eddsa_pubkey")
+        .entry("my_other_string", "string")
+        .entry("my_other_int", "int");
+
+      expect(builderWithEntries.spec().entries).toEqual({
+        my_string: "string",
+        my_int: "int",
+        my_cryptographic: "cryptographic",
+        my_bytes: "bytes",
+        my_date: "date",
+        my_null: "null",
+        my_eddsa_pubkey: "eddsa_pubkey",
+        my_other_string: "string",
+        my_other_int: "int",
+      });
+
+      const builderWithStatements = builderWithEntries
+        .inRange("my_int", { min: 0n, max: 10n })
+        .inRange("my_date", {
+          min: new Date("2020-01-01"),
+          max: new Date("2020-01-10"),
+        })
+        .isMemberOf(["my_string"], ["foo", "bar"])
+        .isNotMemberOf(["my_string"], ["baz"])
+        .equalsEntry("my_string", "my_other_string")
+        .notEqualsEntry("my_int", "my_other_int")
+        // TODO At some point, some of these should throw because they cannot
+        // possibly all be true.
+        .greaterThan("my_int", "my_other_int")
+        .greaterThanEq("my_int", "my_other_int")
+        .lessThan("my_int", "my_other_int")
+        .lessThanEq("my_int", "my_other_int");
+
+      expect(Object.keys(builderWithStatements.spec().statements)).toEqual([
+        "my_int_inRange",
+        "my_date_inRange",
+        "my_string_isMemberOf",
+        "my_string_isNotMemberOf",
+        "my_string_my_other_string_equalsEntry",
+        "my_int_my_other_int_notEqualsEntry",
+        "my_int_my_other_int_greaterThan",
+        "my_int_my_other_int_greaterThanEq",
+        "my_int_my_other_int_lessThan",
+        "my_int_my_other_int_lessThanEq",
+      ]);
+
+      builderWithEntries
+        // @ts-expect-error entry does not exist
+        .isMemberOf(["non_existent_entry"], ["foo", "bar"]);
+    });
+  });
 }

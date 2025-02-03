@@ -11,8 +11,8 @@ export const assertPODSpec = (() => {
     false === Array.isArray(input.entries) &&
     _io1(input.entries) &&
     "object" === typeof input.statements &&
-    null !== input.statements &&
-    false === Array.isArray(input.statements) &&
+      null !== input.statements &&
+      false === Array.isArray(input.statements) &&
     _io2(input.statements);
   const _io1 = (input: any): boolean =>
     Object.keys(input).every((key: any) => {
@@ -56,43 +56,51 @@ export const assertPODSpec = (() => {
         elem.every((elem: any) => "string" === typeof elem)
     );
   const _io5 = (input: any): boolean =>
-    "string" === typeof input.entry &&
+    Array.isArray(input.entries) &&
+    input.entries.length === 1 &&
+    "string" === typeof input.entries[0] &&
     "inRange" === input.type &&
-    "object" === typeof input.inRange &&
-    null !== input.inRange &&
+    "object" === typeof input.inRange && null !== input.inRange &&
     _io6(input.inRange);
   const _io6 = (input: any): boolean =>
     "string" === typeof input.min && "string" === typeof input.max;
   const _io7 = (input: any): boolean =>
-    "string" === typeof input.entry &&
+    Array.isArray(input.entries) &&
+    input.entries.length === 1 &&
+    "string" === typeof input.entries[0] &&
     "notInRange" === input.type &&
-    "object" === typeof input.notInRange &&
-    null !== input.notInRange &&
+    "object" === typeof input.notInRange && null !== input.notInRange &&
     _io6(input.notInRange);
   const _io8 = (input: any): boolean =>
-    "string" === typeof input.entry &&
-    "equalsEntry" === input.type &&
-    "string" === typeof input.otherEntry;
+    Array.isArray(input.entries) &&
+    input.entries.length === 2 && "string" === typeof input.entries[0] &&
+    "string" === typeof input.entries[1] &&
+    "equalsEntry" === input.type;
   const _io9 = (input: any): boolean =>
-    "string" === typeof input.entry &&
-    "notEqualsEntry" === input.type &&
-    "string" === typeof input.otherEntry;
+    Array.isArray(input.entries) &&
+    input.entries.length === 2 && "string" === typeof input.entries[0] &&
+    "string" === typeof input.entries[1] &&
+    "notEqualsEntry" === input.type;
   const _io10 = (input: any): boolean =>
-    "string" === typeof input.entry &&
-    "greaterThan" === input.type &&
-    "string" === typeof input.otherEntry;
+    Array.isArray(input.entries) &&
+    input.entries.length === 2 && "string" === typeof input.entries[0] &&
+    "string" === typeof input.entries[1] &&
+    "greaterThan" === input.type;
   const _io11 = (input: any): boolean =>
-    "string" === typeof input.entry &&
-    "greaterThanEq" === input.type &&
-    "string" === typeof input.otherEntry;
+    Array.isArray(input.entries) &&
+    input.entries.length === 2 && "string" === typeof input.entries[0] &&
+    "string" === typeof input.entries[1] &&
+    "greaterThanEq" === input.type;
   const _io12 = (input: any): boolean =>
-    "string" === typeof input.entry &&
-    "lessThan" === input.type &&
-    "string" === typeof input.otherEntry;
+    Array.isArray(input.entries) &&
+    input.entries.length === 2 && "string" === typeof input.entries[0] &&
+    "string" === typeof input.entries[1] &&
+    "lessThan" === input.type;
   const _io13 = (input: any): boolean =>
-    "string" === typeof input.entry &&
-    "lessThanEq" === input.type &&
-    "string" === typeof input.otherEntry;
+    Array.isArray(input.entries) &&
+    input.entries.length === 2 && "string" === typeof input.entries[0] &&
+    "string" === typeof input.entries[1] &&
+    "lessThanEq" === input.type;
   const _iu0 = (input: any): any =>
     (() => {
       if ("isMemberOf" === input.type) return _io3(input);
@@ -478,14 +486,46 @@ export const assertPODSpec = (() => {
     _path: string,
     _exceptionable: boolean = true
   ): boolean =>
-    ("string" === typeof input.entry ||
+    (((Array.isArray(input.entries) ||
       __typia_transform__assertGuard._assertGuard(
         _exceptionable,
         {
           method: "typia.createAssert",
-          path: _path + ".entry",
-          expected: "string",
-          value: input.entry,
+          path: _path + ".entries",
+          expected: "[entry: string]",
+          value: input.entries,
+        },
+        _errorFactory
+      )) &&
+      (input.entries.length === 1 ||
+        __typia_transform__assertGuard._assertGuard(
+          _exceptionable,
+          {
+            method: "typia.createAssert",
+            path: _path + ".entries",
+            expected: "[string]",
+            value: input.entries,
+          },
+          _errorFactory
+        )) &&
+      ("string" === typeof input.entries[0] ||
+        __typia_transform__assertGuard._assertGuard(
+          _exceptionable,
+          {
+            method: "typia.createAssert",
+            path: _path + ".entries[0]",
+            expected: "string",
+            value: input.entries[0],
+          },
+          _errorFactory
+        ))) ||
+      __typia_transform__assertGuard._assertGuard(
+        _exceptionable,
+        {
+          method: "typia.createAssert",
+          path: _path + ".entries",
+          expected: "[entry: string]",
+          value: input.entries,
         },
         _errorFactory
       )) &&
@@ -554,14 +594,46 @@ export const assertPODSpec = (() => {
     _path: string,
     _exceptionable: boolean = true
   ): boolean =>
-    ("string" === typeof input.entry ||
+    (((Array.isArray(input.entries) ||
       __typia_transform__assertGuard._assertGuard(
         _exceptionable,
         {
           method: "typia.createAssert",
-          path: _path + ".entry",
-          expected: "string",
-          value: input.entry,
+          path: _path + ".entries",
+          expected: "[entry: string].o1",
+          value: input.entries,
+        },
+        _errorFactory
+      )) &&
+      (input.entries.length === 1 ||
+        __typia_transform__assertGuard._assertGuard(
+          _exceptionable,
+          {
+            method: "typia.createAssert",
+            path: _path + ".entries",
+            expected: "[string]",
+            value: input.entries,
+          },
+          _errorFactory
+        )) &&
+      ("string" === typeof input.entries[0] ||
+        __typia_transform__assertGuard._assertGuard(
+          _exceptionable,
+          {
+            method: "typia.createAssert",
+            path: _path + ".entries[0]",
+            expected: "string",
+            value: input.entries[0],
+          },
+          _errorFactory
+        ))) ||
+      __typia_transform__assertGuard._assertGuard(
+        _exceptionable,
+        {
+          method: "typia.createAssert",
+          path: _path + ".entries",
+          expected: "[entry: string].o1",
+          value: input.entries,
         },
         _errorFactory
       )) &&
@@ -603,14 +675,57 @@ export const assertPODSpec = (() => {
     _path: string,
     _exceptionable: boolean = true
   ): boolean =>
-    ("string" === typeof input.entry ||
+    (((Array.isArray(input.entries) ||
       __typia_transform__assertGuard._assertGuard(
         _exceptionable,
         {
           method: "typia.createAssert",
-          path: _path + ".entry",
-          expected: "string",
-          value: input.entry,
+          path: _path + ".entries",
+          expected: "[entry: string, otherEntry: string]",
+          value: input.entries,
+        },
+        _errorFactory
+      )) &&
+      (input.entries.length === 2 ||
+        __typia_transform__assertGuard._assertGuard(
+          _exceptionable,
+          {
+            method: "typia.createAssert",
+            path: _path + ".entries",
+            expected: "[string, string]",
+            value: input.entries,
+          },
+          _errorFactory
+        )) &&
+        ("string" === typeof input.entries[0] ||
+          __typia_transform__assertGuard._assertGuard(
+            _exceptionable,
+            {
+              method: "typia.createAssert",
+              path: _path + ".entries[0]",
+              expected: "string",
+              value: input.entries[0],
+            },
+            _errorFactory
+          )) &&
+      ("string" === typeof input.entries[1] ||
+        __typia_transform__assertGuard._assertGuard(
+          _exceptionable,
+          {
+            method: "typia.createAssert",
+            path: _path + ".entries[1]",
+            expected: "string",
+            value: input.entries[1],
+          },
+          _errorFactory
+        ))) ||
+      __typia_transform__assertGuard._assertGuard(
+        _exceptionable,
+        {
+          method: "typia.createAssert",
+          path: _path + ".entries",
+          expected: "[entry: string, otherEntry: string]",
+          value: input.entries,
         },
         _errorFactory
       )) &&
@@ -624,31 +739,63 @@ export const assertPODSpec = (() => {
           value: input.type,
         },
         _errorFactory
-      )) &&
-    ("string" === typeof input.otherEntry ||
-      __typia_transform__assertGuard._assertGuard(
-        _exceptionable,
-        {
-          method: "typia.createAssert",
-          path: _path + ".otherEntry",
-          expected: "string",
-          value: input.otherEntry,
-        },
-        _errorFactory
       ));
   const _ao9 = (
     input: any,
     _path: string,
     _exceptionable: boolean = true
   ): boolean =>
-    ("string" === typeof input.entry ||
+    (((Array.isArray(input.entries) ||
       __typia_transform__assertGuard._assertGuard(
         _exceptionable,
         {
           method: "typia.createAssert",
-          path: _path + ".entry",
-          expected: "string",
-          value: input.entry,
+          path: _path + ".entries",
+          expected: "[entry: string, otherEntry: string].o1",
+          value: input.entries,
+        },
+        _errorFactory
+      )) &&
+      (input.entries.length === 2 ||
+        __typia_transform__assertGuard._assertGuard(
+          _exceptionable,
+          {
+            method: "typia.createAssert",
+            path: _path + ".entries",
+            expected: "[string, string]",
+            value: input.entries,
+          },
+          _errorFactory
+        )) &&
+        ("string" === typeof input.entries[0] ||
+          __typia_transform__assertGuard._assertGuard(
+            _exceptionable,
+            {
+              method: "typia.createAssert",
+              path: _path + ".entries[0]",
+              expected: "string",
+              value: input.entries[0],
+            },
+            _errorFactory
+          )) &&
+      ("string" === typeof input.entries[1] ||
+        __typia_transform__assertGuard._assertGuard(
+          _exceptionable,
+          {
+            method: "typia.createAssert",
+            path: _path + ".entries[1]",
+            expected: "string",
+            value: input.entries[1],
+          },
+          _errorFactory
+        ))) ||
+      __typia_transform__assertGuard._assertGuard(
+        _exceptionable,
+        {
+          method: "typia.createAssert",
+          path: _path + ".entries",
+          expected: "[entry: string, otherEntry: string].o1",
+          value: input.entries,
         },
         _errorFactory
       )) &&
@@ -662,31 +809,63 @@ export const assertPODSpec = (() => {
           value: input.type,
         },
         _errorFactory
-      )) &&
-    ("string" === typeof input.otherEntry ||
-      __typia_transform__assertGuard._assertGuard(
-        _exceptionable,
-        {
-          method: "typia.createAssert",
-          path: _path + ".otherEntry",
-          expected: "string",
-          value: input.otherEntry,
-        },
-        _errorFactory
       ));
   const _ao10 = (
     input: any,
     _path: string,
     _exceptionable: boolean = true
   ): boolean =>
-    ("string" === typeof input.entry ||
+    (((Array.isArray(input.entries) ||
       __typia_transform__assertGuard._assertGuard(
         _exceptionable,
         {
           method: "typia.createAssert",
-          path: _path + ".entry",
-          expected: "string",
-          value: input.entry,
+          path: _path + ".entries",
+          expected: "[entry: string, otherEntry: string].o2",
+          value: input.entries,
+        },
+        _errorFactory
+      )) &&
+      (input.entries.length === 2 ||
+        __typia_transform__assertGuard._assertGuard(
+          _exceptionable,
+          {
+            method: "typia.createAssert",
+            path: _path + ".entries",
+            expected: "[string, string]",
+            value: input.entries,
+          },
+          _errorFactory
+        )) &&
+        ("string" === typeof input.entries[0] ||
+          __typia_transform__assertGuard._assertGuard(
+            _exceptionable,
+            {
+              method: "typia.createAssert",
+              path: _path + ".entries[0]",
+              expected: "string",
+              value: input.entries[0],
+            },
+            _errorFactory
+          )) &&
+      ("string" === typeof input.entries[1] ||
+        __typia_transform__assertGuard._assertGuard(
+          _exceptionable,
+          {
+            method: "typia.createAssert",
+            path: _path + ".entries[1]",
+            expected: "string",
+            value: input.entries[1],
+          },
+          _errorFactory
+        ))) ||
+      __typia_transform__assertGuard._assertGuard(
+        _exceptionable,
+        {
+          method: "typia.createAssert",
+          path: _path + ".entries",
+          expected: "[entry: string, otherEntry: string].o2",
+          value: input.entries,
         },
         _errorFactory
       )) &&
@@ -700,31 +879,63 @@ export const assertPODSpec = (() => {
           value: input.type,
         },
         _errorFactory
-      )) &&
-    ("string" === typeof input.otherEntry ||
-      __typia_transform__assertGuard._assertGuard(
-        _exceptionable,
-        {
-          method: "typia.createAssert",
-          path: _path + ".otherEntry",
-          expected: "string",
-          value: input.otherEntry,
-        },
-        _errorFactory
       ));
   const _ao11 = (
     input: any,
     _path: string,
     _exceptionable: boolean = true
   ): boolean =>
-    ("string" === typeof input.entry ||
+    (((Array.isArray(input.entries) ||
       __typia_transform__assertGuard._assertGuard(
         _exceptionable,
         {
           method: "typia.createAssert",
-          path: _path + ".entry",
-          expected: "string",
-          value: input.entry,
+          path: _path + ".entries",
+          expected: "[entry: string, otherEntry: string].o3",
+          value: input.entries,
+        },
+        _errorFactory
+      )) &&
+      (input.entries.length === 2 ||
+        __typia_transform__assertGuard._assertGuard(
+          _exceptionable,
+          {
+            method: "typia.createAssert",
+            path: _path + ".entries",
+            expected: "[string, string]",
+            value: input.entries,
+          },
+          _errorFactory
+        )) &&
+        ("string" === typeof input.entries[0] ||
+          __typia_transform__assertGuard._assertGuard(
+            _exceptionable,
+            {
+              method: "typia.createAssert",
+              path: _path + ".entries[0]",
+              expected: "string",
+              value: input.entries[0],
+            },
+            _errorFactory
+          )) &&
+      ("string" === typeof input.entries[1] ||
+        __typia_transform__assertGuard._assertGuard(
+          _exceptionable,
+          {
+            method: "typia.createAssert",
+            path: _path + ".entries[1]",
+            expected: "string",
+            value: input.entries[1],
+          },
+          _errorFactory
+        ))) ||
+      __typia_transform__assertGuard._assertGuard(
+        _exceptionable,
+        {
+          method: "typia.createAssert",
+          path: _path + ".entries",
+          expected: "[entry: string, otherEntry: string].o3",
+          value: input.entries,
         },
         _errorFactory
       )) &&
@@ -738,31 +949,63 @@ export const assertPODSpec = (() => {
           value: input.type,
         },
         _errorFactory
-      )) &&
-    ("string" === typeof input.otherEntry ||
-      __typia_transform__assertGuard._assertGuard(
-        _exceptionable,
-        {
-          method: "typia.createAssert",
-          path: _path + ".otherEntry",
-          expected: "string",
-          value: input.otherEntry,
-        },
-        _errorFactory
       ));
   const _ao12 = (
     input: any,
     _path: string,
     _exceptionable: boolean = true
   ): boolean =>
-    ("string" === typeof input.entry ||
+    (((Array.isArray(input.entries) ||
       __typia_transform__assertGuard._assertGuard(
         _exceptionable,
         {
           method: "typia.createAssert",
-          path: _path + ".entry",
-          expected: "string",
-          value: input.entry,
+          path: _path + ".entries",
+          expected: "[entry: string, otherEntry: string].o4",
+          value: input.entries,
+        },
+        _errorFactory
+      )) &&
+      (input.entries.length === 2 ||
+        __typia_transform__assertGuard._assertGuard(
+          _exceptionable,
+          {
+            method: "typia.createAssert",
+            path: _path + ".entries",
+            expected: "[string, string]",
+            value: input.entries,
+          },
+          _errorFactory
+        )) &&
+        ("string" === typeof input.entries[0] ||
+          __typia_transform__assertGuard._assertGuard(
+            _exceptionable,
+            {
+              method: "typia.createAssert",
+              path: _path + ".entries[0]",
+              expected: "string",
+              value: input.entries[0],
+            },
+            _errorFactory
+          )) &&
+      ("string" === typeof input.entries[1] ||
+        __typia_transform__assertGuard._assertGuard(
+          _exceptionable,
+          {
+            method: "typia.createAssert",
+            path: _path + ".entries[1]",
+            expected: "string",
+            value: input.entries[1],
+          },
+          _errorFactory
+        ))) ||
+      __typia_transform__assertGuard._assertGuard(
+        _exceptionable,
+        {
+          method: "typia.createAssert",
+          path: _path + ".entries",
+          expected: "[entry: string, otherEntry: string].o4",
+          value: input.entries,
         },
         _errorFactory
       )) &&
@@ -776,31 +1019,63 @@ export const assertPODSpec = (() => {
           value: input.type,
         },
         _errorFactory
-      )) &&
-    ("string" === typeof input.otherEntry ||
-      __typia_transform__assertGuard._assertGuard(
-        _exceptionable,
-        {
-          method: "typia.createAssert",
-          path: _path + ".otherEntry",
-          expected: "string",
-          value: input.otherEntry,
-        },
-        _errorFactory
       ));
   const _ao13 = (
     input: any,
     _path: string,
     _exceptionable: boolean = true
   ): boolean =>
-    ("string" === typeof input.entry ||
+    (((Array.isArray(input.entries) ||
       __typia_transform__assertGuard._assertGuard(
         _exceptionable,
         {
           method: "typia.createAssert",
-          path: _path + ".entry",
-          expected: "string",
-          value: input.entry,
+          path: _path + ".entries",
+          expected: "[entry: string, otherEntry: string].o5",
+          value: input.entries,
+        },
+        _errorFactory
+      )) &&
+      (input.entries.length === 2 ||
+        __typia_transform__assertGuard._assertGuard(
+          _exceptionable,
+          {
+            method: "typia.createAssert",
+            path: _path + ".entries",
+            expected: "[string, string]",
+            value: input.entries,
+          },
+          _errorFactory
+        )) &&
+        ("string" === typeof input.entries[0] ||
+          __typia_transform__assertGuard._assertGuard(
+            _exceptionable,
+            {
+              method: "typia.createAssert",
+              path: _path + ".entries[0]",
+              expected: "string",
+              value: input.entries[0],
+            },
+            _errorFactory
+          )) &&
+      ("string" === typeof input.entries[1] ||
+        __typia_transform__assertGuard._assertGuard(
+          _exceptionable,
+          {
+            method: "typia.createAssert",
+            path: _path + ".entries[1]",
+            expected: "string",
+            value: input.entries[1],
+          },
+          _errorFactory
+        ))) ||
+      __typia_transform__assertGuard._assertGuard(
+        _exceptionable,
+        {
+          method: "typia.createAssert",
+          path: _path + ".entries",
+          expected: "[entry: string, otherEntry: string].o5",
+          value: input.entries,
         },
         _errorFactory
       )) &&
@@ -812,17 +1087,6 @@ export const assertPODSpec = (() => {
           path: _path + ".type",
           expected: '"lessThanEq"',
           value: input.type,
-        },
-        _errorFactory
-      )) &&
-    ("string" === typeof input.otherEntry ||
-      __typia_transform__assertGuard._assertGuard(
-        _exceptionable,
-        {
-          method: "typia.createAssert",
-          path: _path + ".otherEntry",
-          expected: "string",
-          value: input.otherEntry,
         },
         _errorFactory
       ));

@@ -1,8 +1,8 @@
 import type {
-  EntryTypes,
-  EntryKeys,
-  PODValueTupleForNamedEntries,
   EntriesOfType,
+  EntryKeys,
+  EntryTypes,
+  PODValueTupleForNamedEntries,
   VirtualEntries,
 } from "./entries.js";
 
@@ -42,11 +42,14 @@ export type IsNotMemberOf<
 
 // Which entry types support range checks?
 export type SupportsRangeChecks = "int" | "boolean" | "date";
+export type EntriesWithRangeChecks<E extends EntryTypes> = EntriesOfType<
+  E,
+  SupportsRangeChecks
+>;
 
 export type RangeInput<
   E extends EntryTypes,
-  N extends keyof EntriesOfType<E & VirtualEntries, SupportsRangeChecks> &
-    string,
+  N extends keyof EntriesWithRangeChecks<E> & string,
 > = {
   min: E[N] extends "date" ? Date : bigint;
   max: E[N] extends "date" ? Date : bigint;
@@ -59,20 +62,18 @@ export type RangePersistent = {
 
 export type InRange<
   E extends EntryTypes,
-  N extends keyof EntriesOfType<E & VirtualEntries, SupportsRangeChecks> &
-    string,
+  N extends keyof EntriesWithRangeChecks<E> & string,
 > = {
-  entry: N;
+  entries: [entry: N];
   type: "inRange";
   inRange: RangePersistent;
 };
 
 export type NotInRange<
   E extends EntryTypes,
-  N extends keyof EntriesOfType<E & VirtualEntries, SupportsRangeChecks> &
-    string,
+  N extends keyof EntriesWithRangeChecks<E> & string,
 > = {
-  entry: N;
+  entries: [entry: N];
   type: "notInRange";
   notInRange: RangePersistent;
 };
@@ -82,9 +83,8 @@ export type EqualsEntry<
   N1 extends keyof (E & VirtualEntries) & string,
   N2 extends keyof (E & VirtualEntries) & string,
 > = {
-  entry: N1;
+  entries: [entry: N1, otherEntry: N2];
   type: "equalsEntry";
-  otherEntry: N2;
 };
 
 export type NotEqualsEntry<
@@ -92,9 +92,8 @@ export type NotEqualsEntry<
   N1 extends keyof (E & VirtualEntries) & string,
   N2 extends keyof (E & VirtualEntries) & string,
 > = {
-  entry: N1;
+  entries: [entry: N1, otherEntry: N2];
   type: "notEqualsEntry";
-  otherEntry: N2;
 };
 
 export type GreaterThan<
@@ -102,9 +101,8 @@ export type GreaterThan<
   N1 extends keyof (E & VirtualEntries) & string,
   N2 extends keyof (E & VirtualEntries) & string,
 > = {
-  entry: N1;
+  entries: [entry: N1, otherEntry: N2];
   type: "greaterThan";
-  otherEntry: N2;
 };
 
 export type GreaterThanEq<
@@ -112,9 +110,8 @@ export type GreaterThanEq<
   N1 extends keyof (E & VirtualEntries) & string,
   N2 extends keyof (E & VirtualEntries) & string,
 > = {
-  entry: N1;
+  entries: [entry: N1, otherEntry: N2];
   type: "greaterThanEq";
-  otherEntry: N2;
 };
 
 export type LessThan<
@@ -122,9 +119,8 @@ export type LessThan<
   N1 extends keyof (E & VirtualEntries) & string,
   N2 extends keyof (E & VirtualEntries) & string,
 > = {
-  entry: N1;
+  entries: [entry: N1, otherEntry: N2];
   type: "lessThan";
-  otherEntry: N2;
 };
 
 export type LessThanEq<
@@ -132,9 +128,8 @@ export type LessThanEq<
   N1 extends keyof (E & VirtualEntries) & string,
   N2 extends keyof (E & VirtualEntries) & string,
 > = {
-  entry: N1;
+  entries: [entry: N1, otherEntry: N2];
   type: "lessThanEq";
-  otherEntry: N2;
 };
 
 export type Statements =
