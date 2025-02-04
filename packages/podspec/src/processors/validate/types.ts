@@ -1,4 +1,4 @@
-import type { ValidationBaseIssue } from "./issues.js";
+import type { ValidationIssue } from "./issues.js";
 
 export type ValidateSuccess<T> = {
   value: T;
@@ -6,7 +6,7 @@ export type ValidateSuccess<T> = {
 };
 
 export type ValidateFailure = {
-  issues: ValidationBaseIssue[];
+  issues: ValidationIssue[];
   isValid: false;
 };
 

@@ -3,7 +3,6 @@ import type { NamedPODSpecs, PODGroupSpec } from "../../builders/group.js";
 import type { PODSpec } from "../../builders/pod.js";
 import type { EntryTypes } from "../../builders/types/entries.js";
 import type { StatementMap } from "../../builders/types/statements.js";
-import type { ValidateOptions } from "../validate.js";
 import {
   IssueCode,
   type ValidationBaseIssue,
@@ -13,6 +12,7 @@ import {
   type ValidationUnexpectedInputEntryIssue,
   type ValidationUnexpectedInputPodIssue,
 } from "./issues.js";
+import type { ValidateOptions } from "./podValidator.js";
 
 export interface EntrySource {
   getEntry(entryName: string): PODValue | undefined;
@@ -90,11 +90,29 @@ export class EntrySourcePodSpec implements EntrySource {
   }
 
   public getEntry(entryName: string): PODValue | undefined {
-    return this.pod.content.getValue(entryName);
+    if (entryName === "$signerPublicKey") {
+      return {
+        type: "eddsa_pubkey",
+        value: this.pod.signerPublicKey,
+      };
+    } else if (entryName === "$contentID") {
+      return {
+        type: "cryptographic",
+        value: this.pod.content.contentID,
+      };
+    } else {
+      return this.pod.content.getValue(entryName);
+    }
   }
 
   public getEntryTypeFromSpec(entryName: string): PODValue["type"] | undefined {
-    return this.podSpec.entries[entryName];
+    if (entryName === "$signerPublicKey") {
+      return "eddsa_pubkey";
+    } else if (entryName === "$contentID") {
+      return "cryptographic";
+    } else {
+      return this.podSpec.entries[entryName];
+    }
   }
 }
 
@@ -178,7 +196,19 @@ export class EntrySourcePodGroupSpec implements EntrySource {
       return undefined;
     }
 
-    return this.pods[podName].content.getValue(entryName);
+    if (entryName === "$signerPublicKey") {
+      return {
+        type: "eddsa_pubkey",
+        value: this.pods[podName].signerPublicKey,
+      };
+    } else if (entryName === "$contentID") {
+      return {
+        type: "cryptographic",
+        value: this.pods[podName].content.contentID,
+      };
+    } else {
+      return this.pods[podName].content.getValue(entryName);
+    }
   }
 
   public getEntryTypeFromSpec(
@@ -192,6 +222,12 @@ export class EntrySourcePodGroupSpec implements EntrySource {
     ) {
       return undefined;
     }
-    return this.podGroupSpec.pods[podName].entries[entryName];
+    if (entryName === "$signerPublicKey") {
+      return "eddsa_pubkey";
+    } else if (entryName === "$contentID") {
+      return "cryptographic";
+    } else {
+      return this.podGroupSpec.pods[podName].entries[entryName];
+    }
   }
 }

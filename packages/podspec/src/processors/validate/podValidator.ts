@@ -1,51 +1,27 @@
-import type { POD, PODContent, PODEntries, PODName, PODValue } from "@pcd/pod";
-import type { PODSpec } from "../builders/pod.js";
-import type { EntryTypes } from "../builders/types/entries.js";
-import type { StatementMap } from "../builders/types/statements.js";
-import { assertPODSpec } from "../generated/podspec.js";
-import { EntrySourcePodSpec } from "./validate/EntrySource.js";
-import { checkEqualsEntry } from "./validate/checks/checkEqualsEntry.js";
-import { checkGreaterThan } from "./validate/checks/checkGreaterThan.js";
-import { checkGreaterThanEq } from "./validate/checks/checkGreaterThanEq.js";
-import { checkInRange } from "./validate/checks/checkInRange.js";
-import { checkIsMemberOf } from "./validate/checks/checkIsMemberOf.js";
-import { checkIsNotMemberOf } from "./validate/checks/checkIsNotMemberOf.js";
-import { checkLessThan } from "./validate/checks/checkLessThan.js";
-import { checkLessThanEq } from "./validate/checks/checkLessThanEq.js";
-import { checkNotEqualsEntry } from "./validate/checks/checkNotEqualsEntry.js";
-import { checkNotInRange } from "./validate/checks/checkNotInRange.js";
-import { FAILURE, SUCCESS } from "./validate/result.js";
-import type { ValidateResult } from "./validate/types.js";
+import type { POD } from "@pcd/pod";
+import type { PODSpec } from "../../builders/pod.js";
+import type { EntryTypes } from "../../builders/types/entries.js";
+import type { StatementMap } from "../../builders/types/statements.js";
+import { assertPODSpec } from "../../generated/podspec.js";
+import type { PODEntriesFromEntryTypes, StrongPOD } from "../../spec/types.js";
+import { EntrySourcePodSpec } from "./EntrySource.js";
+import { checkEqualsEntry } from "./checks/checkEqualsEntry.js";
+import { checkGreaterThan } from "./checks/checkGreaterThan.js";
+import { checkGreaterThanEq } from "./checks/checkGreaterThanEq.js";
+import { checkInRange } from "./checks/checkInRange.js";
+import { checkIsMemberOf } from "./checks/checkIsMemberOf.js";
+import { checkIsNotMemberOf } from "./checks/checkIsNotMemberOf.js";
+import { checkLessThan } from "./checks/checkLessThan.js";
+import { checkLessThanEq } from "./checks/checkLessThanEq.js";
+import { checkNotEqualsEntry } from "./checks/checkNotEqualsEntry.js";
+import { checkNotInRange } from "./checks/checkNotInRange.js";
+import { FAILURE, SUCCESS } from "./result.js";
+import type { ValidateResult } from "./types.js";
 
 /**
  @TOOO
  - [ ] "Compile" a spec by hashing the statement parameters where necessary?
 */
-
-/**
- * "Strong" PODContent is an extension of PODContent which extends the
- * `asEntries()` method to return a strongly-typed PODEntries.
- */
-interface StrongPODContent<T extends PODEntries> extends PODContent {
-  asEntries(): T & PODEntries;
-  getValue<N extends keyof T | PODName>(
-    name: N
-  ): N extends keyof T ? T[N] : PODValue;
-  getRawValue<N extends keyof T | PODName>(
-    name: N
-  ): N extends keyof T ? T[N]["value"] : PODValue["value"];
-}
-
-/**
- * A "strong" POD is a POD with a strongly-typed entries.
- */
-export interface StrongPOD<T extends PODEntries> extends POD {
-  content: StrongPODContent<T>;
-}
-
-type PODEntriesFromEntryTypes<E extends EntryTypes> = {
-  [K in keyof E]: Extract<PODValue, { type: E[K] }>;
-};
 
 export interface ValidateOptions {
   /**
@@ -64,11 +40,15 @@ const DEFAULT_VALIDATE_OPTIONS: ValidateOptions = {
 };
 
 interface PODValidator<E extends EntryTypes> {
-  validate(pod: POD): ValidateResult<StrongPOD<PODEntriesFromEntryTypes<E>>>;
+  validate(
+    pod: POD,
+    exitOnError?: boolean
+  ): ValidateResult<StrongPOD<PODEntriesFromEntryTypes<E>>>;
   check(pod: POD): boolean;
   assert(pod: POD): asserts pod is StrongPOD<PODEntriesFromEntryTypes<E>>;
   strictValidate(
-    pod: POD
+    pod: POD,
+    exitOnError?: boolean
   ): ValidateResult<StrongPOD<PODEntriesFromEntryTypes<E>>>;
   strictCheck(pod: POD): boolean;
   strictAssert(pod: POD): asserts pod is StrongPOD<PODEntriesFromEntryTypes<E>>;
@@ -79,7 +59,7 @@ const SpecValidatorState = new WeakMap<
   boolean
 >();
 
-export function validate<E extends EntryTypes, S extends StatementMap>(
+export function podValidator<E extends EntryTypes, S extends StatementMap>(
   spec: PODSpec<E, S>
 ): PODValidator<E> {
   const validSpec = SpecValidatorState.get(spec);
@@ -97,13 +77,15 @@ export function validate<E extends EntryTypes, S extends StatementMap>(
   }
 
   return {
-    validate: (pod) => validatePOD(pod, spec, {}),
+    validate: (pod, exitOnError = false) =>
+      validatePOD(pod, spec, { exitOnError }),
     check: (pod) => validatePOD(pod, spec, { exitOnError: true }).isValid,
     assert: (pod) => {
       const result = validatePOD(pod, spec, { exitOnError: true });
       if (!result.isValid) throw new Error("POD is not valid");
     },
-    strictValidate: (pod) => validatePOD(pod, spec, { strict: true }),
+    strictValidate: (pod, exitOnError = false) =>
+      validatePOD(pod, spec, { strict: true, exitOnError }),
     strictCheck: (pod) =>
       validatePOD(pod, spec, { strict: true, exitOnError: true }).isValid,
     strictAssert: (pod) => {

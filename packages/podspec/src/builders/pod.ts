@@ -6,9 +6,8 @@ import {
   checkPODName,
 } from "@pcd/pod";
 import type { IsJsonSafe } from "../shared/jsonSafe.js";
-import type { IsLiteral } from "../shared/types.js";
+import type { IsSingleLiteralString } from "../shared/types.js";
 import {
-  canonicalizeJSON,
   convertValuesToStringTuples,
   deepFreeze,
   supportsRangeChecks,
@@ -62,7 +61,7 @@ import type {
  */
 
 export const virtualEntries: VirtualEntries = {
-  $contentID: "string",
+  $contentID: "cryptographic",
   //$signature: "string",
   $signerPublicKey: "eddsa_pubkey",
 };
@@ -118,7 +117,6 @@ export class PODSpecBuilder<
   E extends EntryTypes,
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   S extends StatementMap = {},
-  LiteralMode extends boolean = true,
 > {
   readonly #spec: PODSpec<E, S>;
 
@@ -138,14 +136,9 @@ export class PODSpecBuilder<
   }
 
   public toJSON(): string {
-    const canonicalized = canonicalizeJSON(this.#spec);
-    if (!canonicalized) {
-      throw new Error("Failed to canonicalize PODSpec");
-    }
     return JSON.stringify(
       {
         ...this.#spec,
-        hash: canonicalized /* TODO hashing! */,
       },
       null,
       2
@@ -156,14 +149,10 @@ export class PODSpecBuilder<
     K extends string,
     V extends PODValueType,
     NewEntries extends AddEntry<E, K, V>,
-    // If the key is not a string literal, we need to exit literal mode
-    NewLiteralMode extends boolean = IsLiteral<K> extends false
-      ? false
-      : LiteralMode,
   >(
-    key: NewLiteralMode extends true ? Exclude<K, keyof E> : string,
+    key: IsSingleLiteralString<K> extends true ? Exclude<K, keyof E> : never,
     type: V
-  ): PODSpecBuilder<NewEntries, S, NewLiteralMode> {
+  ): PODSpecBuilder<NewEntries, S> {
     if (Object.prototype.hasOwnProperty.call(this.#spec.entries, key)) {
       throw new Error(`Entry "${key}" already exists`);
     }
@@ -171,7 +160,7 @@ export class PODSpecBuilder<
     // Will throw if not a valid POD entry name
     checkPODName(key);
 
-    return new PODSpecBuilder<NewEntries, S, NewLiteralMode>({
+    return new PODSpecBuilder<NewEntries, S>({
       ...this.#spec,
       entries: {
         ...this.#spec.entries,

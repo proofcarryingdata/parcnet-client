@@ -6,6 +6,7 @@ import {
   POD_INT_MIN,
   checkPODName,
 } from "@pcd/pod";
+import type { IsSingleLiteralString } from "../shared/types.js";
 import { type PODSpec, PODSpecBuilder, virtualEntries } from "./pod.js";
 import {
   convertValuesToStringTuples,
@@ -51,12 +52,25 @@ export type PODGroupSpec<P extends NamedPODSpecs, S extends StatementMap> = {
   statements: S;
 };
 
-export type AllPODEntries<P extends NamedPODSpecs> = {
-  [K in keyof P]: {
-    [E in keyof (P[K]["entries"] & VirtualEntries) as `${K & string}.${E &
-      string}`]: (P[K]["entries"] & VirtualEntries)[E];
-  };
-}[keyof P];
+export type AllPODEntries<P extends NamedPODSpecs> = Evaluate<
+  UnionToIntersection<
+    {
+      [K in keyof P]: {
+        [E in keyof (P[K]["entries"] & VirtualEntries) as `${K & string}.${E &
+          string}`]: (P[K]["entries"] & VirtualEntries)[E];
+      };
+    }[keyof P] extends infer O
+      ? { [K in keyof O]: O[K] }
+      : never
+  >
+>;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type UnionToIntersection<U> = (U extends any ? (x: U) => void : never) extends (
+  x: infer I
+) => void
+  ? I
+  : never;
 
 type MustBePODValueType<T> = T extends PODValueType ? T : never;
 
@@ -93,11 +107,10 @@ export class PODGroupSpecBuilder<
     this.#spec = spec;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  public static create(): PODGroupSpecBuilder<NamedPODSpecs, StatementMap> {
+  public static create() {
     return new PODGroupSpecBuilder({
-      pods: {} as NamedPODSpecs,
-      statements: {} as StatementMap,
+      pods: {},
+      statements: {},
     });
   }
 
@@ -109,7 +122,10 @@ export class PODGroupSpecBuilder<
     N extends PODName,
     Spec extends PODSpec<EntryTypes, StatementMap>,
     NewPods extends AddPOD<P, N, Spec>,
-  >(name: N, spec: Spec): PODGroupSpecBuilder<NewPods, S> {
+  >(
+    name: IsSingleLiteralString<N> extends true ? N : never,
+    spec: Spec
+  ): PODGroupSpecBuilder<NewPods, S> {
     if (Object.prototype.hasOwnProperty.call(this.#spec.pods, name)) {
       throw new Error(`POD "${name}" already exists`);
     }
@@ -728,10 +744,11 @@ export class PODGroupSpecBuilder<
       pod1 === undefined ||
       entry1 === undefined ||
       !Object.prototype.hasOwnProperty.call(this.#spec.pods, pod1) ||
-      !Object.prototype.hasOwnProperty.call(
+      (!Object.prototype.hasOwnProperty.call(
         this.#spec.pods[pod1]!.entries,
         entry1
-      )
+      ) &&
+        !Object.prototype.hasOwnProperty.call(virtualEntries, entry1))
     ) {
       throw new Error(`Entry "${name1}" does not exist`);
     }
@@ -739,10 +756,11 @@ export class PODGroupSpecBuilder<
       pod2 === undefined ||
       entry2 === undefined ||
       !Object.prototype.hasOwnProperty.call(this.#spec.pods, pod2) ||
-      !Object.prototype.hasOwnProperty.call(
+      (!Object.prototype.hasOwnProperty.call(
         this.#spec.pods[pod2]!.entries,
         entry2
-      )
+      ) &&
+        !Object.prototype.hasOwnProperty.call(virtualEntries, entry2))
     ) {
       throw new Error(`Entry "${name2}" does not exist`);
     }
@@ -860,14 +878,46 @@ if (import.meta.vitest) {
         .entry("my_int", "int")
         .entry("mystery_name", "string");
 
-      const pod2 = PODSpecBuilder.create().entry("something_else", "boolean");
+      const _pod2 = PODSpecBuilder.create().entry("something_else", "boolean");
+
+      const _builder = PODGroupSpecBuilder.create()
+        .pod("foo", pod.spec())
+        .pod("bar", pod.spec())
+        .inRange("foo.my_int", { min: 0n, max: 10n });
+    });
+  });
+}
+
+type _Entries = AllPODEntries<{
+  foo: {
+    entries: {
+      my_string: "string";
+      my_int: "int";
+      mystery_name: "string";
+    };
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+    statements: {};
+  };
+  bar: {
+    entries: {
+      something_else: "boolean";
+    };
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+    statements: {};
+  };
+}>;
+
+if (import.meta.vitest) {
+  const { describe, it } = import.meta.vitest;
+
+  describe("PODGroupSpecBuilder", () => {
+    it("should be able to create a builder", () => {
+      const pod = PODSpecBuilder.create()
+        .entry("my_string", "string")
+        .entry("my_int", "int")
+        .entry("mystery_name", "string");
 
       const _builder = PODGroupSpecBuilder.create().pod("foo", pod.spec());
-      // .inRange("foo.my_int", { min: 0n, max: 10n });
-
-      const _builder2 = PODGroupSpecBuilder.create()
-        .pod("mystery" as string, pod.spec())
-        .pod("mystery2" as string, pod2.spec());
     });
   });
 }

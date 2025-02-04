@@ -111,6 +111,17 @@ export interface ValidationStatementNegativeResultIssue
   entries: string[];
 }
 
+export type ValidationIssue =
+  | ValidationTypeMismatchIssue
+  | ValidationMissingEntryIssue
+  | ValidationMissingPodIssue
+  | ValidationInvalidEntryNameIssue
+  | ValidationInvalidStatementIssue
+  | ValidationInvalidPodValueIssue
+  | ValidationUnexpectedInputEntryIssue
+  | ValidationUnexpectedInputPodIssue
+  | ValidationStatementNegativeResultIssue;
+
 /**
  * Exception class for errors that occur when parsing.
  */

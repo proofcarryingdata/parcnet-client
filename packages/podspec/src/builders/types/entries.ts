@@ -23,7 +23,7 @@ export type EntriesOfType<E extends EntryTypes, T extends PODValueType> = {
 };
 
 export type VirtualEntries = {
-  $contentID: "string";
+  $contentID: "cryptographic";
   //$signature: "string";
   $signerPublicKey: "eddsa_pubkey";
 };
