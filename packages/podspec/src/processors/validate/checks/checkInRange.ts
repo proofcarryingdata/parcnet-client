@@ -35,10 +35,10 @@ export function checkInRange(
 
   const isDate = entry.type === "date";
   const min = isDate
-    ? new Date(statement.inRange.min)
+    ? new Date(parseInt(statement.inRange.min))
     : BigInt(statement.inRange.min);
   const max = isDate
-    ? new Date(statement.inRange.max)
+    ? new Date(parseInt(statement.inRange.max))
     : BigInt(statement.inRange.max);
 
   if (isPODArithmeticValue(entry)) {

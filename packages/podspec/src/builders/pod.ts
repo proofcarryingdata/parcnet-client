@@ -257,21 +257,20 @@ export class PODSpecBuilder<
    * @param values - The values to be constrained to
    * @returns A new PODSpecBuilder with the statement added
    */
-  public isMemberOf<N extends EntryKeys<E & VirtualEntries>>(
+  public isMemberOf<N extends EntryKeys<E & VirtualEntries>, C extends string>(
     names: [...N],
     values: N["length"] extends 1
       ? PODValueTypeFromTypeName<
           (E & VirtualEntries)[N[0] & keyof (E & VirtualEntries)]
         >[]
       : PODValueTupleForNamedEntries<E & VirtualEntries, N>[],
-    customStatementName?: string
+    customStatementName?: C
   ): PODSpecBuilder<
     E,
     S & {
-      [K in StatementName<N, "isMemberOf", S>]: IsMemberOf<
-        E & VirtualEntries,
-        N
-      >;
+      [K in IsSingleLiteralString<C> extends true
+        ? C
+        : StatementName<N, "isMemberOf", S>]: IsMemberOf<E & VirtualEntries, N>;
     }
   > {
     // Check for duplicate names
@@ -311,7 +310,7 @@ export class PODSpecBuilder<
     };
 
     const baseName = customStatementName ?? `${names.join("_")}_isMemberOf`;
-    let statementName = baseName;
+    let statementName: string = baseName;
     let suffix = 1;
 
     while (
@@ -344,17 +343,21 @@ export class PODSpecBuilder<
    * @param values - The values to be constrained to
    * @returns A new PODSpecBuilder with the statement added
    */
-  public isNotMemberOf<N extends EntryKeys<E>>(
+  public isNotMemberOf<N extends EntryKeys<E>, C extends string>(
     names: [...N],
     values: N["length"] extends 1
       ? PODValueTypeFromTypeName<
           (E & VirtualEntries)[N[0] & keyof (E & VirtualEntries)]
         >[]
       : PODValueTupleForNamedEntries<E & VirtualEntries, N>[],
-    customStatementName?: string
+    customStatementName?: C
   ): PODSpecBuilder<
     E,
-    S & { [K in StatementName<N, "isNotMemberOf", S>]: IsNotMemberOf<E, N> }
+    S & {
+      [K in IsSingleLiteralString<C> extends true
+        ? C
+        : StatementName<N, "isNotMemberOf", S>]: IsNotMemberOf<E, N>;
+    }
   > {
     // Check that all names exist in entries
     for (const name of names) {
@@ -400,7 +403,7 @@ export class PODSpecBuilder<
     };
 
     const baseName = customStatementName ?? `${names.join("_")}_isNotMemberOf`;
-    let statementName = baseName;
+    let statementName: string = baseName;
     let suffix = 1;
 
     while (
@@ -427,17 +430,20 @@ export class PODSpecBuilder<
    */
   public inRange<
     N extends keyof EntriesWithRangeChecks<E & VirtualEntries> & string,
+    C extends string,
   >(
     name: N,
     range: {
       min: E[N] extends "date" ? Date : bigint;
       max: E[N] extends "date" ? Date : bigint;
     },
-    customStatementName?: string
+    customStatementName?: C
   ): PODSpecBuilder<
     E,
     S & {
-      [K in StatementName<[N & string], "inRange", S>]: InRange<
+      [K in IsSingleLiteralString<C> extends true
+        ? C
+        : StatementName<[N & string], "inRange", S>]: InRange<
         E & VirtualEntries,
         N
       >;
@@ -498,7 +504,7 @@ export class PODSpecBuilder<
     };
 
     const baseName = customStatementName ?? `${name}_inRange`;
-    let statementName = baseName;
+    let statementName: string = baseName;
     let suffix = 1;
 
     while (
@@ -525,17 +531,20 @@ export class PODSpecBuilder<
    */
   public notInRange<
     N extends keyof EntriesWithRangeChecks<E & VirtualEntries> & string,
+    C extends string,
   >(
     name: N,
     range: {
       min: E[N] extends "date" ? Date : bigint;
       max: E[N] extends "date" ? Date : bigint;
     },
-    customStatementName?: string
+    customStatementName?: C
   ): PODSpecBuilder<
     E,
     S & {
-      [K in StatementName<[N & string], "notInRange", S>]: NotInRange<
+      [K in IsSingleLiteralString<C> extends true
+        ? C
+        : StatementName<[N & string], "notInRange", S>]: NotInRange<
         E & VirtualEntries,
         N
       >;
@@ -597,7 +606,7 @@ export class PODSpecBuilder<
     };
 
     const baseName = customStatementName ?? `${name}_notInRange`;
-    let statementName = baseName;
+    let statementName: string = baseName;
     let suffix = 1;
 
     while (
@@ -622,14 +631,17 @@ export class PODSpecBuilder<
       (E & VirtualEntries)[N1]
     > &
       string,
+    C extends string,
   >(
     name1: N1,
     name2: Exclude<N2, N1>,
-    customStatementName?: string
+    customStatementName?: C
   ): PODSpecBuilder<
     E,
     S & {
-      [K in StatementName<[N1, N2], "equalsEntry", S>]: EqualsEntry<E, N1, N2>;
+      [K in IsSingleLiteralString<C> extends true
+        ? C
+        : StatementName<[N1, N2], "equalsEntry", S>]: EqualsEntry<E, N1, N2>;
     }
   > {
     // Check that both names exist in entries
@@ -658,7 +670,7 @@ export class PODSpecBuilder<
     } satisfies EqualsEntry<E, N1, N2>;
 
     const baseName = customStatementName ?? `${name1}_${name2}_equalsEntry`;
-    let statementName = baseName;
+    let statementName: string = baseName;
     let suffix = 1;
 
     while (
@@ -683,14 +695,17 @@ export class PODSpecBuilder<
       (E & VirtualEntries)[N1]
     > &
       string,
+    C extends string,
   >(
     name1: N1,
     name2: Exclude<N2, N1>,
-    customStatementName?: string
+    customStatementName?: C
   ): PODSpecBuilder<
     E,
     S & {
-      [K in StatementName<[N1, N2], "notEqualsEntry", S>]: NotEqualsEntry<
+      [K in IsSingleLiteralString<C> extends true
+        ? C
+        : StatementName<[N1, N2], "notEqualsEntry", S>]: NotEqualsEntry<
         E,
         N1,
         N2
@@ -723,7 +738,7 @@ export class PODSpecBuilder<
     } satisfies NotEqualsEntry<E, N1, N2>;
 
     const baseName = customStatementName ?? `${name1}_${name2}_notEqualsEntry`;
-    let statementName = baseName;
+    let statementName: string = baseName;
     let suffix = 1;
 
     while (
@@ -748,14 +763,17 @@ export class PODSpecBuilder<
       (E & VirtualEntries)[N1]
     > &
       string,
+    C extends string,
   >(
     name1: N1,
     name2: Exclude<N2, N1>,
-    customStatementName?: string
+    customStatementName?: C
   ): PODSpecBuilder<
     E,
     S & {
-      [K in StatementName<[N1, N2], "greaterThan", S>]: GreaterThan<E, N1, N2>;
+      [K in IsSingleLiteralString<C> extends true
+        ? C
+        : StatementName<[N1, N2], "greaterThan", S>]: GreaterThan<E, N1, N2>;
     }
   > {
     // Check that both names exist in entries
@@ -784,7 +802,7 @@ export class PODSpecBuilder<
     } satisfies GreaterThan<E, N1, N2>;
 
     const baseName = customStatementName ?? `${name1}_${name2}_greaterThan`;
-    let statementName = baseName;
+    let statementName: string = baseName;
     let suffix = 1;
 
     while (
@@ -809,14 +827,17 @@ export class PODSpecBuilder<
       (E & VirtualEntries)[N1]
     > &
       string,
+    C extends string,
   >(
     name1: N1,
     name2: Exclude<N2, N1>,
-    customStatementName?: string
+    customStatementName?: C
   ): PODSpecBuilder<
     E,
     S & {
-      [K in StatementName<[N1, N2], "greaterThanEq", S>]: GreaterThanEq<
+      [K in IsSingleLiteralString<C> extends true
+        ? C
+        : StatementName<[N1, N2], "greaterThanEq", S>]: GreaterThanEq<
         E,
         N1,
         N2
@@ -849,7 +870,7 @@ export class PODSpecBuilder<
     } satisfies GreaterThanEq<E, N1, N2>;
 
     const baseName = customStatementName ?? `${name1}_${name2}_greaterThanEq`;
-    let statementName = baseName;
+    let statementName: string = baseName;
     let suffix = 1;
 
     while (
@@ -874,14 +895,17 @@ export class PODSpecBuilder<
       (E & VirtualEntries)[N1]
     > &
       string,
+    C extends string,
   >(
     name1: N1,
     name2: Exclude<N2, N1>,
-    customStatementName?: string
+    customStatementName?: C
   ): PODSpecBuilder<
     E,
     S & {
-      [K in StatementName<[N1, N2], "lessThan", S>]: LessThan<E, N1, N2>;
+      [K in IsSingleLiteralString<C> extends true
+        ? C
+        : StatementName<[N1, N2], "lessThan", S>]: LessThan<E, N1, N2>;
     }
   > {
     // Check that both names exist in entries
@@ -910,7 +934,7 @@ export class PODSpecBuilder<
     } satisfies LessThan<E, N1, N2>;
 
     const baseName = customStatementName ?? `${name1}_${name2}_lessThan`;
-    let statementName = baseName;
+    let statementName: string = baseName;
     let suffix = 1;
 
     while (
@@ -935,14 +959,17 @@ export class PODSpecBuilder<
       (E & VirtualEntries)[N1]
     > &
       string,
+    C extends string,
   >(
     name1: N1,
     name2: Exclude<N2, N1>,
-    customStatementName?: string
+    customStatementName?: C
   ): PODSpecBuilder<
     E,
     S & {
-      [K in StatementName<[N1, N2], "lessThanEq", S>]: LessThanEq<E, N1, N2>;
+      [K in IsSingleLiteralString<C> extends true
+        ? C
+        : StatementName<[N1, N2], "lessThanEq", S>]: LessThanEq<E, N1, N2>;
     }
   > {
     // Check that both names exist in entries
@@ -971,7 +998,7 @@ export class PODSpecBuilder<
     } satisfies LessThanEq<E, N1, N2>;
 
     const baseName = customStatementName ?? `${name1}_${name2}_lessThanEq`;
-    let statementName = baseName;
+    let statementName: string = baseName;
     let suffix = 1;
 
     while (

@@ -35,6 +35,7 @@ import type {
   NotEqualsEntry,
   NotInRange,
   StatementMap,
+  StatementName,
   SupportsRangeChecks,
 } from "./types/statements.js";
 
@@ -139,13 +140,20 @@ export class PODGroupSpecBuilder<
     });
   }
 
-  public isMemberOf<N extends EntryKeys<AllPODEntries<P>>>(
+  public isMemberOf<N extends EntryKeys<AllPODEntries<P>>, C extends string>(
     names: [...N],
     values: N["length"] extends 1
       ? PODValueTypeFromTypeName<EntryType<P, N[0] & keyof AllPODEntries<P>>>[]
       : PODValueTupleForNamedEntries<AllPODEntries<P>, N>[],
-    customStatementName?: string
-  ): PODGroupSpecBuilder<P, S> {
+    customStatementName?: C
+  ): PODGroupSpecBuilder<
+    P,
+    S & {
+      [K in IsSingleLiteralString<C> extends true
+        ? C
+        : StatementName<N, "isMemberOf", S>]: IsMemberOf<AllPODEntries<P>, N>;
+    }
+  > {
     // Check for duplicate names
     const uniqueNames = new Set(names);
     if (uniqueNames.size !== names.length) {
@@ -186,7 +194,7 @@ export class PODGroupSpecBuilder<
     };
 
     const baseName = customStatementName ?? `${names.join("_")}_isMemberOf`;
-    let statementName = baseName;
+    let statementName: string = baseName;
     let suffix = 1;
 
     while (
@@ -204,13 +212,23 @@ export class PODGroupSpecBuilder<
     });
   }
 
-  public isNotMemberOf<N extends EntryKeys<AllPODEntries<P>>>(
+  public isNotMemberOf<N extends EntryKeys<AllPODEntries<P>>, C extends string>(
     names: [...N],
     values: N["length"] extends 1
       ? PODValueTypeFromTypeName<EntryType<P, N[0] & keyof AllPODEntries<P>>>[]
       : PODValueTupleForNamedEntries<AllPODEntries<P>, N>[],
-    customStatementName?: string
-  ): PODGroupSpecBuilder<P, S> {
+    customStatementName?: C
+  ): PODGroupSpecBuilder<
+    P,
+    S & {
+      [K in IsSingleLiteralString<C> extends true
+        ? C
+        : StatementName<N, "isNotMemberOf", S>]: IsNotMemberOf<
+        AllPODEntries<P>,
+        N
+      >;
+    }
+  > {
     // Check for duplicate names
     const uniqueNames = new Set(names);
     if (uniqueNames.size !== names.length) {
@@ -251,7 +269,7 @@ export class PODGroupSpecBuilder<
     };
 
     const baseName = customStatementName ?? `${names.join("_")}_isNotMemberOf`;
-    let statementName = baseName;
+    let statementName: string = baseName;
     let suffix = 1;
 
     while (
@@ -272,6 +290,7 @@ export class PODGroupSpecBuilder<
   public inRange<
     N extends keyof EntriesOfType<AllPODEntries<P>, SupportsRangeChecks> &
       string,
+    C extends string,
   >(
     name: N,
     range: {
@@ -286,8 +305,18 @@ export class PODGroupSpecBuilder<
           : bigint
         : Date | bigint;
     },
-    customStatementName?: string
-  ): PODGroupSpecBuilder<P, S> {
+    customStatementName?: C
+  ): PODGroupSpecBuilder<
+    P,
+    S & {
+      [K in IsSingleLiteralString<C> extends true
+        ? C
+        : StatementName<[N & string], "inRange", S>]: InRange<
+        AllPODEntries<P>,
+        N
+      >;
+    }
+  > {
     // Check that the entry exists
     const [podName, entryName] = name.split(".");
     if (
@@ -349,7 +378,7 @@ export class PODGroupSpecBuilder<
     };
 
     const baseName = customStatementName ?? `${name}_inRange`;
-    let statementName = baseName;
+    let statementName: string = baseName;
     let suffix = 1;
 
     while (
@@ -370,14 +399,25 @@ export class PODGroupSpecBuilder<
   public notInRange<
     N extends keyof EntriesOfType<AllPODEntries<P>, SupportsRangeChecks> &
       string,
+    C extends string,
   >(
     name: N,
     range: {
       min: AllPODEntries<P>[N] extends "date" ? Date : bigint;
       max: AllPODEntries<P>[N] extends "date" ? Date : bigint;
     },
-    customStatementName?: string
-  ): PODGroupSpecBuilder<P, S> {
+    customStatementName?: C
+  ): PODGroupSpecBuilder<
+    P,
+    S & {
+      [K in IsSingleLiteralString<C> extends true
+        ? C
+        : StatementName<[N & string], "notInRange", S>]: NotInRange<
+        AllPODEntries<P>,
+        N
+      >;
+    }
+  > {
     // Check that the entry exists
     const [podName, entryName] = name.split(".");
     if (
@@ -439,7 +479,7 @@ export class PODGroupSpecBuilder<
     };
 
     const baseName = customStatementName ?? `${name}_notInRange`;
-    let statementName = baseName;
+    let statementName: string = baseName;
     let suffix = 1;
 
     while (
@@ -460,11 +500,23 @@ export class PODGroupSpecBuilder<
   public greaterThan<
     N1 extends keyof AllPODEntries<P> & string,
     N2 extends keyof EntriesOfType<AllPODEntries<P>, EntryType<P, N1>> & string,
+    C extends string,
   >(
     name1: N1,
     name2: N2,
-    customStatementName?: string
-  ): PODGroupSpecBuilder<P, S> {
+    customStatementName?: C
+  ): PODGroupSpecBuilder<
+    P,
+    S & {
+      [K in IsSingleLiteralString<C> extends true
+        ? C
+        : StatementName<
+            [N1 & string, N2 & string],
+            "greaterThan",
+            S
+          >]: GreaterThan<AllPODEntries<P>, N1, N2>;
+    }
+  > {
     // Check that both entries exist
     const [pod1, entry1] = name1.split(".");
     const [pod2, entry2] = name2.split(".");
@@ -507,7 +559,7 @@ export class PODGroupSpecBuilder<
     };
 
     const baseName = customStatementName ?? `${name1}_${name2}_greaterThan`;
-    let statementName = baseName;
+    let statementName: string = baseName;
     let suffix = 1;
 
     while (
@@ -528,11 +580,23 @@ export class PODGroupSpecBuilder<
   public greaterThanEq<
     N1 extends keyof AllPODEntries<P> & string,
     N2 extends keyof EntriesOfType<AllPODEntries<P>, EntryType<P, N1>> & string,
+    C extends string,
   >(
     name1: N1,
     name2: N2,
-    customStatementName?: string
-  ): PODGroupSpecBuilder<P, S> {
+    customStatementName?: C
+  ): PODGroupSpecBuilder<
+    P,
+    S & {
+      [K in IsSingleLiteralString<C> extends true
+        ? C
+        : StatementName<
+            [N1 & string, N2 & string],
+            "greaterThanEq",
+            S
+          >]: GreaterThanEq<AllPODEntries<P>, N1, N2>;
+    }
+  > {
     // Check that both entries exist
     const [pod1, entry1] = name1.split(".");
     const [pod2, entry2] = name2.split(".");
@@ -575,7 +639,7 @@ export class PODGroupSpecBuilder<
     };
 
     const baseName = customStatementName ?? `${name1}_${name2}_greaterThanEq`;
-    let statementName = baseName;
+    let statementName: string = baseName;
     let suffix = 1;
 
     while (
@@ -596,11 +660,23 @@ export class PODGroupSpecBuilder<
   public lessThan<
     N1 extends keyof AllPODEntries<P> & string,
     N2 extends keyof EntriesOfType<AllPODEntries<P>, EntryType<P, N1>> & string,
+    C extends string,
   >(
     name1: N1,
     name2: N2,
-    customStatementName?: string
-  ): PODGroupSpecBuilder<P, S> {
+    customStatementName?: C
+  ): PODGroupSpecBuilder<
+    P,
+    S & {
+      [K in IsSingleLiteralString<C> extends true
+        ? C
+        : StatementName<[N1 & string, N2 & string], "lessThan", S>]: LessThan<
+        AllPODEntries<P>,
+        N1,
+        N2
+      >;
+    }
+  > {
     // Check that both entries exist
     const [pod1, entry1] = name1.split(".");
     const [pod2, entry2] = name2.split(".");
@@ -643,7 +719,7 @@ export class PODGroupSpecBuilder<
     };
 
     const baseName = customStatementName ?? `${name1}_${name2}_lessThan`;
-    let statementName = baseName;
+    let statementName: string = baseName;
     let suffix = 1;
 
     while (
@@ -664,11 +740,23 @@ export class PODGroupSpecBuilder<
   public lessThanEq<
     N1 extends keyof AllPODEntries<P> & string,
     N2 extends keyof EntriesOfType<AllPODEntries<P>, EntryType<P, N1>> & string,
+    C extends string,
   >(
     name1: N1,
     name2: N2,
-    customStatementName?: string
-  ): PODGroupSpecBuilder<P, S> {
+    customStatementName?: C
+  ): PODGroupSpecBuilder<
+    P,
+    S & {
+      [K in IsSingleLiteralString<C> extends true
+        ? C
+        : StatementName<
+            [N1 & string, N2 & string],
+            "lessThanEq",
+            S
+          >]: LessThanEq<AllPODEntries<P>, N1, N2>;
+    }
+  > {
     // Check that both entries exist
     const [pod1, entry1] = name1.split(".");
     const [pod2, entry2] = name2.split(".");
@@ -711,7 +799,7 @@ export class PODGroupSpecBuilder<
     };
 
     const baseName = customStatementName ?? `${name1}_${name2}_lessThanEq`;
-    let statementName = baseName;
+    let statementName: string = baseName;
     let suffix = 1;
 
     while (
@@ -732,11 +820,23 @@ export class PODGroupSpecBuilder<
   public equalsEntry<
     N1 extends keyof AllPODEntries<P> & string,
     N2 extends keyof EntriesOfType<AllPODEntries<P>, EntryType<P, N1>> & string,
+    C extends string,
   >(
     name1: N1,
     name2: N2,
-    customStatementName?: string
-  ): PODGroupSpecBuilder<P, S> {
+    customStatementName?: C
+  ): PODGroupSpecBuilder<
+    P,
+    S & {
+      [K in IsSingleLiteralString<C> extends true
+        ? C
+        : StatementName<
+            [N1 & string, N2 & string],
+            "equalsEntry",
+            S
+          >]: EqualsEntry<AllPODEntries<P>, N1, N2>;
+    }
+  > {
     // Check that both entries exist
     const [pod1, entry1] = name1.split(".");
     const [pod2, entry2] = name2.split(".");
@@ -781,7 +881,7 @@ export class PODGroupSpecBuilder<
     };
 
     const baseName = customStatementName ?? `${name1}_${name2}_equalsEntry`;
-    let statementName = baseName;
+    let statementName: string = baseName;
     let suffix = 1;
 
     while (
@@ -802,11 +902,23 @@ export class PODGroupSpecBuilder<
   public notEqualsEntry<
     N1 extends keyof AllPODEntries<P> & string,
     N2 extends keyof EntriesOfType<AllPODEntries<P>, EntryType<P, N1>> & string,
+    C extends string,
   >(
     name1: N1,
     name2: N2,
-    customStatementName?: string
-  ): PODGroupSpecBuilder<P, S> {
+    customStatementName?: C
+  ): PODGroupSpecBuilder<
+    P,
+    S & {
+      [K in IsSingleLiteralString<C> extends true
+        ? C
+        : StatementName<
+            [N1 & string, N2 & string],
+            "notEqualsEntry",
+            S
+          >]: NotEqualsEntry<AllPODEntries<P>, N1, N2>;
+    }
+  > {
     // Check that both entries exist
     const [pod1, entry1] = name1.split(".");
     const [pod2, entry2] = name2.split(".");
@@ -849,7 +961,7 @@ export class PODGroupSpecBuilder<
     };
 
     const baseName = customStatementName ?? `${name1}_${name2}_notEqualsEntry`;
-    let statementName = baseName;
+    let statementName: string = baseName;
     let suffix = 1;
 
     while (
