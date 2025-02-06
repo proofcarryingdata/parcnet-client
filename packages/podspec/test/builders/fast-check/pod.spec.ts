@@ -1,61 +1,26 @@
 import { fc, test } from "@fast-check/vitest";
-import { POD_NAME_REGEX } from "@pcd/pod";
 import { expect } from "vitest";
 import type { PODValueType } from "../../../src/builders/types/entries.js";
 import { UntypedPODSpecBuilder } from "../../../src/builders/untypedPod.js";
-
-const validEntryName = fc.oneof(
-  // Regular valid names
-  fc
-    .string({ minLength: 1 })
-    .filter((s) => POD_NAME_REGEX.test(s)),
-  // Tricky JavaScript property names
-  fc.constantFrom(
-    "constructor",
-    "prototype",
-    "toString",
-    "valueOf",
-    "hasOwnProperty",
-    "length",
-    "name"
-  )
-);
+import { validEntryName, validEntryType } from "./definitions.js";
 
 test("UntypedPODSpecBuilder entries validation", () => {
-  // Valid entry types are fixed strings
-  const validEntryType = fc.constantFrom(
-    "string",
-    "int",
-    "boolean",
-    "date",
-    "bytes",
-    "cryptographic",
-    "null",
-    "eddsa_pubkey"
-  );
-
   fc.assert(
-    fc.property(
-      fc.dictionary(
-        validEntryName,
-        validEntryType as fc.Arbitrary<PODValueType>
-      ),
-      (entries) => {
-        let builder = UntypedPODSpecBuilder.create();
+    fc.property(fc.dictionary(validEntryName, validEntryType), (entries) => {
+      let builder = UntypedPODSpecBuilder.create();
 
-        // Add all entries
-        Object.entries(entries).forEach(([key, type]) => {
-          builder = builder.entry(key, type);
-        });
+      // Add all entries
+      Object.entries(entries).forEach(([key, type]) => {
+        builder = builder.entry(key, type);
+      });
 
-        const result = builder.spec();
+      const result = builder.spec();
 
-        // Check that all entries are present with correct types
-        Object.entries(entries).forEach(([key, type]) => {
-          expect(result.entries[key]).toEqual(type);
-        });
-      }
-    )
+      // Check that all entries are present with correct types
+      Object.entries(entries).forEach(([key, type]) => {
+        expect(result.entries[key]).toEqual(type);
+      });
+    })
   );
 });
 

@@ -44,13 +44,13 @@ interface PODValidator<E extends EntryTypes> {
     pod: POD,
     exitOnError?: boolean
   ): ValidateResult<StrongPOD<PODEntriesFromEntryTypes<E>>>;
-  check(pod: POD): boolean;
+  check(pod: POD): pod is StrongPOD<PODEntriesFromEntryTypes<E>>;
   assert(pod: POD): asserts pod is StrongPOD<PODEntriesFromEntryTypes<E>>;
   strictValidate(
     pod: POD,
     exitOnError?: boolean
   ): ValidateResult<StrongPOD<PODEntriesFromEntryTypes<E>>>;
-  strictCheck(pod: POD): boolean;
+  strictCheck(pod: POD): pod is StrongPOD<PODEntriesFromEntryTypes<E>>;
   strictAssert(pod: POD): asserts pod is StrongPOD<PODEntriesFromEntryTypes<E>>;
 }
 
@@ -79,14 +79,15 @@ export function podValidator<E extends EntryTypes, S extends StatementMap>(
   return {
     validate: (pod, exitOnError = false) =>
       validatePOD(pod, spec, { exitOnError }),
-    check: (pod) => validatePOD(pod, spec, { exitOnError: true }).isValid,
+    check: (pod): pod is StrongPOD<PODEntriesFromEntryTypes<E>> =>
+      validatePOD(pod, spec, { exitOnError: true }).isValid,
     assert: (pod) => {
       const result = validatePOD(pod, spec, { exitOnError: true });
       if (!result.isValid) throw new Error("POD is not valid");
     },
     strictValidate: (pod, exitOnError = false) =>
       validatePOD(pod, spec, { strict: true, exitOnError }),
-    strictCheck: (pod) =>
+    strictCheck: (pod): pod is StrongPOD<PODEntriesFromEntryTypes<E>> =>
       validatePOD(pod, spec, { strict: true, exitOnError: true }).isValid,
     strictAssert: (pod) => {
       const result = validatePOD(pod, spec, {

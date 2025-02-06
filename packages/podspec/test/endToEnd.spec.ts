@@ -1,6 +1,8 @@
 import type { PODValue } from "@pcd/pod";
 import { assert, describe, expect, it } from "vitest";
-import { PODSpecBuilder } from "../src/index.js";
+import { PODGroupSpecBuilder, PODSpecBuilder } from "../src/index.js";
+import { PODDB } from "../src/processors/db/podDB.js";
+import { groupValidator } from "../src/processors/validate/groupValidator.js";
 import { podValidator } from "../src/processors/validate/podValidator.js";
 import { signPOD, signerKeyPair } from "./fixtures.js";
 
@@ -140,7 +142,7 @@ describe("endToEnd", () => {
         },
         email: {
           type: "string",
-          value: "john.doe@example.com",
+          value: "jim.bob@example.com",
         },
         phone: {
           type: "string",
@@ -211,6 +213,118 @@ describe("endToEnd", () => {
       // true, and the POD is valid.
       const result5 = podValidator(spec6).validate(pod);
       assert(result5.isValid === true);
+
+      // We can also create specs for groups of PODs.
+      // Let's say we have a POD for a person, and a POD for a ticket.
+      // We'll use our existing builder for the person POD, and create a new
+      // builder for the ticket POD.
+      const otherBuilder = PODSpecBuilder.create()
+        .entry("eventName", "string")
+        .entry("attendeeEmail", "string");
+
+      // The PODs are named and grouped together in the spec.
+      const groupBuilder = PODGroupSpecBuilder.create()
+        .pod("person", builder6.spec())
+        .pod("ticket", otherBuilder.spec());
+
+      // The spec for the group includes the specs for the individual PODs,
+      // and further statements, which can now cross-reference entries from
+      // either POD.
+      expect(groupBuilder.spec()).toEqual({
+        pods: {
+          person: builder6.spec(),
+          ticket: otherBuilder.spec(),
+        },
+        statements: {},
+      });
+
+      // Let's say that the email addresses on the person and ticket PODs
+      // should match. We can add a statement to the group spec to enforce
+      // this.
+      const groupBuilder2 = groupBuilder.equalsEntry(
+        "person.email",
+        "ticket.attendeeEmail",
+        "matchingEmails"
+      );
+      expect(groupBuilder2.spec()).toEqual({
+        pods: {
+          person: builder6.spec(),
+          ticket: otherBuilder.spec(),
+        },
+        statements: {
+          matchingEmails: {
+            type: "equalsEntry",
+            entries: ["person.email", "ticket.attendeeEmail"],
+          },
+        },
+      });
+
+      const ticketPod = signPOD({
+        eventName: {
+          type: "string",
+          value: "Example Event",
+        },
+        attendeeEmail: {
+          type: "string",
+          // Same email as used in the original `pod` above.
+          value: "john.doe@example.com",
+        },
+      });
+
+      // Let's validate that each POD is valid.
+      const result6 = groupValidator(groupBuilder2.spec()).validate({
+        person: pod,
+        ticket: ticketPod,
+      });
+
+      assert(result6.isValid === true);
+
+      const result7 = groupValidator(groupBuilder2.spec()).validate({
+        person: badPod, // This one has a different email address
+        ticket: ticketPod,
+      });
+
+      // The group is invalid because the person POD has a different email
+      // address than the ticket POD.
+      assert(result7.isValid === false);
+      assert(result7.issues[0]?.code === "statement_negative_result");
+      assert(result7.issues[0]?.statementName === "matchingEmails");
+      assert(result7.issues[0]?.statementType === "equalsEntry");
+      expect(result7.issues[0]?.entries).toEqual([
+        "person.email",
+        "ticket.attendeeEmail",
+      ]);
+
+      // We can also use specs to find PODs in a database.
+
+      // Let's use `spec3`, which finds people who were born in the 90s.
+      const db = new PODDB();
+      db.insertMany([pod, ticketPod, badPod]);
+
+      const peopleBornInThe90s = db.queryBySpec(spec3);
+      assert(peopleBornInThe90s.length === 1);
+      assert(peopleBornInThe90s[0] !== undefined);
+      assert(
+        peopleBornInThe90s[0].content.asEntries().name.value === "John Doe"
+      );
+      // Query results are strongly-typed
+      peopleBornInThe90s[0].content.asEntries().name.value satisfies string;
+
+      // Now let's use our group spec to find people who have a matching email
+      // address to the ticket POD.
+      const peopleWithMatchingEmails = db.queryByGroupSpec(
+        groupBuilder2.spec()
+      );
+      assert(peopleWithMatchingEmails.length === 1);
+      assert(peopleWithMatchingEmails[0] !== undefined);
+      assert(
+        peopleWithMatchingEmails[0].person.content.asEntries().email.value ===
+          "john.doe@example.com"
+      );
+      assert(
+        peopleWithMatchingEmails[0].ticket.content.asEntries().attendeeEmail
+          .value === "john.doe@example.com"
+      );
     }
   });
 });

@@ -3,7 +3,11 @@ import type { NamedPODSpecs, PODGroupSpec } from "../../builders/group.js";
 import type { PODSpec } from "../../builders/pod.js";
 import type { EntryTypes } from "../../builders/types/entries.js";
 import type { StatementMap } from "../../builders/types/statements.js";
-import type { NamedStrongPODs } from "../../spec/types.js";
+import type {
+  NamedStrongPODs,
+  PODEntriesFromEntryTypes,
+  StrongPOD,
+} from "../../spec/types.js";
 import { groupValidator } from "../validate/groupValidator.js";
 import { podValidator } from "../validate/podValidator.js";
 
@@ -72,7 +76,9 @@ export class PODDB {
   /**
    * Query PODs that match a PODSpec
    */
-  public queryBySpec(spec: PODSpec<EntryTypes, StatementMap>): Set<POD> {
+  public queryBySpec<E extends EntryTypes, S extends StatementMap>(
+    spec: PODSpec<E, S>
+  ): StrongPOD<PODEntriesFromEntryTypes<E>>[] {
     const initialResults = new Set<string>();
 
     // Find all PODs that have the required entries
@@ -110,7 +116,7 @@ export class PODDB {
       (signature) => this.indexes.bySignature.get(signature)!
     );
 
-    const finalResults = new Set<POD>();
+    const finalResults = [];
     const validator = podValidator(spec);
 
     for (const pod of pods) {
@@ -119,7 +125,7 @@ export class PODDB {
       // that are not covered by the indexes. We've still massively reduced
       // the number of PODs we need to check by using the indexes.
       if (validator.check(pod)) {
-        finalResults.add(pod);
+        finalResults.push(pod);
       }
     }
 
@@ -137,7 +143,7 @@ export class PODDB {
 
     for (const [name, spec] of Object.entries(groupSpec.pods)) {
       const result = this.queryBySpec(spec);
-      candidates.set(name, result);
+      candidates.set(name, new Set(result));
     }
 
     // Generate all possible combinations
