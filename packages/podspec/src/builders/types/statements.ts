@@ -31,6 +31,9 @@ export type IsMemberOf<
   isMemberOf: Concrete<MembershipListPersistent<E, N>>;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type AnyIsMemberOf = IsMemberOf<any, any>;
+
 export type IsNotMemberOf<
   E extends EntryTypes,
   N extends EntryKeys<E> & string[],
@@ -39,6 +42,9 @@ export type IsNotMemberOf<
   type: "isNotMemberOf";
   isNotMemberOf: Concrete<MembershipListPersistent<E, N>>;
 };
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type AnyIsNotMemberOf = IsNotMemberOf<any, any>;
 
 // Which entry types support range checks?
 export type SupportsRangeChecks = "int" | "boolean" | "date";
@@ -69,6 +75,9 @@ export type InRange<
   inRange: RangePersistent;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type AnyInRange = InRange<any, any>;
+
 export type NotInRange<
   E extends EntryTypes,
   N extends keyof EntriesWithRangeChecks<E> & string,
@@ -77,6 +86,9 @@ export type NotInRange<
   type: "notInRange";
   notInRange: RangePersistent;
 };
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type AnyNotInRange = NotInRange<any, any>;
 
 export type EqualsEntry<
   E extends EntryTypes,
@@ -87,6 +99,9 @@ export type EqualsEntry<
   type: "equalsEntry";
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type AnyEqualsEntry = EqualsEntry<any, any, any>;
+
 export type NotEqualsEntry<
   E extends EntryTypes,
   N1 extends keyof (E & VirtualEntries) & string,
@@ -95,6 +110,9 @@ export type NotEqualsEntry<
   entries: [entry: N1, otherEntry: N2];
   type: "notEqualsEntry";
 };
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type AnyNotEqualsEntry = NotEqualsEntry<any, any, any>;
 
 export type GreaterThan<
   E extends EntryTypes,
@@ -105,6 +123,9 @@ export type GreaterThan<
   type: "greaterThan";
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type AnyGreaterThan = GreaterThan<any, any, any>;
+
 export type GreaterThanEq<
   E extends EntryTypes,
   N1 extends keyof (E & VirtualEntries) & string,
@@ -113,6 +134,9 @@ export type GreaterThanEq<
   entries: [entry: N1, otherEntry: N2];
   type: "greaterThanEq";
 };
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type AnyGreaterThanEq = GreaterThanEq<any, any, any>;
 
 export type LessThan<
   E extends EntryTypes,
@@ -123,6 +147,9 @@ export type LessThan<
   type: "lessThan";
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type AnyLessThan = LessThan<any, any, any>;
+
 export type LessThanEq<
   E extends EntryTypes,
   N1 extends keyof (E & VirtualEntries) & string,
@@ -131,6 +158,9 @@ export type LessThanEq<
   entries: [entry: N1, otherEntry: N2];
   type: "lessThanEq";
 };
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type AnyLessThanEq = LessThanEq<any, any, any>;
 
 export type Statements =
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

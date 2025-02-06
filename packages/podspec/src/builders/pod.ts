@@ -1,18 +1,5 @@
-import {
-  POD_DATE_MAX,
-  POD_DATE_MIN,
-  POD_INT_MAX,
-  POD_INT_MIN,
-  checkPODName,
-} from "@pcd/pod";
 import type { IsJsonSafe } from "../shared/jsonSafe.js";
 import type { IsSingleLiteralString } from "../shared/types.js";
-import {
-  convertValuesToStringTuples,
-  deepFreeze,
-  supportsRangeChecks,
-  validateRange,
-} from "./shared.js";
 import type {
   EntriesOfType,
   EntryKeys,
@@ -37,6 +24,7 @@ import type {
   StatementMap,
   StatementName,
 } from "./types/statements.js";
+import { UntypedPODSpecBuilder } from "./untypedPod.js";
 
 /**
  @todo
@@ -50,14 +38,12 @@ import type {
  - [x] rename away from v2 suffix
  - [x] validate entry names
  - [x] validate isMemberOf/isNotMemberOf parameters
- - [ ] handle multiple/incompatible range checks on the same entry
+ - [ ] handle multiple/incompatible range/inequality checks on the same entry
  - [x] switch to using value types rather than PODValues (everywhere? maybe not membership lists)
  - [ ] better error messages
  - [ ] consider adding a hash to the spec to prevent tampering
- - [ ] untyped entries?
- - [ ] optional entries?
- - [ ] solve the problem whereby some methods are incorrectly typed if we've
- added loosely-typed entries (this seems to be a problem with omit/pick?)
+ - [ ] optional/nullable entries
+ - [ ] restrict gt/lt/etc checks to numeric types?
  */
 
 export const virtualEntries: VirtualEntries = {
@@ -118,31 +104,23 @@ export class PODSpecBuilder<
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   S extends StatementMap = {},
 > {
-  readonly #spec: PODSpec<E, S>;
+  readonly #innerBuilder: UntypedPODSpecBuilder;
 
-  private constructor(spec: PODSpec<E, S>) {
-    this.#spec = spec;
+  private constructor(innerBuilder: UntypedPODSpecBuilder) {
+    this.#innerBuilder = innerBuilder;
   }
 
-  public static create() {
-    return new PODSpecBuilder({
-      entries: {},
-      statements: {},
-    });
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  public static create(): PODSpecBuilder<{}, {}> {
+    return new PODSpecBuilder(UntypedPODSpecBuilder.create());
   }
 
   public spec(): PODSpec<E, S> {
-    return deepFreeze(this.#spec);
+    return this.#innerBuilder.spec() as PODSpec<E, S>;
   }
 
   public toJSON(): string {
-    return JSON.stringify(
-      {
-        ...this.#spec,
-      },
-      null,
-      2
-    );
+    return this.#innerBuilder.toJSON();
   }
 
   public entry<
@@ -153,21 +131,9 @@ export class PODSpecBuilder<
     key: IsSingleLiteralString<K> extends true ? Exclude<K, keyof E> : never,
     type: V
   ): PODSpecBuilder<NewEntries, S> {
-    if (Object.prototype.hasOwnProperty.call(this.#spec.entries, key)) {
-      throw new Error(`Entry "${key}" already exists`);
-    }
-
-    // Will throw if not a valid POD entry name
-    checkPODName(key);
-
-    return new PODSpecBuilder<NewEntries, S>({
-      ...this.#spec,
-      entries: {
-        ...this.#spec.entries,
-        [key]: type,
-      } as NewEntries,
-      statements: this.#spec.statements,
-    });
+    return new PODSpecBuilder<NewEntries, S>(
+      this.#innerBuilder.entry(key, type)
+    );
   }
 
   /**
@@ -178,20 +144,7 @@ export class PODSpecBuilder<
   >(
     keys: K[]
   ): PODSpecBuilder<Pick<E, K>, Concrete<NonOverlappingStatements<S, K[]>>> {
-    return new PODSpecBuilder({
-      entries: Object.fromEntries(
-        Object.entries(this.#spec.entries).filter(([key]) =>
-          keys.includes(key as K)
-        )
-      ) as Pick<E, K>,
-      statements: Object.fromEntries(
-        Object.entries(this.#spec.statements).filter(([_key, statement]) => {
-          return (statement.entries as EntryKeys<E>).every((entry) =>
-            keys.includes(entry as K)
-          );
-        })
-      ) as Concrete<NonOverlappingStatements<S, K[]>>,
-    });
+    return new PODSpecBuilder(this.#innerBuilder.pickEntries(keys));
   }
 
   public omitEntries<
@@ -199,47 +152,19 @@ export class PODSpecBuilder<
   >(
     keys: K[]
   ): PODSpecBuilder<Omit<E, K>, Concrete<NonOverlappingStatements<S, K[]>>> {
-    return new PODSpecBuilder({
-      ...this.#spec,
-      entries: Object.fromEntries(
-        Object.entries(this.#spec.entries).filter(
-          ([key]) => !keys.includes(key as K)
-        )
-      ) as Omit<E, K>,
-      statements: Object.fromEntries(
-        Object.entries(this.#spec.statements).filter(([_key, statement]) => {
-          return (statement.entries as EntryKeys<E>).every(
-            (entry) => !keys.includes(entry as K)
-          );
-        })
-      ) as Concrete<NonOverlappingStatements<S, K[]>>,
-    });
+    return new PODSpecBuilder(this.#innerBuilder.omitEntries(keys));
   }
 
-  public pickStatements<K extends keyof S>(
+  public pickStatements<K extends keyof S & string>(
     keys: K[]
   ): PODSpecBuilder<E, Concrete<Pick<S, K>>> {
-    return new PODSpecBuilder({
-      ...this.#spec,
-      statements: Object.fromEntries(
-        Object.entries(this.#spec.statements).filter(([key]) =>
-          keys.includes(key as K)
-        )
-      ) as Concrete<Pick<S, K>>,
-    });
+    return new PODSpecBuilder(this.#innerBuilder.pickStatements(keys));
   }
 
-  public omitStatements<K extends keyof S>(
+  public omitStatements<K extends keyof S & string>(
     keys: K[]
   ): PODSpecBuilder<E, Concrete<Omit<S, K>>> {
-    return new PODSpecBuilder({
-      ...this.#spec,
-      statements: Object.fromEntries(
-        Object.entries(this.#spec.statements).filter(
-          ([key]) => !keys.includes(key as K)
-        )
-      ) as Concrete<Omit<S, K>>,
-    });
+    return new PODSpecBuilder(this.#innerBuilder.omitStatements(keys));
   }
 
   /**
@@ -273,59 +198,9 @@ export class PODSpecBuilder<
         : StatementName<N, "isMemberOf", S>]: IsMemberOf<E & VirtualEntries, N>;
     }
   > {
-    // Check for duplicate names
-    const uniqueNames = new Set(names);
-    if (uniqueNames.size !== names.length) {
-      throw new Error("Duplicate entry names are not allowed");
-    }
-
-    const allEntries = {
-      ...this.#spec.entries,
-      ...virtualEntries,
-    };
-
-    for (const name of names) {
-      if (!Object.prototype.hasOwnProperty.call(allEntries, name)) {
-        throw new Error(`Entry "${name}" does not exist`);
-      }
-    }
-
-    /**
-     * We want type-safe inputs, but we want JSON-safe data to persist in the
-     * spec. So, we convert the input values to strings - because we have the
-     * POD type information, we can convert back to the correct type when we
-     * read the spec.
-     *
-     * For readability, we also have a special-case on inputs, where if there
-     * is only one entry being matched on, we accept a list in the form of
-     * value[] instead of [value][] - an array of plain values instead of an
-     * array of one-element tuples. When persisting, however, we convert these
-     * to one-element tuples since this makes reading the data out later more
-     * efficient.
-     */
-    const statement: IsMemberOf<E & VirtualEntries, N> = {
-      entries: names,
-      type: "isMemberOf",
-      isMemberOf: convertValuesToStringTuples<N>(names, values, allEntries),
-    };
-
-    const baseName = customStatementName ?? `${names.join("_")}_isMemberOf`;
-    let statementName: string = baseName;
-    let suffix = 1;
-
-    while (
-      Object.prototype.hasOwnProperty.call(this.#spec.statements, statementName)
-    ) {
-      statementName = `${baseName}_${suffix++}`;
-    }
-
-    return new PODSpecBuilder({
-      ...this.#spec,
-      statements: {
-        ...this.#spec.statements,
-        [statementName]: statement,
-      },
-    });
+    return new PODSpecBuilder(
+      this.#innerBuilder.isMemberOf(names, values, customStatementName)
+    );
   }
 
   /**
@@ -359,66 +234,9 @@ export class PODSpecBuilder<
         : StatementName<N, "isNotMemberOf", S>]: IsNotMemberOf<E, N>;
     }
   > {
-    // Check that all names exist in entries
-    for (const name of names) {
-      if (!Object.prototype.hasOwnProperty.call(this.#spec.entries, name)) {
-        throw new Error(`Entry "${name}" does not exist`);
-      }
-    }
-
-    // Check for duplicate names
-    const uniqueNames = new Set(names);
-    if (uniqueNames.size !== names.length) {
-      throw new Error("Duplicate entry names are not allowed");
-    }
-
-    const allEntries = {
-      ...this.#spec.entries,
-      ...virtualEntries,
-    };
-
-    for (const name of names) {
-      if (!Object.prototype.hasOwnProperty.call(allEntries, name)) {
-        throw new Error(`Entry "${name}" does not exist`);
-      }
-    }
-
-    /**
-     * We want type-safe inputs, but we want JSON-safe data to persist in the
-     * spec. So, we convert the input values to strings - because we have the
-     * POD type information, we can convert back to the correct type when we
-     * read the spec.
-     *
-     * For readability, we also have a special-case on inputs, where if there
-     * is only one entry being matched on, we accept a list in the form of
-     * value[] instead of [value][] - an array of plain values instead of an
-     * array of one-element tuples. When persisting, however, we convert these
-     * to one-element tuples since this makes reading the data out later more
-     * efficient.
-     */
-    const statement: IsNotMemberOf<E & VirtualEntries, N> = {
-      entries: names,
-      type: "isNotMemberOf",
-      isNotMemberOf: convertValuesToStringTuples<N>(names, values, allEntries),
-    };
-
-    const baseName = customStatementName ?? `${names.join("_")}_isNotMemberOf`;
-    let statementName: string = baseName;
-    let suffix = 1;
-
-    while (
-      Object.prototype.hasOwnProperty.call(this.#spec.statements, statementName)
-    ) {
-      statementName = `${baseName}_${suffix++}`;
-    }
-
-    return new PODSpecBuilder({
-      ...this.#spec,
-      statements: {
-        ...this.#spec.statements,
-        [statementName]: statement,
-      },
-    });
+    return new PODSpecBuilder(
+      this.#innerBuilder.isNotMemberOf(names, values, customStatementName)
+    );
   }
 
   /**
@@ -449,77 +267,9 @@ export class PODSpecBuilder<
       >;
     }
   > {
-    // Check that the entry exists
-    if (
-      !Object.prototype.hasOwnProperty.call(this.#spec.entries, name) &&
-      !Object.prototype.hasOwnProperty.call(virtualEntries, name)
-    ) {
-      throw new Error(`Entry "${name}" does not exist`);
-    }
-
-    const entryType = this.#spec.entries[name]!;
-
-    if (!supportsRangeChecks(entryType)) {
-      throw new Error(`Entry "${name}" does not support range checks`);
-    }
-
-    switch (entryType) {
-      case "int":
-        validateRange(
-          range.min as bigint,
-          range.max as bigint,
-          POD_INT_MIN,
-          POD_INT_MAX
-        );
-        break;
-      case "boolean":
-        validateRange(range.min as bigint, range.max as bigint, 0n, 1n);
-        break;
-      case "date":
-        validateRange(
-          range.min as Date,
-          range.max as Date,
-          POD_DATE_MIN,
-          POD_DATE_MAX
-        );
-        break;
-      default:
-        const _exhaustiveCheck: never = entryType;
-        throw new Error(`Unsupported entry type: ${name}`);
-    }
-
-    const statement: InRange<E & VirtualEntries, N> = {
-      entries: [name],
-      type: "inRange",
-      inRange: {
-        min:
-          range.min instanceof Date
-            ? range.min.getTime().toString()
-            : range.min.toString(),
-        max:
-          range.max instanceof Date
-            ? range.max.getTime().toString()
-            : range.max.toString(),
-      },
-    };
-
-    const baseName = customStatementName ?? `${name}_inRange`;
-    let statementName: string = baseName;
-    let suffix = 1;
-
-    while (
-      Object.prototype.hasOwnProperty.call(this.#spec.statements, statementName)
-    ) {
-      statementName = `${baseName}_${suffix++}`;
-    }
-
-    return new PODSpecBuilder({
-      ...this.#spec,
-      statements: {
-        ...this.#spec.statements,
-        [statementName]: statement,
-      },
-    });
+    return new PODSpecBuilder(
+      this.#innerBuilder.inRange(name, range, customStatementName)
+    );
   }
 
   /**
@@ -550,78 +300,9 @@ export class PODSpecBuilder<
       >;
     }
   > {
-    // Check that the entry exists
-    if (
-      !Object.prototype.hasOwnProperty.call(this.#spec.entries, name) &&
-      !Object.prototype.hasOwnProperty.call(virtualEntries, name)
-    ) {
-      throw new Error(`Entry "${name}" does not exist`);
-    }
-
-    const entryType = this.#spec.entries[name]!;
-
-    if (!supportsRangeChecks(entryType)) {
-      throw new Error(`Entry "${name}" does not support range checks`);
-    }
-
-    // TODO repetition, consider moving to a utility function
-    switch (entryType) {
-      case "int":
-        validateRange(
-          range.min as bigint,
-          range.max as bigint,
-          POD_INT_MIN,
-          POD_INT_MAX
-        );
-        break;
-      case "boolean":
-        validateRange(range.min as bigint, range.max as bigint, 0n, 1n);
-        break;
-      case "date":
-        validateRange(
-          range.min as Date,
-          range.max as Date,
-          POD_DATE_MIN,
-          POD_DATE_MAX
-        );
-        break;
-      default:
-        const _exhaustiveCheck: never = entryType;
-        throw new Error(`Unsupported entry type: ${name}`);
-    }
-
-    const statement: NotInRange<E & VirtualEntries, N> = {
-      entries: [name],
-      type: "notInRange",
-      notInRange: {
-        min:
-          range.min instanceof Date
-            ? range.min.getTime().toString()
-            : range.min.toString(),
-        max:
-          range.max instanceof Date
-            ? range.max.getTime().toString()
-            : range.max.toString(),
-      },
-    };
-
-    const baseName = customStatementName ?? `${name}_notInRange`;
-    let statementName: string = baseName;
-    let suffix = 1;
-
-    while (
-      Object.prototype.hasOwnProperty.call(this.#spec.statements, statementName)
-    ) {
-      statementName = `${baseName}_${suffix++}`;
-    }
-
-    return new PODSpecBuilder({
-      ...this.#spec,
-      statements: {
-        ...this.#spec.statements,
-        [statementName]: statement,
-      },
-    });
+    return new PODSpecBuilder(
+      this.#innerBuilder.notInRange(name, range, customStatementName)
+    );
   }
 
   public equalsEntry<
@@ -644,48 +325,9 @@ export class PODSpecBuilder<
         : StatementName<[N1, N2], "equalsEntry", S>]: EqualsEntry<E, N1, N2>;
     }
   > {
-    // Check that both names exist in entries
-    if (
-      !Object.prototype.hasOwnProperty.call(this.#spec.entries, name1) &&
-      !Object.prototype.hasOwnProperty.call(virtualEntries, name1)
-    ) {
-      throw new Error(`Entry "${name1}" does not exist`);
-    }
-    if (
-      !Object.prototype.hasOwnProperty.call(this.#spec.entries, name2) &&
-      !Object.prototype.hasOwnProperty.call(virtualEntries, name2)
-    ) {
-      throw new Error(`Entry "${name2}" does not exist`);
-    }
-    if ((name1 as string) === (name2 as string)) {
-      throw new Error("Entry names must be different");
-    }
-    if ((this.#spec.entries[name1] as string) !== this.#spec.entries[name2]) {
-      throw new Error("Entry types must be the same");
-    }
-
-    const statement = {
-      entries: [name1, name2],
-      type: "equalsEntry",
-    } satisfies EqualsEntry<E, N1, N2>;
-
-    const baseName = customStatementName ?? `${name1}_${name2}_equalsEntry`;
-    let statementName: string = baseName;
-    let suffix = 1;
-
-    while (
-      Object.prototype.hasOwnProperty.call(this.#spec.statements, statementName)
-    ) {
-      statementName = `${baseName}_${suffix++}`;
-    }
-
-    return new PODSpecBuilder({
-      ...this.#spec,
-      statements: {
-        ...this.#spec.statements,
-        [statementName]: statement,
-      },
-    });
+    return new PODSpecBuilder(
+      this.#innerBuilder.equalsEntry(name1, name2, customStatementName)
+    );
   }
 
   public notEqualsEntry<
@@ -712,48 +354,9 @@ export class PODSpecBuilder<
       >;
     }
   > {
-    // Check that both names exist in entries
-    if (
-      !Object.prototype.hasOwnProperty.call(this.#spec.entries, name1) &&
-      !Object.prototype.hasOwnProperty.call(virtualEntries, name1)
-    ) {
-      throw new Error(`Entry "${name1}" does not exist`);
-    }
-    if (
-      !Object.prototype.hasOwnProperty.call(this.#spec.entries, name2) &&
-      !Object.prototype.hasOwnProperty.call(virtualEntries, name2)
-    ) {
-      throw new Error(`Entry "${name2}" does not exist`);
-    }
-    if ((name1 as string) === (name2 as string)) {
-      throw new Error("Entry names must be different");
-    }
-    if ((this.#spec.entries[name1] as string) !== this.#spec.entries[name2]) {
-      throw new Error("Entry types must be the same");
-    }
-
-    const statement = {
-      entries: [name1, name2],
-      type: "notEqualsEntry",
-    } satisfies NotEqualsEntry<E, N1, N2>;
-
-    const baseName = customStatementName ?? `${name1}_${name2}_notEqualsEntry`;
-    let statementName: string = baseName;
-    let suffix = 1;
-
-    while (
-      Object.prototype.hasOwnProperty.call(this.#spec.statements, statementName)
-    ) {
-      statementName = `${baseName}_${suffix++}`;
-    }
-
-    return new PODSpecBuilder({
-      ...this.#spec,
-      statements: {
-        ...this.#spec.statements,
-        [statementName]: statement,
-      },
-    });
+    return new PODSpecBuilder(
+      this.#innerBuilder.notEqualsEntry(name1, name2, customStatementName)
+    );
   }
 
   public greaterThan<
@@ -776,48 +379,9 @@ export class PODSpecBuilder<
         : StatementName<[N1, N2], "greaterThan", S>]: GreaterThan<E, N1, N2>;
     }
   > {
-    // Check that both names exist in entries
-    if (
-      !Object.prototype.hasOwnProperty.call(this.#spec.entries, name1) &&
-      !Object.prototype.hasOwnProperty.call(virtualEntries, name1)
-    ) {
-      throw new Error(`Entry "${name1}" does not exist`);
-    }
-    if (
-      !Object.prototype.hasOwnProperty.call(this.#spec.entries, name2) &&
-      !Object.prototype.hasOwnProperty.call(virtualEntries, name2)
-    ) {
-      throw new Error(`Entry "${name2}" does not exist`);
-    }
-    if ((name1 as string) === (name2 as string)) {
-      throw new Error("Entry names must be different");
-    }
-    if ((this.#spec.entries[name1] as string) !== this.#spec.entries[name2]) {
-      throw new Error("Entry types must be the same");
-    }
-
-    const statement = {
-      entries: [name1, name2],
-      type: "greaterThan",
-    } satisfies GreaterThan<E, N1, N2>;
-
-    const baseName = customStatementName ?? `${name1}_${name2}_greaterThan`;
-    let statementName: string = baseName;
-    let suffix = 1;
-
-    while (
-      Object.prototype.hasOwnProperty.call(this.#spec.statements, statementName)
-    ) {
-      statementName = `${baseName}_${suffix++}`;
-    }
-
-    return new PODSpecBuilder({
-      ...this.#spec,
-      statements: {
-        ...this.#spec.statements,
-        [statementName]: statement,
-      },
-    });
+    return new PODSpecBuilder(
+      this.#innerBuilder.greaterThan(name1, name2, customStatementName)
+    );
   }
 
   public greaterThanEq<
@@ -844,48 +408,9 @@ export class PODSpecBuilder<
       >;
     }
   > {
-    // Check that both names exist in entries
-    if (
-      !Object.prototype.hasOwnProperty.call(this.#spec.entries, name1) &&
-      !Object.prototype.hasOwnProperty.call(virtualEntries, name1)
-    ) {
-      throw new Error(`Entry "${name1}" does not exist`);
-    }
-    if (
-      !Object.prototype.hasOwnProperty.call(this.#spec.entries, name2) &&
-      !Object.prototype.hasOwnProperty.call(virtualEntries, name2)
-    ) {
-      throw new Error(`Entry "${name2}" does not exist`);
-    }
-    if ((name1 as string) === (name2 as string)) {
-      throw new Error("Entry names must be different");
-    }
-    if ((this.#spec.entries[name1] as string) !== this.#spec.entries[name2]) {
-      throw new Error("Entry types must be the same");
-    }
-
-    const statement = {
-      entries: [name1, name2],
-      type: "greaterThanEq",
-    } satisfies GreaterThanEq<E, N1, N2>;
-
-    const baseName = customStatementName ?? `${name1}_${name2}_greaterThanEq`;
-    let statementName: string = baseName;
-    let suffix = 1;
-
-    while (
-      Object.prototype.hasOwnProperty.call(this.#spec.statements, statementName)
-    ) {
-      statementName = `${baseName}_${suffix++}`;
-    }
-
-    return new PODSpecBuilder({
-      ...this.#spec,
-      statements: {
-        ...this.#spec.statements,
-        [statementName]: statement,
-      },
-    });
+    return new PODSpecBuilder(
+      this.#innerBuilder.greaterThanEq(name1, name2, customStatementName)
+    );
   }
 
   public lessThan<
@@ -908,48 +433,9 @@ export class PODSpecBuilder<
         : StatementName<[N1, N2], "lessThan", S>]: LessThan<E, N1, N2>;
     }
   > {
-    // Check that both names exist in entries
-    if (
-      !Object.prototype.hasOwnProperty.call(this.#spec.entries, name1) &&
-      !Object.prototype.hasOwnProperty.call(virtualEntries, name1)
-    ) {
-      throw new Error(`Entry "${name1}" does not exist`);
-    }
-    if (
-      !Object.prototype.hasOwnProperty.call(this.#spec.entries, name2) &&
-      !Object.prototype.hasOwnProperty.call(virtualEntries, name2)
-    ) {
-      throw new Error(`Entry "${name2}" does not exist`);
-    }
-    if ((name1 as string) === (name2 as string)) {
-      throw new Error("Entry names must be different");
-    }
-    if ((this.#spec.entries[name1] as string) !== this.#spec.entries[name2]) {
-      throw new Error("Entry types must be the same");
-    }
-
-    const statement = {
-      entries: [name1, name2],
-      type: "lessThan",
-    } satisfies LessThan<E, N1, N2>;
-
-    const baseName = customStatementName ?? `${name1}_${name2}_lessThan`;
-    let statementName: string = baseName;
-    let suffix = 1;
-
-    while (
-      Object.prototype.hasOwnProperty.call(this.#spec.statements, statementName)
-    ) {
-      statementName = `${baseName}_${suffix++}`;
-    }
-
-    return new PODSpecBuilder({
-      ...this.#spec,
-      statements: {
-        ...this.#spec.statements,
-        [statementName]: statement,
-      },
-    });
+    return new PODSpecBuilder(
+      this.#innerBuilder.lessThan(name1, name2, customStatementName)
+    );
   }
 
   public lessThanEq<
@@ -972,48 +458,9 @@ export class PODSpecBuilder<
         : StatementName<[N1, N2], "lessThanEq", S>]: LessThanEq<E, N1, N2>;
     }
   > {
-    // Check that both names exist in entries
-    if (
-      !Object.prototype.hasOwnProperty.call(this.#spec.entries, name1) &&
-      !Object.prototype.hasOwnProperty.call(virtualEntries, name1)
-    ) {
-      throw new Error(`Entry "${name1}" does not exist`);
-    }
-    if (
-      !Object.prototype.hasOwnProperty.call(this.#spec.entries, name2) &&
-      !Object.prototype.hasOwnProperty.call(virtualEntries, name2)
-    ) {
-      throw new Error(`Entry "${name2}" does not exist`);
-    }
-    if ((name1 as string) === (name2 as string)) {
-      throw new Error("Entry names must be different");
-    }
-    if ((this.#spec.entries[name1] as string) !== this.#spec.entries[name2]) {
-      throw new Error("Entry types must be the same");
-    }
-
-    const statement = {
-      entries: [name1, name2],
-      type: "lessThanEq",
-    } satisfies LessThanEq<E, N1, N2>;
-
-    const baseName = customStatementName ?? `${name1}_${name2}_lessThanEq`;
-    let statementName: string = baseName;
-    let suffix = 1;
-
-    while (
-      Object.prototype.hasOwnProperty.call(this.#spec.statements, statementName)
-    ) {
-      statementName = `${baseName}_${suffix++}`;
-    }
-
-    return new PODSpecBuilder({
-      ...this.#spec,
-      statements: {
-        ...this.#spec.statements,
-        [statementName]: statement,
-      },
-    });
+    return new PODSpecBuilder(
+      this.#innerBuilder.lessThanEq(name1, name2, customStatementName)
+    );
   }
 }
 
@@ -1078,9 +525,11 @@ if (import.meta.vitest) {
         "my_int_my_other_int_lessThanEq",
       ]);
 
-      builderWithEntries
-        // @ts-expect-error entry does not exist
-        .isMemberOf(["non_existent_entry"], ["foo", "bar"]);
+      expect(() =>
+        builderWithEntries
+          // @ts-expect-error entry does not exist
+          .isMemberOf(["non_existent_entry"], ["foo", "bar"])
+      ).toThrow();
     });
   });
 }
