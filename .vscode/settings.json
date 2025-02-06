@@ -44,5 +44,6 @@
   "javascript.preferences.quoteStyle": "double",
   "typescript.format.semicolons": "insert",
   "typescript.preferences.quoteStyle": "double",
-  "typescript.enablePromptUseWorkspaceTsdk": true
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "typescript.tsdk": "node_modules/typescript/lib"
 }
