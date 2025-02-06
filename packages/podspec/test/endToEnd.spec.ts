@@ -11,10 +11,11 @@ describe("endToEnd", () => {
     // First of all, we want to be able to describe a POD in the abstract.
     {
       // Here is a PODSpecBuilder:
-      const builder = PODSpecBuilder.create()
-        .entry("name", "string")
-        .entry("date_of_birth", "date")
-        .entry("email", "string");
+      const builder = PODSpecBuilder.create().entries({
+        name: "string",
+        date_of_birth: "date",
+        email: "string",
+      });
 
       // Calling the spec() method on the builder outputs a Spec.
       const spec = builder.spec();
@@ -218,9 +219,10 @@ describe("endToEnd", () => {
       // Let's say we have a POD for a person, and a POD for a ticket.
       // We'll use our existing builder for the person POD, and create a new
       // builder for the ticket POD.
-      const otherBuilder = PODSpecBuilder.create()
-        .entry("eventName", "string")
-        .entry("attendeeEmail", "string");
+      const otherBuilder = PODSpecBuilder.create().entries({
+        eventName: "string",
+        attendeeEmail: "string",
+      });
 
       // The PODs are named and grouped together in the spec.
       const groupBuilder = PODGroupSpecBuilder.create()

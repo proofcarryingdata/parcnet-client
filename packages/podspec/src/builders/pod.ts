@@ -136,6 +136,12 @@ export class PODSpecBuilder<
     );
   }
 
+  public entries<NewEntries extends EntryTypes>(
+    entries: NewEntries
+  ): PODSpecBuilder<Concrete<E & NewEntries>, S> {
+    return new PODSpecBuilder(this.#innerBuilder.entries(entries));
+  }
+
   /**
    * Pick entries by key
    */

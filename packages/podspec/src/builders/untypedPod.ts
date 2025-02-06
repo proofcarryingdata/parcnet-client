@@ -84,6 +84,25 @@ export class UntypedPODSpecBuilder {
     });
   }
 
+  public entries<NewEntries extends EntryTypes>(
+    entries: NewEntries
+  ): UntypedPODSpecBuilder {
+    for (const entryName of Object.keys(entries)) {
+      if (Object.prototype.hasOwnProperty.call(this.#spec.entries, entryName)) {
+        throw new Error(`Entry "${entryName}" already exists`);
+      }
+
+      // Will throw if not a valid POD entry name
+      checkPODName(entryName);
+    }
+
+    return new UntypedPODSpecBuilder({
+      ...this.#spec,
+      entries: { ...this.#spec.entries, ...entries },
+      statements: this.#spec.statements,
+    });
+  }
+
   /**
    * Pick entries by key
    */
